@@ -1,0 +1,11 @@
+/Debug
+/Release/*
+/images
+/vendor
+*.ncb
+*.plg
+*.opt
+*.aps
+
+!/Release/winmapviewer.exe
+
