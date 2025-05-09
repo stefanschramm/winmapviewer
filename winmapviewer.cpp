@@ -39,7 +39,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	// init instance
 	hInst = hInstance;
 
-	HWND hWnd = CreateWindow(
+	HWND hWnd = CreateWindowEx(
+	  WS_EX_CLIENTEDGE,
 	  szWindowClass,
 	  szTitle,
 	  WS_OVERLAPPEDWINDOW,
