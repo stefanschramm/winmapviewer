@@ -175,6 +175,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			EndPaint(hWnd, &ps);
 			break;
 
+		case WM_ERASEBKGND:
+			// reduce flickering
+			return TRUE;
+
 		case WM_SIZE:
 			viewportRenderer->setViewportSize(LOWORD(lParam), HIWORD(lParam));
 			break;

@@ -5,7 +5,7 @@ HBITMAP createPlaceholderBitmap() {
 	HDC hdc = GetDC(NULL);
 	HDC hMemDC = CreateCompatibleDC(hdc);
 	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, m_hPlaceholderBitmap);
-	HBRUSH hBrush = CreateSolidBrush(RGB(192, 255, 192));
+	HBRUSH hBrush = CreateSolidBrush(RGB(0xcc, 0xcc, 0xcc));
 	RECT rect = {0, 0, 256, 256};
 	FillRect(hMemDC, &rect, hBrush);
 	SelectObject(hMemDC, hOldBitmap);
