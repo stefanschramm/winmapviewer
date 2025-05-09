@@ -4,6 +4,8 @@ Just a minimalistic OpenStreetMap viewer application as playground for usage of 
 
 Map data from [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
+![Screenshot of winmapviewer](doc/winmapviewer.png)
+
 ## Building
 
 Open the workspace winmapviewer.dsw in Visual C++ 6 and select Build - Build all.
