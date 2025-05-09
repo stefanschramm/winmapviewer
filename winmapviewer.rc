@@ -45,6 +45,11 @@ BEGIN
     BEGIN
         MENUITEM "E&xit",                       IDM_EXIT
     END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Zoom &in\t+",                 IDM_ZOOMIN
+        MENUITEM "Zoom &out\t-",                IDM_ZOOMOUT
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About ...",                  IDM_ABOUT
