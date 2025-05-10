@@ -27,12 +27,6 @@ ViewportRenderer::ViewportRenderer(TileCache& tileCache, int zoomLevel)
 	m_y = 0;
 }
 
-void ViewportRenderer::render(HWND hWnd) {
-	HDC hdcWindow = GetDC(hWnd);
-	render(hdcWindow);
-	ReleaseDC(hWnd, hdcWindow);
-}
-
 void ViewportRenderer::render(HDC hdcDestination) {
 	// top left corner of complete map
 	long originX = m_x + m_offsetX;

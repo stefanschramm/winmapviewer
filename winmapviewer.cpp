@@ -123,36 +123,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 				case IDM_ZOOMIN:
 					viewportRenderer->zoomIn();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				case IDM_ZOOMOUT:
 					viewportRenderer->zoomOut();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				case IDM_RIGHT:
 					viewportRenderer->setOffset(ARROW_KEYS_MOVE_DISTANCE, 0);
 					viewportRenderer->moveToOffset();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				case IDM_LEFT:
 					viewportRenderer->setOffset(-ARROW_KEYS_MOVE_DISTANCE, 0);
 					viewportRenderer->moveToOffset();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				case IDM_UP:
 					viewportRenderer->setOffset(0, -ARROW_KEYS_MOVE_DISTANCE);
 					viewportRenderer->moveToOffset();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				case IDM_DOWN:
 					viewportRenderer->setOffset(0, ARROW_KEYS_MOVE_DISTANCE);
 					viewportRenderer->moveToOffset();
-					viewportRenderer->render(hWnd);
+					InvalidateRect(hWnd, NULL, FALSE);
 					break;
 
 				default:
@@ -163,7 +163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case WM_USER_TILE_READY:
 			hdc = BeginPaint(hWnd, &ps);
 			// TODO: render only tile(s) that have finished downloading
-			viewportRenderer->render(hWnd);
+			InvalidateRect(hWnd, NULL, FALSE);
 			EndPaint(hWnd, &ps);
 
 			break;
@@ -171,7 +171,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
 			// TODO: Improve rendering - only render part that needs updating
-			viewportRenderer->render(hWnd);
+			viewportRenderer->render(hdc);
 			EndPaint(hWnd, &ps);
 			break;
 
@@ -186,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case WM_MOUSEMOVE:
 			if (dragging) {
 				viewportRenderer->setOffset(dragStartX - GET_X_LPARAM(lParam), dragStartY - GET_Y_LPARAM(lParam));
-				viewportRenderer->render(hWnd);
+				InvalidateRect(hWnd, NULL, FALSE);
 			}
 			break;
 
@@ -199,7 +199,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_LBUTTONUP:
 			viewportRenderer->moveToOffset();
-			viewportRenderer->render(hWnd);
+			InvalidateRect(hWnd, NULL, FALSE);
 			dragging = FALSE;
 			ReleaseCapture();
 			break;
@@ -211,7 +211,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			} else {
 				viewportRenderer->zoomOut();
 			}
-			viewportRenderer->render(hWnd);
+			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 
 		case WM_DESTROY:
