@@ -1,4 +1,6 @@
+#include <windows.h>
 #include <windowsx.h>
+#include <commctrl.h>
 
 #include "resource.h"
 
@@ -20,6 +22,7 @@ const int ARROW_KEYS_MOVE_DISTANCE = 40;
 HINSTANCE hInst;
 TCHAR szTitle[MAX_LOADSTRING];
 TCHAR szWindowClass[MAX_LOADSTRING];
+HWND hwndStatus;
 bool dragging = FALSE;
 int dragStartX = 0;
 int dragStartY = 0;
@@ -34,7 +37,10 @@ LRESULT CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_WINMAPVIEWER, szWindowClass, MAX_LOADSTRING);
+
 	MyRegisterClass(hInstance);
+
+	InitCommonControls();
 
 	// init instance
 	hInst = hInstance;
@@ -57,6 +63,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (!hWnd) {
 		return FALSE;
 	}
+
+	hwndStatus = CreateWindowEx(
+	  0,
+	  STATUSCLASSNAME,
+	  NULL,
+	  WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
+	  0,
+	  0,
+	  0,
+	  0,
+	  hWnd,
+	  (HMENU)100,
+	  hInst,
+	  NULL
+	);
+
+	int partSizes[2] = {100, 200};
+
+	SendMessage(hwndStatus, SB_SETPARTS, sizeof(partSizes), (LPARAM)partSizes);
 
 	GdiPlusWrapper gdi;
 	TileDownloader tileDownloader(gdi);
@@ -107,6 +132,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	int wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
+	char statusText[128];
+	double lon;
+	double lat;
 
 	switch (message) {
 		case WM_COMMAND:
@@ -171,6 +199,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 			hdc = BeginPaint(hWnd, &ps);
 			// TODO: Improve rendering - only render part that needs updating
+			// TODO: Don't render onto status bar area
 			viewportRenderer->render(hdc);
 			EndPaint(hWnd, &ps);
 			break;
@@ -181,6 +210,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_SIZE:
 			viewportRenderer->setViewportSize(LOWORD(lParam), HIWORD(lParam));
+			SendMessage(hwndStatus, WM_SIZE, 0, 0);
 			break;
 
 		case WM_MOUSEMOVE:
@@ -188,6 +218,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				viewportRenderer->setOffset(dragStartX - GET_X_LPARAM(lParam), dragStartY - GET_Y_LPARAM(lParam));
 				InvalidateRect(hWnd, NULL, FALSE);
 			}
+
+			viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &lon, &lat);
+			sprintf(statusText, TEXT("lon: %.6f"), lon);
+			SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
+			sprintf(statusText, TEXT("lat: %.6f"), lat);
+			SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
+
 			break;
 
 		case WM_LBUTTONDOWN:

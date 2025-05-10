@@ -13,6 +13,7 @@ class ViewportRenderer {
 	void zoomIn();
 	void zoomOut();
 	void setViewportSize(int width, int height);
+	void getLonLat(int x, int y, double* lon, double* lat);
 
   private:
 	void restrictCoordinates(long* x, long* y);

@@ -98,8 +98,9 @@ void ViewportRenderer::moveToOffset() {
 }
 
 void ViewportRenderer::setCenterLonLat(double lon, double lat) {
-	m_x = (1 << m_zoomLevel << TILE_SIZE_BITS) * (lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
-	m_y = (1 << m_zoomLevel << TILE_SIZE_BITS) * (1.0 - asinh(tan(lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
+	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	m_x = mapSize * (lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
+	m_y = mapSize * (1.0 - asinh(tan(lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
 	restrictCoordinates(&m_x, &m_y);
 }
 
@@ -137,6 +138,12 @@ void ViewportRenderer::setViewportSize(int width, int height) {
 
 	m_viewportWidth = width;
 	m_viewportHeight = height;
+}
+
+void ViewportRenderer::getLonLat(int x, int y, double* lon, double* lat) {
+	double mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	*lon = (m_x + x + m_offsetX) / mapSize * 360.0 - 180.0;
+	*lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
 }
 
 void ViewportRenderer::restrictCoordinates(long* x, long* y) {
