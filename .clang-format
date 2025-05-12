@@ -3,7 +3,6 @@ ColumnLimit: 0
 PointerAlignment: Left
 AlignAfterOpenBracket: BlockIndent
 IndentCaseLabels: true
-ContinuationIndentWidth: 2
 UseTab: Always
 IndentWidth: 4
 TabWidth: 4

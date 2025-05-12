@@ -3,7 +3,7 @@
 #include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
 
-TileDownloader::TileDownloader(GdiPlusWrapper& gdi) : m_gdi(gdi) {
+TileDownloader::TileDownloader(GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (!m_hInternet) {
 		MessageBox(NULL, TEXT("Unable to initialize WinINet"), TEXT("winmapviewer"), MB_OK);
@@ -20,11 +20,11 @@ TileDownloader::~TileDownloader() {
 HBITMAP TileDownloader::get(TileKey tileKey) {
 	char url[128];
 	wsprintf(
-	  url,
-	  TEXT("http://tile.openstreetmap.org/%i/%i/%i.png"),
-	  tileKey.zoomLevel,
-	  tileKey.x,
-	  tileKey.y
+		url,
+		TEXT("http://tile.openstreetmap.org/%i/%i/%i.png"),
+		tileKey.zoomLevel,
+		tileKey.x,
+		tileKey.y
 	);
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url, NULL, 0, 0, 0);
@@ -55,7 +55,7 @@ HBITMAP TileDownloader::get(TileKey tileKey) {
 	LARGE_INTEGER liZero = {0, 0};
 	memoryStream->Seek(liZero, STREAM_SEEK_SET, NULL);
 
-	HBITMAP hBitmap = m_gdi.loadPng(memoryStream);
+	HBITMAP hBitmap = m_gdi->loadPng(memoryStream);
 
 	InternetCloseHandle(hUrl);
 

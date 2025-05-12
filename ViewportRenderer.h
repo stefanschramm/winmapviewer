@@ -4,7 +4,8 @@
 
 class ViewportRenderer {
   public:
-	ViewportRenderer(TileCache& tileCache, int zoomLevel);
+	ViewportRenderer(int zoomLevel, HWND hWnd);
+	~ViewportRenderer();
 	void render(HWND hWnd);
 	void render(HDC hdcDestination);
 	void setOffset(int offsetX, int offsetY);
@@ -16,8 +17,12 @@ class ViewportRenderer {
 	void getLonLat(int x, int y, double* lon, double* lat);
 
   private:
+	GdiPlusWrapper* m_gdi;
+	TileDownloader* m_tileDownloader;
+	DownloadWorker* m_downloadWorker;
+	TileCache* m_tileCache;
+
 	void restrictCoordinates(long* x, long* y);
-	TileCache& m_tileCache;
 	int m_zoomLevel;
 	long m_x;
 	long m_y;

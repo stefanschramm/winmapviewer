@@ -13,7 +13,7 @@ const WM_USER_TILE_READY = WM_USER + 1;
 
 class DownloadWorker {
   public:
-	DownloadWorker(TileDownloader& tileDownloader, HWND hwndMain);
+	DownloadWorker(TileDownloader* tileDownloader, HWND hwndMain);
 	~DownloadWorker();
 	void download(TileKey tileKey);
 	void transferFinishedDownloads(std::map<TileKey, HBITMAP>* pCacheMap);
@@ -25,7 +25,7 @@ class DownloadWorker {
 	HANDLE m_thread;
 	DWORD m_threadId;
 	HWND m_hwndMain;
-	TileDownloader& m_tileDownloader;
+	TileDownloader* m_tileDownloader;
 
 	static DWORD WINAPI threadEntry(LPVOID lpParam) {
 		DownloadWorker* worker = static_cast<DownloadWorker*>(lpParam);

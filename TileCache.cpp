@@ -16,7 +16,7 @@ HBITMAP createPlaceholderBitmap() {
 	return m_hPlaceholderBitmap;
 }
 
-TileCache::TileCache(TileDownloader& tileDownloader, DownloadWorker& downloadWorker)
+TileCache::TileCache(TileDownloader* tileDownloader, DownloadWorker* downloadWorker)
 	: m_tileDownloader(tileDownloader),
 	  m_downloadWorker(downloadWorker) {
 	m_hPlaceholderBitmap = createPlaceholderBitmap();
@@ -40,7 +40,7 @@ HBITMAP TileCache::get(TileKey tileKey) {
 		throw "Invalid tile requested";
 	}
 
-	m_downloadWorker.transferFinishedDownloads(&m_map);
+	m_downloadWorker->transferFinishedDownloads(&m_map);
 
 	std::map<TileKey, HBITMAP>::iterator iterator = m_map.find(tileKey);
 	if (iterator != m_map.end()) {
@@ -49,7 +49,7 @@ HBITMAP TileCache::get(TileKey tileKey) {
 	}
 
 	// download asynchronously
-	m_downloadWorker.download(tileKey);
+	m_downloadWorker->download(tileKey);
 
 	m_map[tileKey] = m_hPlaceholderBitmap;
 

@@ -101,6 +101,10 @@ SOURCE=.\GdiPlusWrapper.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MapControl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TileCache.cpp
 # End Source File
 # Begin Source File
@@ -130,6 +134,10 @@ SOURCE=.\DownloadWorker.h
 # Begin Source File
 
 SOURCE=.\GdiPlusWrapper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MapControl.h
 # End Source File
 # Begin Source File
 

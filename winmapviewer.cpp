@@ -1,14 +1,12 @@
+// windows.h is required to be included *before* commctrl.h
 #include <windows.h>
-#include <windowsx.h>
 #include <commctrl.h>
+#include <stdio.h>
+#include <windowsx.h>
 
 #include "resource.h"
 
-#include "DownloadWorker.h"
-#include "GdiPlusWrapper.h"
-#include "TileCache.h"
-#include "TileDownloader.h"
-#include "ViewportRenderer.h"
+#include "MapControl.h"
 
 #define MAX_LOADSTRING 100
 
@@ -23,91 +21,18 @@ HINSTANCE hInst;
 TCHAR szTitle[MAX_LOADSTRING];
 TCHAR szWindowClass[MAX_LOADSTRING];
 HWND hwndStatus;
-bool dragging = FALSE;
-int dragStartX = 0;
-int dragStartY = 0;
-
-ViewportRenderer* viewportRenderer;
+HWND hwndMap;
 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK About(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadString(hInstance, IDC_WINMAPVIEWER, szWindowClass, MAX_LOADSTRING);
 
-	MyRegisterClass(hInstance);
-
-	InitCommonControls();
-
-	// init instance
-	hInst = hInstance;
-
-	HWND hWnd = CreateWindowEx(
-	  WS_EX_CLIENTEDGE,
-	  szWindowClass,
-	  szTitle,
-	  WS_OVERLAPPEDWINDOW,
-	  CW_USEDEFAULT,
-	  0,
-	  CW_USEDEFAULT,
-	  0,
-	  NULL,
-	  NULL,
-	  hInstance,
-	  NULL
-	);
-
-	if (!hWnd) {
-		return FALSE;
-	}
-
-	hwndStatus = CreateWindowEx(
-	  0,
-	  STATUSCLASSNAME,
-	  NULL,
-	  WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
-	  0,
-	  0,
-	  0,
-	  0,
-	  hWnd,
-	  (HMENU)100,
-	  hInst,
-	  NULL
-	);
-
-	int partSizes[2] = {100, 200};
-
-	SendMessage(hwndStatus, SB_SETPARTS, sizeof(partSizes), (LPARAM)partSizes);
-
-	GdiPlusWrapper gdi;
-	TileDownloader tileDownloader(gdi);
-	DownloadWorker downloadWorker(tileDownloader, hWnd);
-	TileCache tileCache(tileDownloader, downloadWorker);
-	viewportRenderer = new ViewportRenderer(tileCache, 5);
-	viewportRenderer->setCenterLonLat(13.377222, 52.526944);
-
-	ShowWindow(hWnd, nCmdShow);
-	UpdateWindow(hWnd);
-
-	HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
-	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-
-	delete viewportRenderer;
-
-	return msg.wParam;
-}
-
-ATOM MyRegisterClass(HINSTANCE hInstance) {
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -124,17 +49,69 @@ ATOM MyRegisterClass(HINSTANCE hInstance) {
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
 
-	return RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex)) {
+		MessageBox(NULL, TEXT("Error registering main window"), TEXT("winmapviewer"), MB_OK);
+	}
+
+	RegisterMapControl(hInstance);
+
+	InitCommonControls();
+
+	// init instance
+	hInst = hInstance;
+
+	HWND hWnd = CreateWindowEx(
+		WS_EX_CLIENTEDGE,
+		szWindowClass,
+		szTitle,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		0,
+		CW_USEDEFAULT,
+		0,
+		NULL,
+		NULL,
+		hInstance,
+		NULL
+	);
+
+	if (!hWnd) {
+		return FALSE;
+	}
+
+	hwndStatus = CreateStatusWindow(
+		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
+		TEXT(""),
+		hWnd,
+		100
+	);
+
+	hwndMap = CreateMapWindow(0, 0, 640, 480, hWnd, hInstance);
+
+	int partSizes[2] = {100, 200};
+
+	SendMessage(hwndStatus, SB_SETPARTS, sizeof(partSizes), (LPARAM)partSizes);
+
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+
+	HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
+	MSG msg;
+	while (GetMessage(&msg, NULL, 0, 0)) {
+		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	return msg.wParam;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	int wmId;
 	int wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
 	char statusText[128];
-	double lon;
-	double lat;
+	LonLat lonLat;
 
 	switch (message) {
 		case WM_COMMAND:
@@ -150,37 +127,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 					break;
 
 				case IDM_ZOOMIN:
-					viewportRenderer->zoomIn();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_ZOOM_IN, 0, 0);
 					break;
 
 				case IDM_ZOOMOUT:
-					viewportRenderer->zoomOut();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_ZOOM_OUT, 0, 0);
 					break;
 
 				case IDM_RIGHT:
-					viewportRenderer->setOffset(ARROW_KEYS_MOVE_DISTANCE, 0);
-					viewportRenderer->moveToOffset();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_MOVE_X, ARROW_KEYS_MOVE_DISTANCE, 0);
 					break;
 
 				case IDM_LEFT:
-					viewportRenderer->setOffset(-ARROW_KEYS_MOVE_DISTANCE, 0);
-					viewportRenderer->moveToOffset();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_MOVE_X, -ARROW_KEYS_MOVE_DISTANCE, 0);
 					break;
 
 				case IDM_UP:
-					viewportRenderer->setOffset(0, -ARROW_KEYS_MOVE_DISTANCE);
-					viewportRenderer->moveToOffset();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_MOVE_Y, -ARROW_KEYS_MOVE_DISTANCE, 0);
 					break;
 
 				case IDM_DOWN:
-					viewportRenderer->setOffset(0, ARROW_KEYS_MOVE_DISTANCE);
-					viewportRenderer->moveToOffset();
-					InvalidateRect(hWnd, NULL, FALSE);
+					SendMessage(hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
 					break;
 
 				default:
@@ -188,67 +155,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			}
 			break;
 
-		case WM_USER_TILE_READY:
-			hdc = BeginPaint(hWnd, &ps);
-			// TODO: render only tile(s) that have finished downloading
-			InvalidateRect(hWnd, NULL, FALSE);
-			EndPaint(hWnd, &ps);
-
-			break;
-
-		case WM_PAINT:
-			hdc = BeginPaint(hWnd, &ps);
-			// TODO: Improve rendering - only render part that needs updating
-			// TODO: Don't render onto status bar area
-			viewportRenderer->render(hdc);
-			EndPaint(hWnd, &ps);
-			break;
-
 		case WM_ERASEBKGND:
 			// reduce flickering
 			return TRUE;
 
 		case WM_SIZE:
-			viewportRenderer->setViewportSize(LOWORD(lParam), HIWORD(lParam));
 			SendMessage(hwndStatus, WM_SIZE, 0, 0);
-			break;
-
-		case WM_MOUSEMOVE:
-			if (dragging) {
-				viewportRenderer->setOffset(dragStartX - GET_X_LPARAM(lParam), dragStartY - GET_Y_LPARAM(lParam));
-				InvalidateRect(hWnd, NULL, FALSE);
-			}
-
-			viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &lon, &lat);
-			sprintf(statusText, TEXT("lon: %.6f"), lon);
-			SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
-			sprintf(statusText, TEXT("lat: %.6f"), lat);
-			SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
-
-			break;
-
-		case WM_LBUTTONDOWN:
-			dragStartX = GET_X_LPARAM(lParam);
-			dragStartY = GET_Y_LPARAM(lParam);
-			dragging = TRUE;
-			SetCapture(hWnd);
-			break;
-
-		case WM_LBUTTONUP:
-			viewportRenderer->moveToOffset();
-			InvalidateRect(hWnd, NULL, FALSE);
-			dragging = FALSE;
-			ReleaseCapture();
+			RECT rect;
+			SendMessage(hwndStatus, SB_GETRECT, 0, (LPARAM)&rect);
+			MoveWindow(hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
 			break;
 
 		case WM_MOUSEWHEEL:
-			// TODO: Pass position and adjust new center
-			if ((short)HIWORD(wParam) > 0) {
-				viewportRenderer->zoomIn();
-			} else {
-				viewportRenderer->zoomOut();
-			}
-			InvalidateRect(hWnd, NULL, FALSE);
+			SendMessage(hwndMap, WM_MOUSEWHEEL, wParam, lParam);
+			break;
+
+		case WM_MAP_LONLAT_UPDATE:
+			SendMessage(hwndMap, WM_MAP_GET_LONLAT, (WPARAM)&lonLat, (LPARAM)lParam);
+			sprintf(statusText, TEXT("lon: %.6f"), lonLat.lon);
+			SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
+			sprintf(statusText, TEXT("lat: %.6f"), lonLat.lat);
+			SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
 			break;
 
 		case WM_DESTROY:
@@ -261,7 +188,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	return 0;
 }
 
-// Mesage handler for about box.
 LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
 		case WM_INITDIALOG:

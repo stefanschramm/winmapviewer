@@ -16,15 +16,26 @@ double asinh(double x) {
 	return log(x + sqrt(x * x + 1));
 }
 
-ViewportRenderer::ViewportRenderer(TileCache& tileCache, int zoomLevel)
-	: m_tileCache(tileCache),
-	  m_viewportWidth(640),
+ViewportRenderer::ViewportRenderer(int zoomLevel, HWND hWnd)
+	: m_viewportWidth(640),
 	  m_viewportHeight(480),
 	  m_offsetX(0),
 	  m_offsetY(0),
-	  m_zoomLevel(zoomLevel) {
-	m_x = 0;
-	m_y = 0;
+	  m_zoomLevel(zoomLevel),
+	  m_x(0),
+	  m_y(0) {
+	m_gdi = new GdiPlusWrapper();
+	;
+	m_tileDownloader = new TileDownloader(m_gdi);
+	m_downloadWorker = new DownloadWorker(m_tileDownloader, hWnd);
+	m_tileCache = new TileCache(m_tileDownloader, m_downloadWorker);
+}
+
+ViewportRenderer::~ViewportRenderer() {
+	delete m_tileCache;
+	delete m_downloadWorker;
+	delete m_tileDownloader;
+	delete m_gdi;
 }
 
 void ViewportRenderer::render(HDC hdcDestination) {
@@ -52,10 +63,10 @@ void ViewportRenderer::render(HDC hdcDestination) {
 			if (tileY > (1 << m_zoomLevel) - 1) {
 				// south out of bounds
 				RECT rect = {
-				  -offsetX + (x << TILE_SIZE_BITS),
-				  -offsetY + (y << TILE_SIZE_BITS),
-				  -offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
-				  -offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE};
+					-offsetX + (x << TILE_SIZE_BITS),
+					-offsetY + (y << TILE_SIZE_BITS),
+					-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
+					-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE};
 				HBRUSH hBrush = CreateSolidBrush(RGB(128, 128, 128));
 				FillRect(hdcDestination, &rect, hBrush);
 				DeleteObject(hBrush);
@@ -65,18 +76,18 @@ void ViewportRenderer::render(HDC hdcDestination) {
 
 			TileKey tileKey(m_zoomLevel, tileX, tileY);
 
-			HBITMAP hBitmap = m_tileCache.get(tileKey);
+			HBITMAP hBitmap = m_tileCache->get(tileKey);
 			SelectObject(hMemDC, hBitmap);
 			BitBlt(
-			  hdcDestination,
-			  -offsetX + (x << TILE_SIZE_BITS),
-			  -offsetY + (y << TILE_SIZE_BITS),
-			  TILE_SIZE,
-			  TILE_SIZE,
-			  hMemDC,
-			  0,
-			  0,
-			  SRCCOPY
+				hdcDestination,
+				-offsetX + (x << TILE_SIZE_BITS),
+				-offsetY + (y << TILE_SIZE_BITS),
+				TILE_SIZE,
+				TILE_SIZE,
+				hMemDC,
+				0,
+				0,
+				SRCCOPY
 			);
 		}
 	}
@@ -132,9 +143,9 @@ void ViewportRenderer::zoomOut() {
 
 void ViewportRenderer::setViewportSize(int width, int height) {
 	// re-center
-	m_x -= (width - m_viewportWidth) >> 1;
-	m_y -= (height - m_viewportHeight) >> 1;
-	restrictCoordinates(&m_x, &m_y);
+	// m_x = m_x - ((width - m_viewportWidth) / 2.0);
+	// m_y = m_y - ((height - m_viewportHeight) / 2.0);
+	// restrictCoordinates(&m_x, &m_y);
 
 	m_viewportWidth = width;
 	m_viewportHeight = height;

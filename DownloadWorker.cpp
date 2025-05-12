@@ -1,6 +1,6 @@
 #include "DownloadWorker.h"
 
-DownloadWorker::DownloadWorker(TileDownloader& tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
+DownloadWorker::DownloadWorker(TileDownloader* tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
 	InitializeCriticalSection(&m_mutex);
 
 	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);
@@ -24,7 +24,7 @@ void DownloadWorker::run() {
 			TileKey tileKey = m_downloadQueue.front();
 			m_downloadQueue.pop();
 			LeaveCriticalSection(&m_mutex);
-			HBITMAP hBitmap = m_tileDownloader.get(tileKey);
+			HBITMAP hBitmap = m_tileDownloader->get(tileKey);
 
 			EnterCriticalSection(&m_mutex);
 			m_finishedDownloads[tileKey] = hBitmap;

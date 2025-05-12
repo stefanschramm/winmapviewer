@@ -8,11 +8,11 @@
 
 class TileDownloader {
   public:
-	TileDownloader(GdiPlusWrapper& gdi);
+	TileDownloader(GdiPlusWrapper* gdi);
 	~TileDownloader();
 	HBITMAP get(TileKey tileKey);
 
   private:
-	GdiPlusWrapper& m_gdi;
+	GdiPlusWrapper* m_gdi;
 	HINTERNET m_hInternet;
 };
