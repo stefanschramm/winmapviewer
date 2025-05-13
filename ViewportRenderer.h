@@ -15,6 +15,9 @@ class ViewportRenderer {
 	void zoomOut();
 	void setViewportSize(int width, int height);
 	void getLonLat(int x, int y, double* lon, double* lat);
+	void startDragging(int x, int y);
+	bool mouseMove(int x, int y);
+	void endDragging(int x, int y);
 
   private:
 	GdiPlusWrapper* m_gdi;
@@ -30,4 +33,7 @@ class ViewportRenderer {
 	long m_viewportHeight;
 	int m_offsetX;
 	int m_offsetY;
+	bool m_dragging;
+	int m_dragStartX;
+	int m_dragStartY;
 };

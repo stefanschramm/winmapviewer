@@ -175,3 +175,24 @@ void ViewportRenderer::restrictCoordinates(long* x, long* y) {
 		*y = 0;
 	}
 }
+
+void ViewportRenderer::startDragging(int x, int y) {
+	m_dragging = true;
+	m_dragStartX = x;
+	m_dragStartY = y;
+}
+
+bool ViewportRenderer::mouseMove(int x, int y) {
+	if (m_dragging) {
+		setOffset(m_dragStartX - x, m_dragStartY - y);
+		return true;
+	}
+
+	return false;
+}
+
+void ViewportRenderer::endDragging(int x, int y) {
+	setOffset(m_dragStartX - x, m_dragStartY - y);
+	moveToOffset();
+	m_dragging = false;
+}

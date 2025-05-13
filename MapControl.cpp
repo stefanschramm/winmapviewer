@@ -16,11 +16,6 @@
 // Currently only one instance is supported!
 ViewportRenderer* viewportRenderer;
 
-// TODO: put these in the renderer?
-bool dragging = FALSE;
-int dragStartX = 0;
-int dragStartY = 0;
-
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
 	HDC hdc;
@@ -59,11 +54,9 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_MOUSEMOVE:
-			if (dragging) {
-				viewportRenderer->setOffset(dragStartX - GET_X_LPARAM(lParam), dragStartY - GET_Y_LPARAM(lParam));
+			if (viewportRenderer->mouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) {
 				InvalidateRect(hWnd, NULL, FALSE);
 			}
-
 			SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, lParam);
 			break;
 
@@ -73,16 +66,13 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_LBUTTONDOWN:
-			dragStartX = GET_X_LPARAM(lParam);
-			dragStartY = GET_Y_LPARAM(lParam);
-			dragging = TRUE;
+			viewportRenderer->startDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			SetCapture(hWnd);
 			break;
 
 		case WM_LBUTTONUP:
-			viewportRenderer->moveToOffset();
+			viewportRenderer->endDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 			InvalidateRect(hWnd, NULL, FALSE);
-			dragging = FALSE;
 			ReleaseCapture();
 			break;
 
