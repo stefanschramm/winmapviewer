@@ -9,7 +9,7 @@
 #include "TileDownloader.h"
 #include "TileKey.h"
 
-const WM_USER_TILE_READY = WM_USER + 1;
+const UINT WM_USER_TILE_READY = WM_USER + 1;
 
 class DownloadWorker {
   public:

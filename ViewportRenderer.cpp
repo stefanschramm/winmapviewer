@@ -3,14 +3,16 @@
 #include "ViewportRenderer.h"
 
 // used for optimized multiplication
-const unsigned int TILE_SIZE_BITS = 8;
+const int TILE_SIZE_BITS = 8;
 
 // == 256 px
-const unsigned int TILE_SIZE = 1 << TILE_SIZE_BITS;
-const unsigned int TILE_INNER_OFFSET_MAP = 0xff;
+const int TILE_SIZE = 1 << TILE_SIZE_BITS;
+const int TILE_INNER_OFFSET_MAP = 0xff;
 
 // M_PI and asinh are missing in math.h of VC++ 6
+#if !defined M_PI
 const double M_PI = 3.141592653589793;
+#endif
 
 double asinh(double x) {
 	return log(x + sqrt(x * x + 1));
