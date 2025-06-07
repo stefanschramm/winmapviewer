@@ -83,7 +83,7 @@ END
 IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 230, 65
 STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
-FONT 8, "System"
+FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "Copyright (C) 2025 Stefan Schramm",IDC_STATIC,2,15,119,
                     8
