@@ -86,7 +86,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		100
 	);
 
-	hwndMap = CreateMapWindow(0, 0, 640, 480, hWnd, hInstance);
+	hwndMap = CreateMapWindow(0, 0, 200, 200, hWnd, hInstance);
+
+	// CreateMapWindow(210, 0, 200, 200, hWnd, hInstance);
 
 	int partSizes[2] = {100, 200};
 

@@ -48,8 +48,9 @@ void DownloadWorker::download(TileKey tileKey) {
 	m_downloadQueue.push(tileKey);
 	LeaveCriticalSection(&m_mutex);
 	if (ResumeThread(m_thread) == 0xFFFFFFFF) {
-		MessageBox(NULL, TEXT("Unable to resume worker thread."), TEXT("winmapviewer"), MB_OK);
-		throw "Unable to resume worker thread.";
+		// Disabling because for some reason Windows 95 fails this check all the time...
+		// MessageBox(NULL, TEXT("Unable to resume worker thread."), TEXT("winmapviewer"), MB_OK);
+		// throw "Unable to resume worker thread.";
 	}
 }
 

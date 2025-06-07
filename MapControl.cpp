@@ -13,21 +13,26 @@
 #define WM_MOUSEWHEEL 0x020A
 #endif
 
-// Currently only one instance is supported!
-ViewportRenderer* viewportRenderer;
+std::map<HWND, ViewportRenderer*> renderers;
 
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
 	HDC hdc;
 	LonLat* lonLat;
+	ViewportRenderer* viewportRenderer = NULL;
+
+	if (message != WM_CREATE && !renderers.count(hWnd)) {
+		// should not happen
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	} else {
+		viewportRenderer = renderers[hWnd];
+	}
 
 	switch (message) {
 		case WM_CREATE:
-			// TODO: Initialize service structure (ViewportRenderer etc.) in WM_CREATE if required (use factory method instead)
-			// TODO: When multiple controls are active: common (static) TileCache, DownloadWorker, TileDownloader  and GdiWrapper instances, but individual ViewportRenderer
-			// TODO: (statically) count controls to determine when common services can be destroyed
 			viewportRenderer = new ViewportRenderer(5, hWnd);
 			viewportRenderer->setCenterLonLat(13.377222, 52.526944);
+			renderers[hWnd] = viewportRenderer;
 
 			break;
 
@@ -110,6 +115,8 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 		case WM_DESTROY:
 			delete viewportRenderer;
+			renderers.erase(hWnd);
+
 			break;
 
 		default:
