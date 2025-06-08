@@ -1,5 +1,5 @@
 /Debug
-/Release/*
+/Release
 /images
 /vendor
 *.ncb
@@ -7,5 +7,7 @@
 *.opt
 *.aps
 
-!/Release/winmapviewer.exe
+*.o
+*.res.o
+*.exe
 
