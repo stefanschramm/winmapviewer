@@ -19,8 +19,8 @@ class TileCache {
 	void downloadFinished(TileKey key, HBITMAP hBitmap);
 
   private:
-	const TileDownloader* m_tileDownloader;
-	DownloadWorker* m_downloadWorker;
+	const TileDownloader* const m_tileDownloader;
+	DownloadWorker* const m_downloadWorker;
 
 	std::map<TileKey, HBITMAP> m_map;
 	HBITMAP m_hPlaceholderBitmap;

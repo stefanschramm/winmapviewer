@@ -21,7 +21,7 @@ class ViewportRenderer {
 
   private:
 	GdiPlusWrapper* m_gdi;
-	TileDownloader* m_tileDownloader;
+	const TileDownloader* m_tileDownloader;
 	DownloadWorker* m_downloadWorker;
 	TileCache* m_tileCache;
 

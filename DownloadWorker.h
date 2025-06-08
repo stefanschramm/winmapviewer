@@ -25,7 +25,7 @@ class DownloadWorker {
 	HANDLE m_thread;
 	DWORD m_threadId;
 	HWND m_hwndMain;
-	const TileDownloader* m_tileDownloader;
+	const TileDownloader* const m_tileDownloader;
 
 	static DWORD WINAPI threadEntry(LPVOID lpParam) {
 		DownloadWorker* worker = static_cast<DownloadWorker*>(lpParam);
