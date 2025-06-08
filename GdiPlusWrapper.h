@@ -28,7 +28,7 @@ class GdiPlusWrapper {
   public:
 	GdiPlusWrapper();
 	~GdiPlusWrapper();
-	HBITMAP loadPng(IStream* stream);
+	HBITMAP loadPng(IStream* stream) const;
 
   private:
 	HINSTANCE m_lib;

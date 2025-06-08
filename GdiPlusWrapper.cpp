@@ -31,7 +31,7 @@ GdiPlusWrapper::~GdiPlusWrapper() {
 	FreeLibrary(m_lib);
 }
 
-HBITMAP GdiPlusWrapper::loadPng(IStream* stream) {
+HBITMAP GdiPlusWrapper::loadPng(IStream* stream) const {
 	GdiplusImage* image = NULL;
 	HBITMAP hBitmap = NULL;
 

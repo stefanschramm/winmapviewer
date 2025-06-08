@@ -16,7 +16,7 @@ HBITMAP createPlaceholderBitmap() {
 	return m_hPlaceholderBitmap;
 }
 
-TileCache::TileCache(TileDownloader* tileDownloader, DownloadWorker* downloadWorker)
+TileCache::TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker)
 	: m_tileDownloader(tileDownloader),
 	  m_downloadWorker(downloadWorker) {
 	m_hPlaceholderBitmap = createPlaceholderBitmap();

@@ -13,13 +13,13 @@
 // TODO: Clean up cache (keep 100 tiles?)
 class TileCache {
   public:
-	TileCache(TileDownloader* tileDownloader, DownloadWorker* downloadWorker);
+	TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker);
 	~TileCache();
 	HBITMAP get(TileKey tileKey);
 	void downloadFinished(TileKey key, HBITMAP hBitmap);
 
   private:
-	TileDownloader* m_tileDownloader;
+	const TileDownloader* m_tileDownloader;
 	DownloadWorker* m_downloadWorker;
 
 	std::map<TileKey, HBITMAP> m_map;

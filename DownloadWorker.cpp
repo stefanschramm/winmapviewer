@@ -1,6 +1,6 @@
 #include "DownloadWorker.h"
 
-DownloadWorker::DownloadWorker(TileDownloader* tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
+DownloadWorker::DownloadWorker(const TileDownloader* tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
 	InitializeCriticalSection(&m_mutex);
 
 	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);

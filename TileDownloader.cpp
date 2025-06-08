@@ -3,7 +3,7 @@
 #include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
 
-TileDownloader::TileDownloader(GdiPlusWrapper* gdi) : m_gdi(gdi) {
+TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (!m_hInternet) {
 		MessageBox(NULL, TEXT("Unable to initialize WinINet"), TEXT("winmapviewer"), MB_OK);
@@ -17,7 +17,7 @@ TileDownloader::~TileDownloader() {
 
 // Returns bitmap for specified tile
 // The caller is responsible to DeleteObject after usage.
-HBITMAP TileDownloader::get(TileKey tileKey) {
+HBITMAP TileDownloader::get(TileKey tileKey) const {
 	char url[128];
 	wsprintf(
 		url,
