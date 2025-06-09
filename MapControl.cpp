@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>
 
@@ -13,7 +14,13 @@
 #define WM_MOUSEWHEEL 0x020A
 #endif
 
+#define IDM_COPY_LON_LAT 10001
+
 std::map<HWND, ViewportRenderer*> renderers;
+
+LonLat clickLonLat;
+
+void putTextIntoClipboard(char* text);
 
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
@@ -29,6 +36,20 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	}
 
 	switch (message) {
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDM_COPY_LON_LAT: {
+					char latLonTxt[256];
+					sprintf(latLonTxt, TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
+					putTextIntoClipboard(latLonTxt);
+					break;
+				}
+
+				default:
+					return DefWindowProc(hWnd, message, wParam, lParam);
+			}
+			break;
+
 		case WM_CREATE:
 			viewportRenderer = new ViewportRenderer(5, hWnd);
 			viewportRenderer->setCenterLonLat(13.377222, 52.526944);
@@ -80,6 +101,17 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			InvalidateRect(hWnd, NULL, FALSE);
 			ReleaseCapture();
 			break;
+
+		case WM_RBUTTONDOWN: {
+			HMENU hMenu = CreatePopupMenu();
+			AppendMenu(hMenu, MF_STRING, IDM_COPY_LON_LAT, "Copy coordinates to clipboard (Format: lat lon)");
+			POINT pt;
+			GetCursorPos(&pt);
+			viewportRenderer->getLonLat(pt.x, pt.y, &clickLonLat.lon, &clickLonLat.lat);
+			TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
+			DestroyMenu(hMenu);
+			break;
+		}
 
 		case WM_MOUSEWHEEL:
 			// TODO: Pass position and adjust new center; coords may be shifted when widget is not at 0;0
@@ -163,4 +195,22 @@ HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE h
 		hInstance,
 		NULL
 	);
+}
+
+void putTextIntoClipboard(char* text) {
+	if (!OpenClipboard(NULL)) {
+		return;
+	}
+	EmptyClipboard();
+	size_t size = strlen(text) + 1;
+	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, size);
+	if (hMem) {
+		char* pMem = (char*)GlobalLock(hMem);
+		if (pMem) {
+			memcpy(pMem, text, size);
+			GlobalUnlock(hMem);
+			SetClipboardData(CF_TEXT, hMem);
+		}
+	}
+	CloseClipboard();
 }
