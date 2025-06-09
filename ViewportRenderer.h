@@ -14,7 +14,7 @@ class ViewportRenderer {
 	void zoomIn();
 	void zoomOut();
 	void setViewportSize(int width, int height);
-	void getLonLat(int x, int y, double* lon, double* lat);
+	void getLonLat(int x, int y, double* lon, double* lat) const;
 	void startDragging(int x, int y);
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);
@@ -25,7 +25,7 @@ class ViewportRenderer {
 	DownloadWorker* m_downloadWorker;
 	TileCache* m_tileCache;
 
-	void restrictCoordinates(long* x, long* y);
+	void restrictCoordinates(long* x, long* y) const;
 	int m_zoomLevel;
 	long m_x;
 	long m_y;
