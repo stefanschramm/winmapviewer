@@ -79,20 +79,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return FALSE;
 	}
 
+	hwndMap = CreateMapWindow(0, 0, 200, 200, hWnd, hInstance);
+
+	// status bar
 	hwndStatus = CreateStatusWindow(
 		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
 		TEXT(""),
 		hWnd,
 		100
 	);
-
-	hwndMap = CreateMapWindow(0, 0, 200, 200, hWnd, hInstance);
-
-	// CreateMapWindow(210, 0, 200, 200, hWnd, hInstance);
-
-	int partSizes[2] = {100, 200};
-
-	SendMessage(hwndStatus, SB_SETPARTS, sizeof(partSizes), (LPARAM)partSizes);
+	int partSizes[] = {100, 200, -1};
+	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
+	SendMessage(hwndStatus, SB_SETPARTS, numParts, (LPARAM)partSizes);
+	SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)TEXT("Copyright OpenStreetMap.org contributors"));
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
