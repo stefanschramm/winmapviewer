@@ -4,6 +4,7 @@
 #define WM_MAP_MOVE_Y (WM_USER + 13)
 #define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
 #define WM_MAP_GET_LONLAT (WM_USER + 15)
+#define WM_MAP_PRINT (WM_USER + 16)
 
 struct LonLat {
 	double lon;

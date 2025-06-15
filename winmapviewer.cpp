@@ -108,6 +108,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	return msg.wParam;
 }
 
+
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	int wmId;
 	int wmEvent;
@@ -149,6 +151,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 
 				case IDM_DOWN:
 					SendMessage(hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
+					break;
+
+				case IDM_PRINT:
+					SendMessage(hwndMap, WM_MAP_PRINT, 0, 0);
 					break;
 
 				default:

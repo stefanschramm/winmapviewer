@@ -43,6 +43,7 @@ IDC_WINMAPVIEWER MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Print",                      IDM_PRINT
         MENUITEM "E&xit",                       IDM_EXIT
     END
     POPUP "&View"

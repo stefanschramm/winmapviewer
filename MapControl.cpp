@@ -21,6 +21,7 @@ std::map<HWND, ViewportRenderer*> renderers;
 LonLat clickLonLat;
 
 void putTextIntoClipboard(char* text);
+void printMap(HWND hWnd, ViewportRenderer* const viewportRenderer);
 
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
@@ -145,10 +146,13 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			InvalidateRect(hWnd, NULL, FALSE);
 			break;
 
+		case WM_MAP_PRINT:
+			printMap(hWnd, viewportRenderer);
+			break;
+
 		case WM_DESTROY:
 			delete viewportRenderer;
 			renderers.erase(hWnd);
-
 			break;
 
 		default:
@@ -213,4 +217,50 @@ void putTextIntoClipboard(char* text) {
 		}
 	}
 	CloseClipboard();
+}
+
+void printMap(HWND hWnd, ViewportRenderer* const viewportRenderer) {
+    PRINTDLG pd;
+    memset(&pd, 0, sizeof(pd));
+    pd.lStructSize = sizeof(PRINTDLG);
+    pd.hwndOwner = hWnd;
+    pd.Flags = PD_RETURNDC | PD_PRINTSETUP;
+    pd.nCopies = 1;
+
+    if (!PrintDlg(&pd)) {
+		return;
+	}
+
+	HDC hdcPrint = pd.hDC;
+	static DOCINFO di = {sizeof(DOCINFO), TEXT("WinMapViewer")};
+	if (hdcPrint == NULL) {
+		return;
+	}
+
+	// TODO: Set abort procedure
+	// TODO: Display modal dialog with cancel button
+
+	if (StartDoc(hdcPrint, &di) <= 0) {
+		MessageBox(NULL, TEXT("StartDoc problem"), TEXT("winmapviewer"), MB_OK);
+		DeleteDC(hdcPrint);
+		return;
+	}
+	if (StartPage(hdcPrint) <= 0) {
+		MessageBox(NULL, TEXT("StartPage problem"), TEXT("winmapviewer"), MB_OK);
+		DeleteDC(hdcPrint);
+		return;
+	}
+
+	// TODO: Printing commands
+	viewportRenderer->render(hdcPrint);
+
+	if (EndPage(hdcPrint) <= 0) {
+		MessageBox(NULL, TEXT("EndPage problem"), TEXT("winmapviewer"), MB_OK);
+		DeleteDC(hdcPrint);
+		return;
+	}
+	if (EndDoc(hdcPrint) <= 0) {
+		MessageBox(NULL, TEXT("EndDoc problem"), TEXT("winmapviewer"), MB_OK);
+	}
+	DeleteDC(hdcPrint);
 }
