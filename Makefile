@@ -4,7 +4,7 @@ APPNAME = winmapviewer
 CC = i686-w64-mingw32-g++
 RC = i686-w64-mingw32-windres
 
-CFLAGS = -mwindows -static-libgcc -static-libstdc++
+CFLAGS = -mwindows -static-libgcc -static-libstdc++ -s -Os
 LFLAGS = -luser32 -lgdi32 -lole32 -lcomctl32 -lwininet
 
 SRC = $(wildcard *.cpp)
