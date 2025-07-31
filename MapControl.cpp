@@ -103,12 +103,13 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_RBUTTONDOWN: {
+			viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &clickLonLat.lon, &clickLonLat.lat);
+
 			HMENU hMenu = CreatePopupMenu();
 			AppendMenu(hMenu, MF_STRING, IDM_COPY_LON_LAT, "Copy coordinates to clipboard (Format: lat lon)");
-			POINT pt;
-			GetCursorPos(&pt);
-			viewportRenderer->getLonLat(pt.x, pt.y, &clickLonLat.lon, &clickLonLat.lat);
-			TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
+			POINT absolutePosition;
+			GetCursorPos(&absolutePosition);
+			TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, absolutePosition.x, absolutePosition.y, 0, hWnd, NULL);
 			DestroyMenu(hMenu);
 			break;
 		}
