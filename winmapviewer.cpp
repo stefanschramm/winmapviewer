@@ -1,7 +1,7 @@
 // windows.h is required to be included *before* commctrl.h
 #include <windows.h>
 #include <commctrl.h>
-#include <stdio.h>
+#include <iostream>
 #include <windowsx.h>
 
 #include "resource.h"
@@ -114,78 +114,84 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	char statusText[128];
 	LonLat lonLat;
 
-	switch (message) {
-		case WM_COMMAND:
-			wmId = LOWORD(wParam);
-			wmEvent = HIWORD(wParam);
-			switch (wmId) {
-				case IDM_ABOUT:
-					DialogBox(hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
-					break;
+	try {
+		switch (message) {
+			case WM_COMMAND:
+				wmId = LOWORD(wParam);
+				wmEvent = HIWORD(wParam);
+				switch (wmId) {
+					case IDM_ABOUT:
+						DialogBox(hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+						break;
 
-				case IDM_EXIT:
-					DestroyWindow(hWnd);
-					break;
+					case IDM_EXIT:
+						DestroyWindow(hWnd);
+						break;
 
-				case IDM_ZOOMIN:
-					SendMessage(hwndMap, WM_MAP_ZOOM_IN, 0, 0);
-					break;
+					case IDM_ZOOMIN:
+						SendMessage(hwndMap, WM_MAP_ZOOM_IN, 0, 0);
+						break;
 
-				case IDM_ZOOMOUT:
-					SendMessage(hwndMap, WM_MAP_ZOOM_OUT, 0, 0);
-					break;
+					case IDM_ZOOMOUT:
+						SendMessage(hwndMap, WM_MAP_ZOOM_OUT, 0, 0);
+						break;
 
-				case IDM_RIGHT:
-					SendMessage(hwndMap, WM_MAP_MOVE_X, ARROW_KEYS_MOVE_DISTANCE, 0);
-					break;
+					case IDM_RIGHT:
+						SendMessage(hwndMap, WM_MAP_MOVE_X, ARROW_KEYS_MOVE_DISTANCE, 0);
+						break;
 
-				case IDM_LEFT:
-					SendMessage(hwndMap, WM_MAP_MOVE_X, -ARROW_KEYS_MOVE_DISTANCE, 0);
-					break;
+					case IDM_LEFT:
+						SendMessage(hwndMap, WM_MAP_MOVE_X, -ARROW_KEYS_MOVE_DISTANCE, 0);
+						break;
 
-				case IDM_UP:
-					SendMessage(hwndMap, WM_MAP_MOVE_Y, -ARROW_KEYS_MOVE_DISTANCE, 0);
-					break;
+					case IDM_UP:
+						SendMessage(hwndMap, WM_MAP_MOVE_Y, -ARROW_KEYS_MOVE_DISTANCE, 0);
+						break;
 
-				case IDM_DOWN:
-					SendMessage(hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
-					break;
+					case IDM_DOWN:
+						SendMessage(hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
+						break;
 
-				default:
-					return DefWindowProc(hWnd, message, wParam, lParam);
-			}
-			break;
+					default:
+						return DefWindowProc(hWnd, message, wParam, lParam);
+				}
+				break;
 
-		case WM_ERASEBKGND:
-			// reduce flickering
-			return TRUE;
+			case WM_ERASEBKGND:
+				// reduce flickering
+				return TRUE;
 
-		case WM_SIZE:
-			SendMessage(hwndStatus, WM_SIZE, 0, 0);
-			RECT rect;
-			SendMessage(hwndStatus, SB_GETRECT, 0, (LPARAM)&rect);
-			MoveWindow(hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
-			break;
+			case WM_SIZE:
+				SendMessage(hwndStatus, WM_SIZE, 0, 0);
+				RECT rect;
+				SendMessage(hwndStatus, SB_GETRECT, 0, (LPARAM)&rect);
+				MoveWindow(hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
+				break;
 
-		case WM_MOUSEWHEEL:
-			SendMessage(hwndMap, WM_MOUSEWHEEL, wParam, lParam);
-			break;
+			case WM_MOUSEWHEEL:
+				SendMessage(hwndMap, WM_MOUSEWHEEL, wParam, lParam);
+				break;
 
-		case WM_MAP_LONLAT_UPDATE:
-			SendMessage(hwndMap, WM_MAP_GET_LONLAT, (WPARAM)&lonLat, (LPARAM)lParam);
-			sprintf(statusText, TEXT("lon: %.6f"), lonLat.lon);
-			SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
-			sprintf(statusText, TEXT("lat: %.6f"), lonLat.lat);
-			SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
-			break;
+			case WM_MAP_LONLAT_UPDATE:
+				SendMessage(hwndMap, WM_MAP_GET_LONLAT, (WPARAM)&lonLat, (LPARAM)lParam);
+				sprintf(statusText, TEXT("lon: %.6f"), lonLat.lon);
+				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
+				sprintf(statusText, TEXT("lat: %.6f"), lonLat.lat);
+				SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
+				break;
 
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
+			case WM_DESTROY:
+				PostQuitMessage(0);
+				break;
 
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	} catch (char const* e) {
+		std::cout << "Exception caught in main window procedure: " << e << std::endl;
+		std::terminate();
 	}
+
 	return 0;
 }
 

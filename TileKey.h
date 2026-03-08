@@ -6,7 +6,7 @@ class TileKey {
 	int x;
 	int y;
 
-	TileKey(int zoomLevel, int x, int y) : zoomLevel(zoomLevel), x(x), y(y){};
+	TileKey(int zoomLevel, int x, int y) : zoomLevel(zoomLevel), x(x), y(y) {};
 
 	bool operator<(const TileKey& other) const {
 		if (x != other.x) {

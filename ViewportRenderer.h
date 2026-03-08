@@ -7,7 +7,7 @@ class ViewportRenderer {
 	ViewportRenderer(int zoomLevel, HWND hWnd);
 	~ViewportRenderer();
 	void render(HWND hWnd);
-	void render(HDC hdcDestination);
+	void render(HDC hdcDestination, RECT* updateRect);
 	void setOffset(int offsetX, int offsetY);
 	void moveToOffset();
 	void setCenterLonLat(double lon, double lat);

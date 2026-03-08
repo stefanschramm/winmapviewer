@@ -8,6 +8,7 @@
 
 #include "TileDownloader.h"
 #include "TileKey.h"
+#include "TileRange.h"
 
 const UINT WM_USER_TILE_READY = WM_USER + 1;
 
@@ -17,9 +18,10 @@ class DownloadWorker {
 	~DownloadWorker();
 	void download(TileKey tileKey);
 	void transferFinishedDownloads(std::map<TileKey, HBITMAP>* pCacheMap);
+	void unqueueInvisible(TileRange visibleTiles, std::map<TileKey, HBITMAP>* pCacheMap);
 
   private:
-	std::queue<TileKey> m_downloadQueue;
+	std::deque<TileKey> m_queuedDownloads;
 	std::map<TileKey, HBITMAP> m_finishedDownloads;
 	CRITICAL_SECTION m_mutex;
 	HANDLE m_thread;

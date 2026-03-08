@@ -8,6 +8,7 @@
 #include "DownloadWorker.h"
 #include "TileDownloader.h"
 #include "TileKey.h"
+#include "TileRange.h"
 
 // TODO: Cache PNG data instead of bitmap to save memory.
 // TODO: Clean up cache (keep 100 tiles?)
@@ -16,7 +17,7 @@ class TileCache {
 	TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker);
 	~TileCache();
 	HBITMAP get(TileKey tileKey);
-	void downloadFinished(TileKey key, HBITMAP hBitmap);
+	void unqueueInvisible(TileRange visibleTiles);
 
   private:
 	const TileDownloader* const m_tileDownloader;

@@ -1,5 +1,7 @@
+#include <iostream>
 #include <math.h>
 
+#include "TileRange.h"
 #include "ViewportRenderer.h"
 
 // used for optimized multiplication
@@ -40,7 +42,7 @@ ViewportRenderer::~ViewportRenderer() {
 	delete m_gdi;
 }
 
-void ViewportRenderer::render(HDC hdcDestination) {
+void ViewportRenderer::render(HDC hdcDestination, RECT* updateRect) {
 	// top left corner of complete map
 	long originX = m_x + m_offsetX;
 	long originY = m_y + m_offsetY;
@@ -55,20 +57,39 @@ void ViewportRenderer::render(HDC hdcDestination) {
 	long offsetX = originX & TILE_INNER_OFFSET_MAP;
 	long offsetY = originY & TILE_INNER_OFFSET_MAP;
 
+	int maxExtend = 1 << m_zoomLevel;
+	int widthInTiles = (m_viewportWidth >> TILE_SIZE_BITS) + 2;
+	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
+
+	TileRange visibleTiles(
+		m_zoomLevel,
+		originTileX,
+		originTileX + widthInTiles,
+		originTileY,
+		std::min(originTileY + heightInTiles, maxExtend)
+	);
+
+	m_tileCache->unqueueInvisible(visibleTiles);
+
 	HDC hMemDC = CreateCompatibleDC(hdcDestination);
 
+	// TODO: Check if there is an update region and use it
+	// if (updateRect != NULL) {
+	// }
+
 	// render one additional row/column of tiles at each edge
-	for (int x = 0; x < (m_viewportWidth >> TILE_SIZE_BITS) + 2; x++) {
-		for (int y = 0; y < (m_viewportHeight >> TILE_SIZE_BITS) + 2; y++) {
-			int tileX = (originTileX + x) % (1 << m_zoomLevel);
+	for (int x = 0; x < widthInTiles; x++) {
+		for (int y = 0; y < heightInTiles; y++) {
+			int tileX = (originTileX + x) % maxExtend;
 			int tileY = originTileY + y;
-			if (tileY > (1 << m_zoomLevel) - 1) {
+			if (tileY > maxExtend - 1) {
 				// south out of bounds
 				RECT rect = {
 					-offsetX + (x << TILE_SIZE_BITS),
 					-offsetY + (y << TILE_SIZE_BITS),
 					-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
-					-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE};
+					-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE
+				};
 				HBRUSH hBrush = CreateSolidBrush(RGB(128, 128, 128));
 				FillRect(hdcDestination, &rect, hBrush);
 				DeleteObject(hBrush);

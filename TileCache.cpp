@@ -44,7 +44,7 @@ HBITMAP TileCache::get(TileKey tileKey) {
 
 	std::map<TileKey, HBITMAP>::iterator iterator = m_map.find(tileKey);
 	if (iterator != m_map.end()) {
-		// When the map contains either the real tile or the placeholder, no download is required.
+		// When the map contains either the real tile or the placeholder, no triggering of download is required.
 		return iterator->second;
 	}
 
@@ -54,4 +54,8 @@ HBITMAP TileCache::get(TileKey tileKey) {
 	m_map[tileKey] = m_hPlaceholderBitmap;
 
 	return m_map[tileKey];
+}
+
+void TileCache::unqueueInvisible(TileRange visibleTiles) {
+	m_downloadWorker->unqueueInvisible(visibleTiles, &m_map);
 }
