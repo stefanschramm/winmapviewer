@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "DownloadWorker.h"
 
 DownloadWorker::DownloadWorker(const TileDownloader* tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
@@ -41,8 +43,8 @@ void DownloadWorker::run() {
 		}
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cout << "Exception caught in download worker main loop: " << e << std::endl;
-		std::terminate();
+		std::cerr << "Exception caught in download worker main loop: " << e << std::endl;
+		std::exit(EXIT_FAILURE);
 	}
 }
 

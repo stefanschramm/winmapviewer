@@ -1,6 +1,7 @@
 // windows.h is required to be included *before* commctrl.h
 #include <windows.h>
 #include <commctrl.h>
+#include <cstdlib>
 #include <iostream>
 #include <windowsx.h>
 
@@ -110,8 +111,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cout << "Exception caught in WinMain: " << e << std::endl;
-		std::terminate();
+		std::cerr << "Exception caught in WinMain: " << e << std::endl;
+		std::exit(EXIT_FAILURE);
 	}
 }
 
@@ -199,8 +200,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		}
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cout << "Exception caught in main window procedure: " << e << std::endl;
-		std::terminate();
+		std::cerr << "Exception caught in main window procedure: " << e << std::endl;
+		std::exit(EXIT_FAILURE);
 	}
 
 	return 0;
