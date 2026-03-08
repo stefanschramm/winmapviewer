@@ -80,21 +80,17 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 230, 65
+IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 300, 65
 STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    LTEXT           "Copyright (C) 2025 Stefan Schramm",IDC_STATIC,2,15,119,
-                    8
-    LTEXT           "winmapviewer",IDC_STATIC,2,3,119,8,SS_NOPREFIX
-    LTEXT           "Map data from OpenStreetMap",IDC_STATIC,2,39,119,8
-    DEFPUSHBUTTON   "OK",IDOK,180,6,45,15,WS_GROUP
-    CONTROL         "https://www.openstreetmap.org/copyright",IDC_STATIC,
-                    "Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,51,186,8
-    CONTROL         "https://github.com/stefanschramm/winmapviewer",
-                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,27,
-                    186,8
+    LTEXT           "winmapviewer",IDC_STATIC,2,3,250,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2026 Stefan Schramm",IDC_STATIC,2,15,250,8
+    LTEXT           "Map data from OpenStreetMap",IDC_STATIC,2,39,250,8
+    DEFPUSHBUTTON   "OK",IDOK,250,6,45,15,WS_GROUP
+    CONTROL         "https://www.openstreetmap.org/copyright",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,51,250,8
+    CONTROL         "https://github.com/stefanschramm/winmapviewer",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,27,250,8
 END
 
 
