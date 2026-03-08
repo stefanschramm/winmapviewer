@@ -176,6 +176,7 @@ void ViewportRenderer::setViewportSize(int width, int height) {
 
 void ViewportRenderer::getLonLat(int x, int y, double* lon, double* lat) const {
 	double mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	// TODO: fix (normalize) lon for > +180° 
 	*lon = (m_x + x + m_offsetX) / mapSize * 360.0 - 180.0;
 	*lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
 }
