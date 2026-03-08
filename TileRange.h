@@ -61,19 +61,6 @@ class TileRange {
 		}
 	}
 
-	int count() const {
-		int height = bottom - top;
-
-		int width;
-		if (left == right) {
-			width = maxExtend;
-		} else {
-			width = left <= right ? right - left : (maxExtend - left + right);
-		}
-
-		return width * height;
-	}
-
   private:
 	int maxExtend;
 };
