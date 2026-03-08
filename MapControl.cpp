@@ -43,7 +43,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				switch (LOWORD(wParam)) {
 					case IDM_COPY_LON_LAT: {
 						char latLonTxt[256];
-						sprintf(latLonTxt, TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
+						snprintf(latLonTxt, sizeof(latLonTxt), TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
 						putTextIntoClipboard(latLonTxt);
 						break;
 					}
@@ -161,6 +161,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 	} catch (char const* e) {
+		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
 		std::cout << "Exception caught in map control window procedure: " << e << std::endl;
 		std::terminate();
 	}
@@ -186,7 +187,7 @@ void RegisterMapControl(HINSTANCE hInstance) {
 	wcex.hIconSm = NULL;
 
 	if (!RegisterClassEx(&wcex)) {
-		MessageBox(NULL, TEXT("Error registering map control"), TEXT("winmapviewer"), MB_OK);
+		throw "Error registering map control";
 	}
 }
 

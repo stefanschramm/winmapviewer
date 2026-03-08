@@ -36,7 +36,6 @@ TileCache::~TileCache() {
 
 HBITMAP TileCache::get(TileKey tileKey) {
 	if (tileKey.x < 0 || tileKey.y < 0 || tileKey.x > (1 << tileKey.zoomLevel) || tileKey.y > (1 << tileKey.zoomLevel)) {
-		MessageBox(NULL, TEXT("Invalid tile requested"), TEXT("winmapviewer"), MB_OK);
 		throw "Invalid tile requested";
 	}
 

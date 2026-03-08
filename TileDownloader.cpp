@@ -6,8 +6,7 @@
 TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (!m_hInternet) {
-		MessageBox(NULL, TEXT("Unable to initialize WinINet"), TEXT("winmapviewer"), MB_OK);
-		throw "Unable to initialize WinINet";
+		throw "Unable to initialize WinINet.";
 	}
 }
 
@@ -29,13 +28,11 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url, NULL, 0, 0, 0);
 	if (!hUrl) {
-		MessageBox(NULL, TEXT("Failed to open URL"), TEXT("winmapviewer"), MB_OK);
-		throw "Failed to open URL";
+		throw "Failed to open URL.";
 	}
 
 	IStream* memoryStream = NULL;
 	if (FAILED(CreateStreamOnHGlobal(NULL, TRUE, &memoryStream))) {
-		MessageBox(NULL, TEXT("Failed to create memory stream."), TEXT("winmapviewer"), MB_OK);
 		InternetCloseHandle(hUrl);
 		throw "Failed to create memory stream.";
 	}
@@ -45,7 +42,6 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 	ULONG bytesWritten = 0;
 	while (InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
 		if (memoryStream->Write(buffer, bytesRead, &bytesWritten) != S_OK) {
-			MessageBox(NULL, TEXT("Failed to write to memory stream."), TEXT("winmapviewer"), MB_OK);
 			memoryStream->Release();
 			InternetCloseHandle(hUrl);
 			throw "Failed to write to memory stream.";

@@ -5,7 +5,6 @@ DownloadWorker::DownloadWorker(const TileDownloader* tileDownloader, HWND hwndMa
 
 	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);
 	if (!m_thread) {
-		MessageBox(NULL, TEXT("Failed to create download worker thread."), TEXT("winmapviewer"), MB_OK);
 		throw "Failed to create download worker thread.";
 	}
 }
@@ -17,28 +16,33 @@ DownloadWorker::~DownloadWorker() {
 }
 
 void DownloadWorker::run() {
-	while (true) {
-		if (!m_queuedDownloads.empty()) {
-			EnterCriticalSection(&m_mutex);
-			TileKey tileKey = m_queuedDownloads.front();
-			m_queuedDownloads.pop_front();
-			LeaveCriticalSection(&m_mutex);
+	try {
+		while (true) {
+			if (!m_queuedDownloads.empty()) {
+				EnterCriticalSection(&m_mutex);
+				TileKey tileKey = m_queuedDownloads.front();
+				m_queuedDownloads.pop_front();
+				LeaveCriticalSection(&m_mutex);
 
-			HBITMAP hBitmap = m_tileDownloader->get(tileKey);
+				HBITMAP hBitmap = m_tileDownloader->get(tileKey);
 
-			EnterCriticalSection(&m_mutex);
-			m_finishedDownloads[tileKey] = hBitmap;
-			LeaveCriticalSection(&m_mutex);
+				EnterCriticalSection(&m_mutex);
+				m_finishedDownloads[tileKey] = hBitmap;
+				LeaveCriticalSection(&m_mutex);
 
-			PostMessage(m_hwndMain, WM_USER_TILE_READY, 0, 0);
-		}
-		if (m_queuedDownloads.empty()) {
-			// wait for further download requests
-			if (SuspendThread(m_thread) == 0xFFFFFFFF) {
-				MessageBox(NULL, TEXT("WORKER THREAD: Unable to suspend myself."), TEXT("winmapviewer"), MB_OK);
-				throw "WORKER THREAD: Unable to suspend myself.";
+				PostMessage(m_hwndMain, WM_USER_TILE_READY, 0, 0);
+			}
+			if (m_queuedDownloads.empty()) {
+				// wait for further download requests
+				if (SuspendThread(m_thread) == 0xFFFFFFFF) {
+					throw "Unable to suspend myself.";
+				}
 			}
 		}
+	} catch (char const* e) {
+		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
+		std::cout << "Exception caught in download worker main loop: " << e << std::endl;
+		std::terminate();
 	}
 }
 
@@ -49,7 +53,6 @@ void DownloadWorker::download(TileKey tileKey) {
 	LeaveCriticalSection(&m_mutex);
 	if (ResumeThread(m_thread) == 0xFFFFFFFF) {
 		// Disabling because for some reason Windows 95 fails this check all the time...
-		// MessageBox(NULL, TEXT("Unable to resume worker thread."), TEXT("winmapviewer"), MB_OK);
 		// throw "Unable to resume worker thread.";
 	}
 }

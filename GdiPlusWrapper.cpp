@@ -3,7 +3,6 @@
 GdiPlusWrapper::GdiPlusWrapper() {
 	m_lib = LoadLibrary(TEXT("gdiplus.dll"));
 	if (m_lib == NULL) {
-		MessageBox(NULL, TEXT("Unable to load library"), TEXT("winmapviewer"), MB_OK);
 		throw "Unable to load gdiplus.dll";
 	}
 
@@ -15,13 +14,11 @@ GdiPlusWrapper::GdiPlusWrapper() {
 	m_GdiplusShutdown = (GdiplusShutdownFunc)GetProcAddress(m_lib, "GdiplusShutdown");
 
 	if (!m_GdiplusStartup || !m_GdipCreateBitmapFromStream || !m_GdipCreateHBITMAPFromBitmap || !m_GdipDisposeImage || !m_GdiplusShutdown) {
-		MessageBox(NULL, TEXT("Unable to get GDI+ function pointers"), TEXT("winmapviewer"), MB_OK);
 		throw "Unable to get GDI+ function pointers";
 	}
 
 	GdiplusStartupInput startupInput = {1, NULL, FALSE, FALSE};
 	if (m_GdiplusStartup(&m_gdipToken, &startupInput, NULL) != 0) {
-		MessageBox(NULL, TEXT("Unable to initialize GDI+"), TEXT("winmapviewer"), MB_OK);
 		throw "Unable to initialize GDI+";
 	}
 }
@@ -36,12 +33,10 @@ HBITMAP GdiPlusWrapper::loadPng(IStream* stream) const {
 	HBITMAP hBitmap = NULL;
 
 	if (m_GdipCreateBitmapFromStream(stream, &image) != 0 || image == NULL) {
-		MessageBox(NULL, TEXT("Unable to load image"), TEXT("winmapviewer"), MB_OK);
 		throw "Unable to load image";
 	}
 
 	if (m_GdipCreateHBITMAPFromBitmap(image, &hBitmap, 0) != 0 || hBitmap == NULL) {
-		MessageBox(NULL, TEXT("Unable convert to HBITMAP"), TEXT("winmapviewer"), MB_OK);
 		throw "Unable convert to HBITMAP";
 	}
 
