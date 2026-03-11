@@ -179,8 +179,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				SendMessage(hwndMap, WM_MOUSEWHEEL, wParam, lParam);
 				break;
 
-			case WM_MAP_LONLAT_UPDATE:
-			{
+			case WM_MAP_LONLAT_UPDATE: {
 				SendMessage(hwndMap, WM_MAP_GET_LONLAT, (WPARAM)&lonLat, (LPARAM)lParam);
 
 				char statusText[128];
