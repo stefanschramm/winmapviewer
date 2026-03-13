@@ -18,10 +18,11 @@ class ViewportRenderer {
 	void startDragging(int x, int y);
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);
+	void setStyle(char* style);
 
   private:
 	GdiPlusWrapper* m_gdi;
-	const TileDownloader* m_tileDownloader;
+	TileDownloader* m_tileDownloader;
 	DownloadWorker* m_downloadWorker;
 	TileCache* m_tileCache;
 

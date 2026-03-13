@@ -18,6 +18,7 @@ class TileCache {
 	~TileCache();
 	HBITMAP get(TileKey tileKey);
 	void unqueueInvisible(TileRange visibleTiles);
+	void clear();
 
   private:
 	const TileDownloader* const m_tileDownloader;

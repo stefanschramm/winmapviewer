@@ -152,6 +152,12 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				InvalidateRect(hWnd, NULL, FALSE);
 				break;
 
+			case WM_MAP_SET_STYLE: {
+				char* style = (char*)wParam;
+				viewportRenderer->setStyle(style);
+				break;
+			}
+
 			case WM_DESTROY:
 				delete viewportRenderer;
 				renderers.erase(hWnd);

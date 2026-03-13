@@ -23,12 +23,14 @@ TCHAR szTitle[MAX_LOADSTRING];
 TCHAR szWindowClass[MAX_LOADSTRING];
 HWND hwndStatus;
 HWND hwndMap;
+HWND hWnd;
 
 ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+void changeStyle(int styleIdentifier);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	try {
@@ -62,7 +64,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		// init instance
 		hInst = hInstance;
 
-		HWND hWnd = CreateWindowEx(
+		hWnd = CreateWindowEx(
 			WS_EX_CLIENTEDGE,
 			szWindowClass,
 			szTitle,
@@ -159,6 +161,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 						SendMessage(hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
 						break;
 
+					case IDM_STYLE_OSM_STANDARD:
+					case IDM_STYLE_OSM_GERMAN:
+					case IDM_STYLE_OEPNV:
+					case IDM_STYLE_OPENTOPO:
+						changeStyle(wmId);
+						break;
+
 					default:
 						return DefWindowProc(hWnd, message, wParam, lParam);
 				}
@@ -219,4 +228,33 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 			break;
 	}
 	return FALSE;
+}
+
+void changeStyle(int styleIdentifier) {
+	static const char* const styles[4] = {
+		// 400 IDM_STYLE_OSM_STANDARD
+		"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+		// 401 IDM_STYLE_OSM_GERMAN
+		"https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+		// 402 IDM_STYLE_OEPNV
+		"https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png",
+		// 403 IDM_STYLE_OPENTOPO
+		"https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
+	};
+
+	if (styleIdentifier > IDM_STYLE_OPENTOPO) {
+		throw "Invalid style.";
+	}
+
+	HMENU hMenu = GetMenu(hWnd);
+	CheckMenuRadioItem(
+		hMenu,
+		IDM_STYLE_OSM_STANDARD,
+		IDM_STYLE_OPENTOPO,
+		styleIdentifier,
+		MF_BYCOMMAND
+	);
+
+	const char* style = styles[styleIdentifier - 400];
+	SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)style, 0);
 }

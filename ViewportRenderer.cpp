@@ -29,7 +29,6 @@ ViewportRenderer::ViewportRenderer(int zoomLevel, HWND hWnd)
 	  m_x(0),
 	  m_y(0) {
 	m_gdi = new GdiPlusWrapper();
-	// TODO: use same instance for every ViewportRenderer
 	m_tileDownloader = new TileDownloader(m_gdi);
 	m_downloadWorker = new DownloadWorker(m_tileDownloader, hWnd);
 	m_tileCache = new TileCache(m_tileDownloader, m_downloadWorker);
@@ -218,4 +217,10 @@ void ViewportRenderer::endDragging(int x, int y) {
 	setOffset(m_dragStartX - x, m_dragStartY - y);
 	moveToOffset();
 	m_dragging = false;
+}
+
+void ViewportRenderer::setStyle(char* style) {
+	m_tileCache->clear();
+	// TODO: cancel downloading / queued tiles
+	m_tileDownloader->setStyle(style);
 }

@@ -23,14 +23,7 @@ TileCache::TileCache(const TileDownloader* tileDownloader, DownloadWorker* downl
 }
 
 TileCache::~TileCache() {
-	std::map<TileKey, HBITMAP>::iterator iterator;
-	for (iterator = m_map.begin(); iterator != m_map.end(); iterator++) {
-		if (iterator->second != m_hPlaceholderBitmap) {
-			// there may be multiple m_hPlaceholderBitmap in the map
-			DeleteObject(iterator->second);
-		}
-	}
-
+	clear();
 	DeleteObject(m_hPlaceholderBitmap);
 }
 
@@ -57,4 +50,15 @@ HBITMAP TileCache::get(TileKey tileKey) {
 
 void TileCache::unqueueInvisible(TileRange visibleTiles) {
 	m_downloadWorker->unqueueInvisible(visibleTiles, &m_map);
+}
+
+void TileCache::clear() {
+	std::map<TileKey, HBITMAP>::iterator iterator;
+	for (iterator = m_map.begin(); iterator != m_map.end(); iterator++) {
+		if (iterator->second != m_hPlaceholderBitmap) {
+			// there may be multiple m_hPlaceholderBitmap in the map
+			DeleteObject(iterator->second);
+		}
+	}
+	m_map.clear();
 }
