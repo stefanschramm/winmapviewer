@@ -51,10 +51,10 @@ BEGIN
         MENUITEM "Zoom &out\t-",                IDM_ZOOMOUT
         POPUP "&Style"
         BEGIN
-            MENUITEM "OpenStreetMap Standard", IDM_STYLE_OSM_STANDARD
-            MENUITEM "OpenStreetMap German",   IDM_STYLE_OSM_GERMAN
-            MENUITEM "OEPNVKarte",             IDM_STYLE_OEPNV
-            MENUITEM "OpenTopoMap",            IDM_STYLE_OPENTOPO
+            MENUITEM "&1 OpenStreetMap Standard", IDM_STYLE_OSM_STANDARD
+            MENUITEM "&2 OpenStreetMap German",   IDM_STYLE_OSM_GERMAN
+            MENUITEM "&3 OEPNVKarte",             IDM_STYLE_OEPNV
+            MENUITEM "&4 OpenTopoMap",            IDM_STYLE_OPENTOPO
         END
     END
     POPUP "&Help"
