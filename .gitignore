@@ -11,3 +11,4 @@
 *.res.o
 *.exe
 
+.vscode
