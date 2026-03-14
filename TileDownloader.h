@@ -11,7 +11,7 @@ class TileDownloader {
   public:
 	TileDownloader(const GdiPlusWrapper* gdi);
 	~TileDownloader();
-	void setStyle(std::string urlTemplate);
+	void setStyle(const std::string& urlTemplate);
 	HBITMAP get(TileKey tileKey) const;
 
   private:

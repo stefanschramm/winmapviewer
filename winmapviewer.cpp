@@ -1,6 +1,8 @@
 // windows.h is required to be included *before* commctrl.h
+// clang-format off
 #include <windows.h>
 #include <commctrl.h>
+// clang-format on
 #include <cstdlib>
 #include <iostream>
 #include <windowsx.h>
@@ -168,6 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 					case IDM_STYLE_OSM_GERMAN:
 					case IDM_STYLE_OEPNV:
 					case IDM_STYLE_OPENTOPO:
+					case IDM_STYLE_CUSTOM:
 						changeStyle(wmId);
 						break;
 
@@ -233,6 +236,33 @@ LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
+LRESULT CALLBACK CustomStyleDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+	switch (message) {
+		case WM_INITDIALOG:
+			return TRUE;
+
+		case WM_COMMAND:
+			if (LOWORD(wParam) == IDOK) {
+				HWND hInputField = GetDlgItem(hDlg, IDC_DLG_TEXT);
+				int length = GetWindowTextLength(hInputField) + 1;
+				std::string urlTemplate;
+				urlTemplate.resize(length);
+				GetWindowTextA(hInputField, &urlTemplate[0], length);
+				EndDialog(hDlg, LOWORD(wParam));
+				SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
+				// TODO: Verify urlTemplate (currently an exception occurs when placehoders are missing etc.)
+
+				return TRUE;
+			}
+			if (LOWORD(wParam) == IDCANCEL) {
+				EndDialog(hDlg, LOWORD(wParam));
+				return TRUE;
+			}
+			break;
+	}
+	return FALSE;
+}
+
 void changeStyle(int styleIdentifier) {
 	static const char* const styles[4] = {
 		// 400 IDM_STYLE_OSM_STANDARD
@@ -245,7 +275,7 @@ void changeStyle(int styleIdentifier) {
 		"https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
 	};
 
-	if (styleIdentifier > IDM_STYLE_OPENTOPO) {
+	if (styleIdentifier > IDM_STYLE_OPENTOPO && styleIdentifier != IDM_STYLE_CUSTOM) {
 		throw "Invalid style.";
 	}
 
@@ -253,11 +283,15 @@ void changeStyle(int styleIdentifier) {
 	CheckMenuRadioItem(
 		hMenu,
 		IDM_STYLE_OSM_STANDARD,
-		IDM_STYLE_OPENTOPO,
+		IDM_STYLE_CUSTOM,
 		styleIdentifier,
 		MF_BYCOMMAND
 	);
 
-	const char* style = styles[styleIdentifier - 400];
-	SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)style, 0);
+	if (styleIdentifier != IDM_STYLE_CUSTOM) {
+		std::string urlTemplate(styles[styleIdentifier - 400]);
+		SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
+	} else {
+		DialogBox(hInst, (LPCTSTR)IDD_CUSTOMSTYLE, hWnd, (DLGPROC)CustomStyleDialog);
+	}
 }

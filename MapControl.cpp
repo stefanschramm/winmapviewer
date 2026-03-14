@@ -153,8 +153,8 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 
 			case WM_MAP_SET_STYLE: {
-				char* style = (char*)wParam;
-				viewportRenderer->setStyle(style);
+				std::string* urlTemplate = (std::string*)wParam;
+				viewportRenderer->setStyle(*urlTemplate);
 				InvalidateRect(hWnd, NULL, FALSE);
 				break;
 			}

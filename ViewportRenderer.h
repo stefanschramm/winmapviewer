@@ -18,7 +18,7 @@ class ViewportRenderer {
 	void startDragging(int x, int y);
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);
-	void setStyle(char* style);
+	void setStyle(const std::string& urlTemplate);
 
   private:
 	GdiPlusWrapper* m_gdi;

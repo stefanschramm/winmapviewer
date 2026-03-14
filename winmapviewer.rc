@@ -55,6 +55,8 @@ BEGIN
             MENUITEM "&2 OpenStreetMap German",   IDM_STYLE_OSM_GERMAN
             MENUITEM "&3 OEPNVKarte",             IDM_STYLE_OEPNV
             MENUITEM "&4 OpenTopoMap",            IDM_STYLE_OPENTOPO
+            MENUITEM SEPARATOR
+            MENUITEM "&Custom...",                IDM_STYLE_CUSTOM
         END
     END
     POPUP "&Help"
@@ -98,6 +100,16 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,250,6,45,15,WS_GROUP
     CONTROL         "https://www.openstreetmap.org/copyright",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,51,250,8
     CONTROL         "https://github.com/stefanschramm/winmapviewer",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,27,250,8
+END
+
+IDD_CUSTOMSTYLE DIALOG DISCARDABLE  22, 17, 300, 40
+STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+CAPTION "Custom style"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL       "https://tile.openstreetmap.org/{z}/{x}/{y}.png", IDC_DLG_TEXT, "EDIT", ES_LEFT | ES_AUTOHSCROLL | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 2, 2, 298, 15
+    DEFPUSHBUTTON "&OK",IDOK,2,20,45,15,WS_GROUP
+    PUSHBUTTON    "&Cancel",IDCANCEL,50,20,45,15,WS_GROUP
 END
 
 

@@ -222,8 +222,8 @@ void ViewportRenderer::endDragging(int x, int y) {
 	m_dragging = false;
 }
 
-void ViewportRenderer::setStyle(char* style) {
+void ViewportRenderer::setStyle(const std::string& urlTemplate) {
 	m_tileCache->clear();
 	// TODO: cancel downloading / queued tiles
-	m_tileDownloader->setStyle(style);
+	m_tileDownloader->setStyle(urlTemplate);
 }

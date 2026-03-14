@@ -73,7 +73,7 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 // https://tile.openstreetmap.org/{z}/{x}/{y}.png
 //
 // A sprintf format string will be generated once to prevent parsing the URL template on every get() call
-void TileDownloader::setStyle(std::string urlTemplate) {
+void TileDownloader::setStyle(const std::string& urlTemplate) {
 	static const char* invalidPlaceholder = "Invalid URL template: Encountered invalid placeholder. Valid placeholders: {z}, {x}, {y}";
 
 	std::stringstream strstr;
