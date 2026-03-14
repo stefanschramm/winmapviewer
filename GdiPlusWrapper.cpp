@@ -33,11 +33,13 @@ HBITMAP GdiPlusWrapper::loadPng(IStream* stream) const {
 	HBITMAP hBitmap = NULL;
 
 	if (m_GdipCreateBitmapFromStream(stream, &image) != 0 || image == NULL) {
-		throw "Unable to load image";
+		return NULL;
+		// throw "Unable to load image";
 	}
 
 	if (m_GdipCreateHBITMAPFromBitmap(image, &hBitmap, 0) != 0 || hBitmap == NULL) {
-		throw "Unable convert to HBITMAP";
+		return NULL;
+		// throw "Unable convert to HBITMAP";
 	}
 
 	m_GdipDisposeImage(image);

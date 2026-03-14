@@ -4,6 +4,7 @@
 
 #include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
+#include "Utils.h"
 
 TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
@@ -35,7 +36,7 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url, NULL, 0, 0, 0);
 	if (!hUrl) {
-		throw "Failed to open URL.";
+		return createPlaceholderBitmap(true);
 	}
 
 	IStream* memoryStream = NULL;
@@ -59,6 +60,9 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 	memoryStream->Seek(liZero, STREAM_SEEK_SET, NULL);
 
 	HBITMAP hBitmap = m_gdi->loadPng(memoryStream);
+	if (hBitmap == NULL) {
+		return createPlaceholderBitmap(true);
+	}
 
 	InternetCloseHandle(hUrl);
 

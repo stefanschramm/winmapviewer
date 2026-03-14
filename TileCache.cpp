@@ -1,25 +1,10 @@
 #include "TileCache.h"
-
-HBITMAP createPlaceholderBitmap() {
-	HBITMAP m_hPlaceholderBitmap = CreateBitmap(256, 256, 1, 32, NULL);
-	HDC hdc = GetDC(NULL);
-	HDC hMemDC = CreateCompatibleDC(hdc);
-	HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, m_hPlaceholderBitmap);
-	HBRUSH hBrush = CreateSolidBrush(RGB(0xcc, 0xcc, 0xcc));
-	RECT rect = {0, 0, 256, 256};
-	FillRect(hMemDC, &rect, hBrush);
-	SelectObject(hMemDC, hOldBitmap);
-	DeleteObject(hBrush);
-	DeleteDC(hMemDC);
-	ReleaseDC(NULL, hdc);
-
-	return m_hPlaceholderBitmap;
-}
+#include "Utils.h"
 
 TileCache::TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker)
 	: m_tileDownloader(tileDownloader),
 	  m_downloadWorker(downloadWorker) {
-	m_hPlaceholderBitmap = createPlaceholderBitmap();
+	m_hPlaceholderBitmap = createPlaceholderBitmap(false);
 }
 
 TileCache::~TileCache() {
