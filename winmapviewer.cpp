@@ -83,7 +83,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			return FALSE;
 		}
 
-		hwndMap = CreateMapWindow(0, 0, 200, 200, hWnd, hInstance);
+		RECT clientRect;
+		GetClientRect(hWnd, &clientRect);
+
+		hwndMap = CreateMapWindow(0, 0, clientRect.right, clientRect.bottom, hWnd, hInstance);
 
 		// status bar
 		hwndStatus = CreateStatusWindow(

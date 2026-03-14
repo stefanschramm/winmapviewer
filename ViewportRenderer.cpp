@@ -21,13 +21,16 @@ double asinh(double x) {
 }
 
 ViewportRenderer::ViewportRenderer(int zoomLevel, HWND hWnd)
-	: m_viewportWidth(640),
-	  m_viewportHeight(480),
-	  m_offsetX(0),
+	: m_offsetX(0),
 	  m_offsetY(0),
 	  m_zoomLevel(zoomLevel),
 	  m_x(0),
 	  m_y(0) {
+	RECT clientRect;
+	GetClientRect(hWnd, &clientRect);
+	m_viewportWidth = clientRect.right;
+	m_viewportHeight = clientRect.bottom;
+
 	m_gdi = new GdiPlusWrapper();
 	m_tileDownloader = new TileDownloader(m_gdi);
 	m_downloadWorker = new DownloadWorker(m_tileDownloader, hWnd);

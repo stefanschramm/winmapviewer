@@ -155,6 +155,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 			case WM_MAP_SET_STYLE: {
 				char* style = (char*)wParam;
 				viewportRenderer->setStyle(style);
+				InvalidateRect(hWnd, NULL, FALSE);
 				break;
 			}
 
