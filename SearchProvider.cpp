@@ -105,11 +105,17 @@ std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
 		node->get_attributes(&attrs);
 
 		searchResult.push_back(
-			SearchResult(
+			SearchResult{
 				getAttribute(attrs, L"display_name"),
-				wcstod(getAttribute(attrs, L"lon").c_str(), NULL),
-				wcstod(getAttribute(attrs, L"lat").c_str(), NULL)
-			)
+				getAttribute(attrs, L"osm_type"),
+				getAttribute(attrs, L"osm_id"),
+				getAttribute(attrs, L"class"),
+				getAttribute(attrs, L"type"),
+				LonLat{
+					wcstod(getAttribute(attrs, L"lon").c_str(), NULL),
+					wcstod(getAttribute(attrs, L"lat").c_str(), NULL)
+				}
+			}
 		);
 
 		attrs->Release();

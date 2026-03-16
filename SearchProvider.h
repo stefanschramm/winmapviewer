@@ -5,13 +5,12 @@
 
 #include "Common.h"
 
-class SearchResult {
-  public:
-	SearchResult(std::wstring displayName, double lon, double lat)
-		: m_displayName(displayName), m_lonLat({lon, lat}) {
-		  };
-
+struct SearchResult {
 	std::wstring m_displayName;
+	std::wstring m_osmType;
+	std::wstring m_osmId;
+	std::wstring m_class;
+	std::wstring m_type;
 	LonLat m_lonLat;
 };
 

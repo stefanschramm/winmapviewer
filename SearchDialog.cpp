@@ -41,11 +41,33 @@ void updateResultList(HWND hListView) {
 		entry.iSubItem = 2;
 		entry.pszText = const_cast<wchar_t*>(lonText.str().c_str());
 		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+
+		entry.iSubItem = 3;
+		entry.pszText = const_cast<wchar_t*>(it->m_class.c_str());
+		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+
+		entry.iSubItem = 4;
+		entry.pszText = const_cast<wchar_t*>(it->m_type.c_str());
+		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+
+		entry.iSubItem = 5;
+		entry.pszText = const_cast<wchar_t*>(it->m_osmType.c_str());
+		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+
+		entry.iSubItem = 6;
+		entry.pszText = const_cast<wchar_t*>(it->m_osmId.c_str());
+		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
 	}
 
-	SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 0, 350);
-	SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 1, 50);
-	SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 2, 50);
+	if (i > 0) {
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 0, 350);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 1, LVSCW_AUTOSIZE);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 2, LVSCW_AUTOSIZE);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 3, LVSCW_AUTOSIZE);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 5, LVSCW_AUTOSIZE);
+		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 6, LVSCW_AUTOSIZE);
+	}
 }
 
 void selectItem(LPNMITEMACTIVATE item) {
@@ -80,6 +102,22 @@ LRESULT CALLBACK SearchDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			col.pszText = const_cast<wchar_t*>(L"Lon");
 			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 2, reinterpret_cast<LPARAM>(&col));
+
+			col.pszText = const_cast<wchar_t*>(L"Class");
+			col.cx = 30;
+			SendMessageW(hListView, LVM_INSERTCOLUMNW, 3, reinterpret_cast<LPARAM>(&col));
+
+			col.pszText = const_cast<wchar_t*>(L"Type");
+			col.cx = 30;
+			SendMessageW(hListView, LVM_INSERTCOLUMNW, 4, reinterpret_cast<LPARAM>(&col));
+
+			col.pszText = const_cast<wchar_t*>(L"OSM Type");
+			col.cx = 30;
+			SendMessageW(hListView, LVM_INSERTCOLUMNW, 5, reinterpret_cast<LPARAM>(&col));
+
+			col.pszText = const_cast<wchar_t*>(L"OSM ID");
+			col.cx = 30;
+			SendMessageW(hListView, LVM_INSERTCOLUMNW, 6, reinterpret_cast<LPARAM>(&col));
 
 			updateResultList(hListView);
 
