@@ -2,9 +2,9 @@
 #include <sstream>
 #include <string>
 
+#include "Common.h"
 #include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
-#include "Utils.h"
 
 TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);

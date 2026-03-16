@@ -133,10 +133,10 @@ void ViewportRenderer::moveToOffset() {
 	m_offsetY = 0;
 }
 
-void ViewportRenderer::setCenterLonLat(double lon, double lat) {
+void ViewportRenderer::setCenterLonLat(const LonLat* lonLat) {
 	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
-	m_x = mapSize * (lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
-	m_y = mapSize * (1.0 - asinh(tan(lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
+	m_x = mapSize * (lonLat->lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
+	m_y = mapSize * (1.0 - asinh(tan(lonLat->lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
 	restrictCoordinates(&m_x, &m_y);
 }
 
@@ -176,10 +176,10 @@ void ViewportRenderer::setViewportSize(int width, int height) {
 	m_viewportHeight = height;
 }
 
-void ViewportRenderer::getLonLat(int x, int y, double* lon, double* lat) const {
+void ViewportRenderer::getLonLat(int x, int y, LonLat* lonLat) const {
 	int mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
-	*lon = ((m_x + x + m_offsetX) % mapSize) / (double)mapSize * 360.0 - 180.0;
-	*lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
+	lonLat->lon = ((m_x + x + m_offsetX) % mapSize) / (double)mapSize * 360.0 - 180.0;
+	lonLat->lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
 }
 
 void ViewportRenderer::restrictCoordinates(long* x, long* y) const {

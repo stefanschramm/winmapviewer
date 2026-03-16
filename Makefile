@@ -5,7 +5,7 @@ CC = i686-w64-mingw32-g++
 RC = i686-w64-mingw32-windres
 
 CFLAGS = -mwindows -static-libgcc -static-libstdc++ -s -Os
-LFLAGS = -luser32 -lgdi32 -lole32 -lcomctl32 -lwininet
+LFLAGS = -luser32 -lgdi32 -lole32 -lcomctl32 -lwininet -lmsxml2 -loleaut32
 
 SRC = $(wildcard *.cpp)
 RC_FILE = $(APPNAME).rc

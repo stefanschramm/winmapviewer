@@ -5,11 +5,13 @@
 // clang-format on
 #include <cstdlib>
 #include <iostream>
+#include <string>
 #include <windowsx.h>
 
 #include "resource.h"
 
 #include "MapControl.h"
+#include "SearchDialog.h"
 
 #define MAX_LOADSTRING 100
 
@@ -142,6 +144,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 						DestroyWindow(hWnd);
 						break;
 
+					case IDM_SEARCH:
+						search(hInst, hWnd);
+						break;
+
 					case IDM_ZOOMIN:
 						SendMessage(hwndMap, WM_MAP_ZOOM_IN, 0, 0);
 						break;
@@ -195,13 +201,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				break;
 
 			case WM_MAP_LONLAT_UPDATE: {
-				SendMessage(hwndMap, WM_MAP_GET_LONLAT, (WPARAM)&lonLat, (LPARAM)lParam);
-
+				LonLat* updatedLonLat = (LonLat*)lParam;
 				char statusText[128];
-				snprintf(statusText, sizeof(statusText), TEXT("lon: %.6f"), lonLat.lon);
+				snprintf(statusText, sizeof(statusText), TEXT("lon: %.6f"), updatedLonLat->lon);
 				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
-				snprintf(statusText, sizeof(statusText), TEXT("lat: %.6f"), lonLat.lat);
+				snprintf(statusText, sizeof(statusText), TEXT("lat: %.6f"), updatedLonLat->lat);
 				SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
+				break;
+			}
+
+			case WM_SEARCH_SET_LONLAT: {
+				SendMessage(hwndMap, WM_MAP_SET_LONLAT, 0, lParam);
 				break;
 			}
 
@@ -288,6 +298,7 @@ void changeStyle(int styleIdentifier) {
 		MF_BYCOMMAND
 	);
 
+	// TODO: Adjust copyright / attribution text
 	if (styleIdentifier != IDM_STYLE_CUSTOM) {
 		std::string urlTemplate(styles[styleIdentifier - 400]);
 		SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);

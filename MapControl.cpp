@@ -20,6 +20,8 @@
 
 std::map<HWND, ViewportRenderer*> renderers;
 
+static const LonLat INITIAL_LON_LAT = {13.377222, 52.526944};
+
 LonLat clickLonLat;
 
 void putTextIntoClipboard(char* text);
@@ -55,8 +57,8 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 
 			case WM_CREATE:
-				viewportRenderer = new ViewportRenderer(2, hWnd);
-				viewportRenderer->setCenterLonLat(13.377222, 52.526944);
+				viewportRenderer = new ViewportRenderer(4, hWnd);
+				viewportRenderer->setCenterLonLat(&INITIAL_LON_LAT);
 				renderers[hWnd] = viewportRenderer;
 
 				break;
@@ -85,16 +87,19 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				EndPaint(hWnd, &ps);
 				break;
 
-			case WM_MOUSEMOVE:
+			case WM_MOUSEMOVE: {
 				if (viewportRenderer->mouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) {
 					InvalidateRect(hWnd, NULL, FALSE);
 				}
-				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, lParam);
+				LonLat myLonLat;
+				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &myLonLat);
+				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, (LPARAM)&myLonLat);
 				break;
+			}
 
-			case WM_MAP_GET_LONLAT:
-				lonLat = (LonLat*)wParam;
-				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &(lonLat->lon), &(lonLat->lat));
+			case WM_MAP_SET_LONLAT:
+				viewportRenderer->setCenterLonLat((LonLat*)lParam);
+				InvalidateRect(hWnd, NULL, FALSE);
 				break;
 
 			case WM_LBUTTONDOWN:
@@ -109,7 +114,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 
 			case WM_RBUTTONDOWN: {
-				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &clickLonLat.lon, &clickLonLat.lat);
+				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &clickLonLat);
 
 				HMENU hMenu = CreatePopupMenu();
 				AppendMenu(hMenu, MF_STRING, IDM_COPY_LON_LAT, "Copy coordinates to clipboard (Format: lat lon)");

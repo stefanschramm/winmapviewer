@@ -1,5 +1,5 @@
 #include "TileCache.h"
-#include "Utils.h"
+#include "Common.h"
 
 TileCache::TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker)
 	: m_tileDownloader(tileDownloader),

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common.h"
 #include "TileCache.h"
 
 class ViewportRenderer {
@@ -10,11 +11,11 @@ class ViewportRenderer {
 	void render(HDC hdcDestination, RECT* updateRect);
 	void setOffset(int offsetX, int offsetY);
 	void moveToOffset();
-	void setCenterLonLat(double lon, double lat);
+	void setCenterLonLat(const LonLat* lonLat);
 	void zoomIn();
 	void zoomOut();
 	void setViewportSize(int width, int height);
-	void getLonLat(int x, int y, double* lon, double* lat) const;
+	void getLonLat(int x, int y, LonLat* lonLat) const;
 	void startDragging(int x, int y);
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);
