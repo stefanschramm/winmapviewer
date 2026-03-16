@@ -10,4 +10,4 @@ struct LonLat {
 
 HBITMAP createPlaceholderBitmap(bool error);
 
-std::wstring urlEncode(const std::wstring& url);
+std::string urlEncode(const std::wstring& url);

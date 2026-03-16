@@ -16,14 +16,14 @@ HBITMAP createPlaceholderBitmap(bool error) {
 	return hPlaceholderBitmap;
 }
 
-std::wstring urlEncode(const std::wstring& url) {
+std::string urlEncode(const std::wstring& url) {
 	int utf8Length = WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, 0, 0, 0, 0);
 	std::string utf8(utf8Length - 1, '\0');
 	WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, &utf8[0], utf8Length, 0, 0);
 
 	static const char hex[] = "0123456789ABCDEF";
-	std::string encoded;
 
+	std::string encoded;
 	for (size_t i = 0; i < utf8.size(); ++i) {
 		unsigned char c = utf8[i];
 
@@ -39,9 +39,5 @@ std::wstring urlEncode(const std::wstring& url) {
 		}
 	}
 
-	int wLength = MultiByteToWideChar(CP_UTF8, 0, encoded.c_str(), -1, 0, 0);
-	std::wstring result(wLength - 1, L'\0');
-	MultiByteToWideChar(CP_UTF8, 0, encoded.c_str(), -1, &result[0], wLength);
-
-	return result;
+	return encoded;
 }

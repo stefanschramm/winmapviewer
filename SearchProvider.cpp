@@ -19,11 +19,11 @@ SearchProvider::~SearchProvider() {
 
 std::wstring* SearchProvider::doQuery(std::wstring locationName) {
 	// TODO: set up proxy and use proxy URL
-	std::wstringstream strstr;
+	std::stringstream strstr;
 	strstr << "http://nominatim.openstreetmap.org/search?format=xml&limit=35&q=" << urlEncode(locationName);
 
 	// TODO: Add user agent and explicit referer header
-	HINTERNET hUrl = InternetOpenUrlW(m_hInternet, strstr.str().c_str(), NULL, 0, 0, 0);
+	HINTERNET hUrl = InternetOpenUrl(m_hInternet, strstr.str().c_str(), NULL, 0, 0, 0);
 	if (!hUrl) {
 		throw "Unable to do nominatim request.";
 	}
