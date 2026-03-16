@@ -101,8 +101,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		);
 		int partSizes[] = {100, 200, -1};
 		int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
-		SendMessage(hwndStatus, SB_SETPARTS, numParts, (LPARAM)partSizes);
-		SendMessage(hwndStatus, SB_SETTEXT, 2, (LPARAM)TEXT("Copyright OpenStreetMap.org contributors"));
+		SendMessage(hwndStatus, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
+		SendMessage(hwndStatus, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Copyright OpenStreetMap.org contributors")));
 
 		ShowWindow(hWnd, nCmdShow);
 		UpdateWindow(hWnd);
@@ -192,7 +192,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			case WM_SIZE:
 				SendMessage(hwndStatus, WM_SIZE, 0, 0);
 				RECT rect;
-				SendMessage(hwndStatus, SB_GETRECT, 0, (LPARAM)&rect);
+				SendMessage(hwndStatus, SB_GETRECT, 0, reinterpret_cast<LPARAM>(&rect));
 				MoveWindow(hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
 				break;
 
@@ -204,9 +204,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				LonLat* updatedLonLat = (LonLat*)lParam;
 				char statusText[128];
 				snprintf(statusText, sizeof(statusText), TEXT("lon: %.6f"), updatedLonLat->lon);
-				SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM)statusText);
+				SendMessage(hwndStatus, SB_SETTEXT, 0, reinterpret_cast<LPARAM>(statusText));
 				snprintf(statusText, sizeof(statusText), TEXT("lat: %.6f"), updatedLonLat->lat);
-				SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM)statusText);
+				SendMessage(hwndStatus, SB_SETTEXT, 1, reinterpret_cast<LPARAM>(statusText));
 				break;
 			}
 

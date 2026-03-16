@@ -80,7 +80,7 @@ void selectItem(LPNMITEMACTIVATE item) {
 	int col = item->iSubItem;
 	if (row >= 0) {
 		SearchResult selectedResult = searchResult.at(row);
-		SendMessage(hMainWindow, WM_SEARCH_SET_LONLAT, 0, (LPARAM)&selectedResult.m_lonLat);
+		SendMessage(hMainWindow, WM_SEARCH_SET_LONLAT, 0, reinterpret_cast<LPARAM>(&selectedResult.m_lonLat));
 	}
 }
 
@@ -193,7 +193,7 @@ LRESULT CALLBACK SearchDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 		case WM_NOTIFY:
 			LPNMHDR hdr = reinterpret_cast<LPNMHDR>(lParam);
 			if (hdr->hwndFrom == hListView && hdr->code == LVN_ITEMACTIVATE) {
-				selectItem(reinterpret_cast<LPNMITEMACTIVATE>(lParam));
+				selectItem((LPNMITEMACTIVATE) lParam);
 			}
 			break;
 	}

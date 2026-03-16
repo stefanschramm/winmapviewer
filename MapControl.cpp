@@ -93,7 +93,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				}
 				LonLat myLonLat;
 				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &myLonLat);
-				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, (LPARAM)&myLonLat);
+				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, reinterpret_cast<LPARAM>(&myLonLat));
 				break;
 			}
 
