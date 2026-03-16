@@ -6,11 +6,14 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <windowsx.h>
 
 #include "Common.h"
 #include "SearchDialog.h"
 #include "SearchProvider.h"
 #include "resource.h"
+
+#define IDM_OPEN_IN_OSM 10002
 
 HWND hMainWindow = NULL;
 
@@ -18,6 +21,8 @@ SearchProvider* searchProvider = NULL;
 
 // TODO: ownership? initialization?
 std::vector<SearchResult> searchResult;
+
+SearchResult clickedSearchResult;
 
 void updateResultList(HWND hListView) {
 	int i = 0;
@@ -148,7 +153,43 @@ LRESULT CALLBACK SearchDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 
 				return TRUE;
 			}
+			if (LOWORD(wParam) == IDM_OPEN_IN_OSM) {
+				std::stringstream url;
+				url << "https://www.openstreetmap.org/"
+					<< urlEncode(clickedSearchResult.m_osmType)
+					<< "/"
+					<< urlEncode(clickedSearchResult.m_osmId);
+				ShellExecute(
+					NULL,
+					"open",
+					url.str().c_str(),
+					NULL,
+					NULL,
+					SW_SHOWNORMAL
+				);
+			}
 			break;
+
+		case WM_CONTEXTMENU: {
+			POINT point = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+
+			LVHITTESTINFO hitTest = {0};
+			hitTest.pt = point;
+			ScreenToClient(hListView, &hitTest.pt);
+			int index = ListView_HitTest(hListView, &hitTest);
+
+			if (index != -1 && (hitTest.flags & LVHT_ONITEM)) {
+				clickedSearchResult = searchResult.at(index);
+
+				HMENU hMenu = CreatePopupMenu();
+				AppendMenu(hMenu, MF_STRING, IDM_OPEN_IN_OSM, "Open OSM object in browser");
+				TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, point.x, point.y, 0, hDlg, NULL);
+				DestroyMenu(hMenu);
+			}
+
+			break;
+		}
+
 		case WM_NOTIFY:
 			LPNMHDR hdr = reinterpret_cast<LPNMHDR>(lParam);
 			if (hdr->hwndFrom == hListView && hdr->code == LVN_ITEMACTIVATE) {
