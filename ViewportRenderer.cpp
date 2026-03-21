@@ -20,6 +20,11 @@ double asinh(double x) {
 	return log(x + sqrt(x * x + 1));
 }
 
+// std::min() is missing in VC++ 6
+int myMin(int a, int b) {
+	return a < b ? a : b;
+}
+
 ViewportRenderer::ViewportRenderer(int zoomLevel, HWND hWnd)
 	: m_offsetX(0),
 	  m_offsetY(0),
@@ -68,7 +73,7 @@ void ViewportRenderer::render(HDC hdcDestination, RECT* updateRect) {
 		originTileX,
 		originTileX + widthInTiles,
 		originTileY,
-		std::min(originTileY + heightInTiles, maxExtend)
+		myMin(originTileY + heightInTiles, maxExtend)
 	);
 
 	m_tileCache->unqueueInvisible(visibleTiles);

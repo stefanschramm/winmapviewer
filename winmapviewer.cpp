@@ -121,7 +121,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
 		std::cerr << "Exception caught in WinMain: " << e << std::endl;
-		std::exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -203,9 +203,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			case WM_MAP_LONLAT_UPDATE: {
 				LonLat* updatedLonLat = (LonLat*)lParam;
 				char statusText[128];
-				snprintf(statusText, sizeof(statusText), TEXT("lon: %.6f"), updatedLonLat->lon);
+				sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
 				SendMessage(hwndStatus, SB_SETTEXT, 0, reinterpret_cast<LPARAM>(statusText));
-				snprintf(statusText, sizeof(statusText), TEXT("lat: %.6f"), updatedLonLat->lat);
+				sprintf(statusText, TEXT("lat: %.6f"), updatedLonLat->lat);
 				SendMessage(hwndStatus, SB_SETTEXT, 1, reinterpret_cast<LPARAM>(statusText));
 				break;
 			}
@@ -225,7 +225,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
 		std::cerr << "Exception caught in main window procedure: " << e << std::endl;
-		std::exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
 	return 0;

@@ -178,7 +178,7 @@ LRESULT CALLBACK SearchDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 		case WM_NOTIFY:
 			LPNMHDR hdr = reinterpret_cast<LPNMHDR>(lParam);
 			if (hdr->hwndFrom == hListView && hdr->code == LVN_ITEMACTIVATE) {
-				selectItem((LPNMITEMACTIVATE) lParam);
+				selectItem((LPNMITEMACTIVATE)lParam);
 			}
 			break;
 	}

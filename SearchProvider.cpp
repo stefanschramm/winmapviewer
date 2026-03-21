@@ -1,7 +1,13 @@
 #include <iostream>
-#include <msxml2.h>
 #include <sstream>
-#include <unistd.h>
+// #include <unistd.h>
+// Just differentiating V C++ 6 vs. everything else here.
+#if _MSC_VER == 1200
+#import "msxml6.dll" raw_interfaces_only
+using namespace MSXML2;
+#else
+#include <msxml2.h>
+#endif
 
 #include "Common.h"
 #include "SearchProvider.h"
@@ -60,13 +66,19 @@ std::wstring getAttribute(IXMLDOMNamedNodeMap* attrs, const wchar_t* attributeNa
 }
 
 std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
-	std::vector<SearchResult> searchResult;
+	std::vector<SearchResult> searchResults;
 
 	std::wstring* rawXml = doQuery(locationName);
 
 	CoInitialize(NULL);
 	IXMLDOMDocument* doc = NULL;
-	HRESULT hr = CoCreateInstance(CLSID_DOMDocument60, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&doc));
+	HRESULT hr = CoCreateInstance(
+		__uuidof(DOMDocument60),
+		NULL,
+		CLSCTX_INPROC_SERVER,
+		__uuidof(IXMLDOMDocument2),
+		(void**)&doc
+	);
 
 	if (FAILED(hr)) {
 		throw "MSXML not available.";
@@ -88,7 +100,7 @@ std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
 		doc->Release();
 		CoUninitialize();
 		// throw "Failed to load XML.";
-		return searchResult;
+		return searchResults;
 	}
 
 	IXMLDOMNodeList* places = NULL;
@@ -104,19 +116,20 @@ std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
 		IXMLDOMNamedNodeMap* attrs = NULL;
 		node->get_attributes(&attrs);
 
-		searchResult.push_back(
-			SearchResult{
-				getAttribute(attrs, L"display_name"),
-				getAttribute(attrs, L"osm_type"),
-				getAttribute(attrs, L"osm_id"),
-				getAttribute(attrs, L"class"),
-				getAttribute(attrs, L"type"),
-				LonLat{
-					wcstod(getAttribute(attrs, L"lon").c_str(), NULL),
-					wcstod(getAttribute(attrs, L"lat").c_str(), NULL)
-				}
-			}
-		);
+		LonLat lonLat = {
+			wcstod(getAttribute(attrs, L"lon").c_str(), NULL),
+			wcstod(getAttribute(attrs, L"lat").c_str(), NULL)
+		};
+
+		SearchResult searchResult;
+		searchResult.m_displayName = getAttribute(attrs, L"display_name");
+		searchResult.m_osmType = getAttribute(attrs, L"osm_type");
+		searchResult.m_osmId = getAttribute(attrs, L"osm_id");
+		searchResult.m_class = getAttribute(attrs, L"class");
+		searchResult.m_type = getAttribute(attrs, L"type");
+		searchResult.m_lonLat = lonLat;
+
+		searchResults.push_back(searchResult);
 
 		attrs->Release();
 		node->Release();
@@ -125,5 +138,5 @@ std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
 	doc->Release();
 	CoUninitialize();
 
-	return searchResult;
+	return searchResults;
 }

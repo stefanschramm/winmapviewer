@@ -29,7 +29,6 @@ void putTextIntoClipboard(char* text);
 LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
 	HDC hdc;
-	LonLat* lonLat;
 	ViewportRenderer* viewportRenderer = NULL;
 
 	try {
@@ -46,7 +45,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				switch (LOWORD(wParam)) {
 					case IDM_COPY_LON_LAT: {
 						char latLonTxt[256];
-						snprintf(latLonTxt, sizeof(latLonTxt), TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
+						sprintf(latLonTxt, TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
 						putTextIntoClipboard(latLonTxt);
 						break;
 					}
@@ -176,7 +175,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
 		std::cerr << "Exception caught in map control window procedure: " << e << std::endl;
-		std::exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
 	return FALSE;
