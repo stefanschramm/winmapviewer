@@ -63,16 +63,6 @@ void updateResultList(HWND hListView) {
 		entry.pszText = const_cast<wchar_t*>(it->m_osmId.c_str());
 		SendMessageW(hListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
 	}
-
-	if (i > 0) {
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 0, 350);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 1, LVSCW_AUTOSIZE);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 2, LVSCW_AUTOSIZE);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 3, LVSCW_AUTOSIZE);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 5, LVSCW_AUTOSIZE);
-		SendMessageW(hListView, LVM_SETCOLUMNWIDTH, 6, LVSCW_AUTOSIZE);
-	}
 }
 
 void selectItem(LPNMITEMACTIVATE item) {
@@ -97,31 +87,26 @@ LRESULT CALLBACK SearchDialog(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
 			col.mask = LVCF_TEXT | LVCF_WIDTH;
 
 			col.pszText = const_cast<wchar_t*>(L"Name");
-			col.cx = 120;
+			col.cx = 350;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 0, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"Lat");
-			col.cx = 30;
+			col.cx = 65;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 1, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"Lon");
-			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 2, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"Class");
-			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 3, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"Type");
-			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 4, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"OSM Type");
-			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 5, reinterpret_cast<LPARAM>(&col));
 
 			col.pszText = const_cast<wchar_t*>(L"OSM ID");
-			col.cx = 30;
 			SendMessageW(hListView, LVM_INSERTCOLUMNW, 6, reinterpret_cast<LPARAM>(&col));
 
 			updateResultList(hListView);
