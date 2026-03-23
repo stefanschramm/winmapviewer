@@ -12,6 +12,7 @@
 
 #include "MapControl.h"
 #include "SearchDialog.h"
+#include "StyleDatabase.h"
 
 #define MAX_LOADSTRING 100
 
@@ -30,6 +31,8 @@ HWND hwndMap;
 HWND hWnd;
 bool useTls = true;
 int currentStyleIdentifier = IDM_STYLE_OSM_STANDARD;
+
+StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK About(HWND, UINT, WPARAM, LPARAM);
@@ -96,7 +99,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
 			TEXT(""),
 			hWnd,
-			100
+			1001
 		);
 		int partSizes[] = {100, 200, -1};
 		int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
@@ -133,7 +136,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	int wmId;
 	int wmEvent;
-	LonLat lonLat;
 
 	try {
 		switch (message) {
@@ -199,12 +201,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				// reduce flickering
 				return TRUE;
 
-			case WM_SIZE:
+			case WM_SIZE: {
 				SendMessage(hwndStatus, WM_SIZE, 0, 0);
 				RECT rect;
 				SendMessage(hwndStatus, SB_GETRECT, 0, reinterpret_cast<LPARAM>(&rect));
 				MoveWindow(hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
 				break;
+			}
+
+			case WM_NOTIFY: {
+				LPNMHDR nm = (LPNMHDR)lParam;
+				if (nm->idFrom == 1001 && nm->code == NM_CLICK) {
+					LPNMMOUSE mouse = (LPNMMOUSE)lParam;
+					RECT rect;
+					SendMessage(hwndStatus, SB_GETRECT, 2, (LPARAM)&rect);
+					if (PtInRect(&rect, mouse->pt) && currentStyleIdentifier != IDM_STYLE_CUSTOM) {
+						ShellExecute(NULL, "open", styleDatabase.get(currentStyleIdentifier)->attributionLink, NULL, NULL, SW_SHOWNORMAL);
+					}
+				}
+				break;
+			}
 
 			case WM_MOUSEWHEEL:
 				SendMessage(hwndMap, WM_MOUSEWHEEL, wParam, lParam);
@@ -284,46 +300,23 @@ LRESULT CALLBACK CustomStyleDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
 }
 
 void changeStyle(int styleIdentifier) {
-	// Reverse proxy server is used to be able to centrally disable tile usage if required.
-
-	// 400 IDM_STYLE_OSM_STANDARD https://tile.openstreetmap.org/{z}/{x}/{y}.png
-	// 401 IDM_STYLE_OSM_GERMAN https://tile.openstreetmap.de/{z}/{x}/{y}.png
-	// 402 IDM_STYLE_OEPNV https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png
-	// 403 IDM_STYLE_OPENTOPO https://a.tile.opentopomap.org/{z}/{x}/{y}.png
-	static const char* const styles[4] = {
-		"https://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
-		"https://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
-		"https://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
-		"https://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png"
-	};
-
-	static const char* const stylesInsecure[4] = {
-		"http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
-		"http://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
-		"http://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
-		"http://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png"
-	};
-
-	if (styleIdentifier > IDM_STYLE_OPENTOPO && styleIdentifier != IDM_STYLE_CUSTOM) {
-		throw "Invalid style.";
+	if (styleIdentifier == IDM_STYLE_CUSTOM) {
+		DialogBox(hInst, (LPCTSTR)IDD_CUSTOMSTYLE, hWnd, (DLGPROC)CustomStyleDialog);
+		SendMessage(hwndStatus, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
+	} else {
+		const Style* style = styleDatabase.get(styleIdentifier);
+		std::string urlTemplate(useTls ? style->url : style->urlInsecure);
+		SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
+		SendMessage(hwndStatus, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	}
 
 	currentStyleIdentifier = styleIdentifier;
 
-	HMENU hMenu = GetMenu(hWnd);
 	CheckMenuRadioItem(
-		hMenu,
+		GetMenu(hWnd),
 		IDM_STYLE_OSM_STANDARD,
 		IDM_STYLE_CUSTOM,
 		styleIdentifier,
 		MF_BYCOMMAND
 	);
-
-	// TODO: Adjust copyright / attribution text
-	if (styleIdentifier != IDM_STYLE_CUSTOM) {
-		std::string urlTemplate(useTls ? styles[styleIdentifier - 400] : stylesInsecure[styleIdentifier - 400]);
-		SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
-	} else {
-		DialogBox(hInst, (LPCTSTR)IDD_CUSTOMSTYLE, hWnd, (DLGPROC)CustomStyleDialog);
-	}
 }
