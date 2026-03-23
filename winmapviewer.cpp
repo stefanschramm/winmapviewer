@@ -28,6 +28,8 @@ TCHAR szWindowClass[MAX_LOADSTRING];
 HWND hwndStatus;
 HWND hwndMap;
 HWND hWnd;
+bool useTls = true;
+int currentStyleIdentifier = IDM_STYLE_OSM_STANDARD;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK About(HWND, UINT, WPARAM, LPARAM);
@@ -100,6 +102,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
 		SendMessage(hwndStatus, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
 		SendMessage(hwndStatus, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Copyright OpenStreetMap.org contributors")));
+
+		// menu status
+		HMENU hMenu = GetMenu(hWnd);
+		CheckMenuItem(hMenu, IDM_USE_TLS, useTls ? MF_CHECKED : MF_UNCHECKED);
+		CheckMenuItem(hMenu, IDM_STYLE_OSM_STANDARD, useTls ? MF_CHECKED : MF_UNCHECKED);
+		// TODO: load settings from registry
 
 		ShowWindow(hWnd, nCmdShow);
 		UpdateWindow(hWnd);
@@ -175,6 +183,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 					case IDM_STYLE_OPENTOPO:
 					case IDM_STYLE_CUSTOM:
 						changeStyle(wmId);
+						break;
+					case IDM_USE_TLS:
+						useTls = !useTls;
+						CheckMenuItem(GetMenu(hWnd), IDM_USE_TLS, useTls ? MF_CHECKED : MF_UNCHECKED);
+						changeStyle(currentStyleIdentifier);
 						break;
 
 					default:
@@ -271,20 +284,31 @@ LRESULT CALLBACK CustomStyleDialog(HWND hDlg, UINT message, WPARAM wParam, LPARA
 }
 
 void changeStyle(int styleIdentifier) {
+	// Reverse proxy server is used to be able to centrally disable tile usage if required.
+
+	// 400 IDM_STYLE_OSM_STANDARD https://tile.openstreetmap.org/{z}/{x}/{y}.png
+	// 401 IDM_STYLE_OSM_GERMAN https://tile.openstreetmap.de/{z}/{x}/{y}.png
+	// 402 IDM_STYLE_OEPNV https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png
+	// 403 IDM_STYLE_OPENTOPO https://a.tile.opentopomap.org/{z}/{x}/{y}.png
 	static const char* const styles[4] = {
-		// 400 IDM_STYLE_OSM_STANDARD
-		"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-		// 401 IDM_STYLE_OSM_GERMAN
-		"https://tile.openstreetmap.de/{z}/{x}/{y}.png",
-		// 402 IDM_STYLE_OEPNV
-		"https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png",
-		// 403 IDM_STYLE_OPENTOPO
-		"https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
+		"https://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
+		"https://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
+		"https://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
+		"https://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png"
+	};
+
+	static const char* const stylesInsecure[4] = {
+		"http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
+		"http://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
+		"http://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
+		"http://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png"
 	};
 
 	if (styleIdentifier > IDM_STYLE_OPENTOPO && styleIdentifier != IDM_STYLE_CUSTOM) {
 		throw "Invalid style.";
 	}
+
+	currentStyleIdentifier = styleIdentifier;
 
 	HMENU hMenu = GetMenu(hWnd);
 	CheckMenuRadioItem(
@@ -297,7 +321,7 @@ void changeStyle(int styleIdentifier) {
 
 	// TODO: Adjust copyright / attribution text
 	if (styleIdentifier != IDM_STYLE_CUSTOM) {
-		std::string urlTemplate(styles[styleIdentifier - 400]);
+		std::string urlTemplate(useTls ? styles[styleIdentifier - 400] : stylesInsecure[styleIdentifier - 400]);
 		SendMessage(hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
 	} else {
 		DialogBox(hInst, (LPCTSTR)IDD_CUSTOMSTYLE, hWnd, (DLGPROC)CustomStyleDialog);
