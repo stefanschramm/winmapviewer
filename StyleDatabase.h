@@ -1,8 +1,9 @@
 struct Style {
-	const char* const url;
-	const char* const urlInsecure;
-	const char* const attributionText;
-	const char* const attributionLink;
+	// Can't use const char* const in VC++6
+	const char* url;
+	const char* urlInsecure;
+	const char* attributionText;
+	const char* attributionLink;
 };
 
 class StyleDatabase {
