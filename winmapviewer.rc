@@ -43,7 +43,8 @@ IDC_WINMAPVIEWER MENU DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Search\tF3",                     IDM_SEARCH
+        MENUITEM "&New window",                 IDM_NEW_WINDOW
+        MENUITEM "&Search\tF3",                 IDM_SEARCH
         MENUITEM "E&xit",                       IDM_EXIT
     END
     POPUP "&View"

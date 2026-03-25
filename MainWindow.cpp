@@ -127,6 +127,11 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 						search(m_hInstance, m_hWnd);
 						break;
 
+					case IDM_NEW_WINDOW:
+						// Freed by itself on WM_DESTORY
+						new MainWindow(m_hInstance, SW_SHOWNORMAL, m_styleDatabase, m_currentStyleIdentifier);
+						break;
+
 					case IDM_ZOOMIN:
 						SendMessage(m_hwndMap, WM_MAP_ZOOM_IN, 0, 0);
 						break;
@@ -220,6 +225,9 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 				if (mainWindowCount == 0) {
 					PostQuitMessage(0);
 				}
+				// Not sure if this will break something :)
+				// Would be bad if the window continues to receive messages.
+				delete this;
 				break;
 
 			default:
