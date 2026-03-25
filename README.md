@@ -1,24 +1,29 @@
 # winmapviewer
 
-Just a minimalistic OpenStreetMap viewer application as playground for usage of the Win32 API.
-
-Map data from [OpenStreetMap](https://www.openstreetmap.org/copyright)
+[OpenStreetMap](https://www.openstreetmap.org/) viewer application playground for usage of the Win32 API.
 
 ![Screenshot of winmapviewer](doc/winmapviewer.png)
 
 ## Building
 
-Open the workspace winmapviewer.dsw in Visual C++ 6 and select Build - Build all.
+### Visual C++ 6
+
+Open the workspace winmapviewer.dsw and select Build - Build all.
+
+### Linux / MinGW
+
+Install `g++-mingw-w64` and run `make`.
+
+## Disabling TLS
+
+When running winmapviewer on older versions of Windows it may be necessary to use insecure HTTP for fetching the tiles.
+This is possible by toggling *View* - *Style* - *Use secure connection (TLS)*.
 
 ## Running under Windows 95/98
 
 The program makes use of GDI+ to decode the map tile PNGs.
 
 GDI+ was introduced in Windows XP, but you can download ["Platform SDK Redistributable: GDI+"](https://archive.org/download/gdiplus_dnld) and place the gdiplus.dll next to winmapviewer.exe to use it under Windows 9x.
-
-## Notes
-
-The map files are fetched using unencrypted HTTP.
 
 ## Authors
 
