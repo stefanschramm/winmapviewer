@@ -30,7 +30,8 @@ ViewportRenderer::ViewportRenderer(int zoomLevel, HWND hWnd)
 	  m_offsetY(0),
 	  m_zoomLevel(zoomLevel),
 	  m_x(0),
-	  m_y(0) {
+	  m_y(0),
+	  m_dragging(false) {
 	RECT clientRect;
 	GetClientRect(hWnd, &clientRect);
 	m_viewportWidth = clientRect.right;
