@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
 
@@ -11,7 +12,7 @@ class MainWindow {
 		HINSTANCE hInstance,
 		int nCmdShow,
 		StyleDatabase& styleDatabase,
-		int initialStyleIdentifier
+		Settings settings
 	);
 
 	static LRESULT CALLBACK wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -28,10 +29,7 @@ class MainWindow {
 	static int mainWindowCount;
 
 	StyleDatabase& m_styleDatabase;
-	// TODO: Put into settings struct that can be loaded/stored from/to registry
-	int m_currentStyleIdentifier;
-	bool m_useTls;
-
+	Settings m_settings;
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;

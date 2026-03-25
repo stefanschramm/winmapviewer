@@ -8,6 +8,7 @@
 #include "MainWindow.h"
 #include "MapControl.h"
 #include "SearchDialog.h"
+#include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
 
@@ -25,11 +26,10 @@ MainWindow::MainWindow(
 	HINSTANCE hInstance,
 	int nCmdShow,
 	StyleDatabase& styleDatabase,
-	int initialStyleIdentifier
+	Settings settings
 ) : m_hInstance(hInstance),
 	m_styleDatabase(styleDatabase),
-	m_currentStyleIdentifier(initialStyleIdentifier),
-	m_useTls(true) {
+	m_settings(settings) {
 
 	if (!mainWindowIsRegistered) {
 		MainWindow::registerWindow(m_hInstance);
@@ -78,15 +78,18 @@ MainWindow::MainWindow(
 
 	// menu status
 	HMENU hMenu = GetMenu(m_hWnd);
-	CheckMenuItem(hMenu, IDM_USE_TLS, m_useTls ? MF_CHECKED : MF_UNCHECKED);
+	CheckMenuItem(hMenu, IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuRadioItem(
 		GetMenu(m_hWnd),
 		IDM_STYLE_OSM_STANDARD,
 		IDM_STYLE_CUSTOM,
-		m_currentStyleIdentifier,
+		m_settings.styleIdentifier,
 		MF_BYCOMMAND
 	);
-	// TODO: load settings from registry
+
+	// TODO: Pass other settings to map control (zoomLevel, lanLot)
+
+	changeStyle(m_settings.styleIdentifier);
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
@@ -129,7 +132,7 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 					case IDM_NEW_WINDOW:
 						// Freed by itself on WM_DESTORY
-						new MainWindow(m_hInstance, SW_SHOWNORMAL, m_styleDatabase, m_currentStyleIdentifier);
+						new MainWindow(m_hInstance, SW_SHOWNORMAL, m_styleDatabase, m_settings);
 						break;
 
 					case IDM_ZOOMIN:
@@ -164,9 +167,9 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 						changeStyle(wmId);
 						break;
 					case IDM_USE_TLS:
-						m_useTls = !m_useTls;
-						CheckMenuItem(GetMenu(m_hWnd), IDM_USE_TLS, m_useTls ? MF_CHECKED : MF_UNCHECKED);
-						changeStyle(m_currentStyleIdentifier);
+						m_settings.useTls = !m_settings.useTls;
+						CheckMenuItem(GetMenu(m_hWnd), IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
+						changeStyle(m_settings.styleIdentifier);
 						break;
 
 					default:
@@ -192,8 +195,8 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 					LPNMMOUSE mouse = (LPNMMOUSE)lParam;
 					RECT rect;
 					SendMessage(m_hwndStatusBar, SB_GETRECT, 2, (LPARAM)&rect);
-					if (PtInRect(&rect, mouse->pt) && m_currentStyleIdentifier != IDM_STYLE_CUSTOM) {
-						ShellExecute(NULL, "open", m_styleDatabase.get(m_currentStyleIdentifier)->attributionLink, NULL, NULL, SW_SHOWNORMAL);
+					if (PtInRect(&rect, mouse->pt) && m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
+						ShellExecute(NULL, "open", m_styleDatabase.get(m_settings.styleIdentifier)->attributionLink, NULL, NULL, SW_SHOWNORMAL);
 					}
 				}
 				break;
@@ -219,8 +222,7 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 			}
 
 			case WM_DESTROY:
-				// TODO: Quit only when all windows where closed.
-				// TODO: Store settings of (last) closed window.
+				storeSettingsInRegistry(m_settings);
 				mainWindowCount--;
 				if (mainWindowCount == 0) {
 					PostQuitMessage(0);
@@ -319,18 +321,18 @@ void MainWindow::changeStyle(int styleIdentifier) {
 		DialogBoxParam(m_hInstance, (LPCTSTR)IDD_CUSTOMSTYLE, m_hWnd, (DLGPROC)MainWindow::customStyleDialogWndProcStatic, reinterpret_cast<LPARAM>(this));
 	} else {
 		const Style* style = m_styleDatabase.get(styleIdentifier);
-		std::string urlTemplate(m_useTls ? style->url : style->urlInsecure);
+		std::string urlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
 		SendMessage(m_hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
 		SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	}
 
-	m_currentStyleIdentifier = styleIdentifier;
+	m_settings.styleIdentifier = styleIdentifier;
 
 	CheckMenuRadioItem(
 		GetMenu(m_hWnd),
 		IDM_STYLE_OSM_STANDARD,
 		IDM_STYLE_CUSTOM,
-		styleIdentifier,
+		m_settings.styleIdentifier,
 		MF_BYCOMMAND
 	);
 }
