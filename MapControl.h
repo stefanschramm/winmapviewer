@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-// TODO: Put all messages in same include (s. SearchDialog.h)?
+// TODO: Put all messages in same include (s. SearchDialog.h)? - Probably not required because messages are control-dependent.
 #define WM_MAP_ZOOM_IN (WM_USER + 10)
 #define WM_MAP_ZOOM_OUT (WM_USER + 11)
 #define WM_MAP_MOVE_X (WM_USER + 12)

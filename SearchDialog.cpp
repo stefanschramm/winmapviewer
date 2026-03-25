@@ -24,6 +24,8 @@ std::vector<SearchResult> searchResult;
 
 SearchResult clickedSearchResult;
 
+// TODO: Put into class - make it work independently from two windows
+
 void updateResultList(HWND hListView) {
 	int i = 0;
 	for (std::vector<SearchResult>::iterator it = searchResult.begin(); it != searchResult.end(); ++it) {

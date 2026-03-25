@@ -105,6 +105,10 @@ SOURCE=.\GdiPlusWrapper.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MainWindow.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MapControl.cpp
 # End Source File
 # Begin Source File
@@ -114,6 +118,10 @@ SOURCE=.\SearchDialog.cpp
 # Begin Source File
 
 SOURCE=.\SearchProvider.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\StyleDatabase.cpp
 # End Source File
 # Begin Source File
 
@@ -153,6 +161,10 @@ SOURCE=.\GdiPlusWrapper.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\MainWindow.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MapControl.h
 # End Source File
 # Begin Source File
@@ -166,6 +178,10 @@ SOURCE=.\SearchDialog.h
 # Begin Source File
 
 SOURCE=.\SearchProvider.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\StyleDatabase.h
 # End Source File
 # Begin Source File
 

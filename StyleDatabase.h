@@ -1,3 +1,5 @@
+#pragma once
+
 struct Style {
 	// Can't use const char* const in VC++6
 	const char* url;

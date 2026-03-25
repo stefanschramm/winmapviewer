@@ -18,6 +18,8 @@
 
 #define IDM_COPY_LON_LAT 10001
 
+bool mapControlIsRegistered = false;
+
 std::map<HWND, ViewportRenderer*> renderers;
 
 static const LonLat INITIAL_LON_LAT = {13.377222, 52.526944};
@@ -182,6 +184,10 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 void RegisterMapControl(HINSTANCE hInstance) {
+	if (mapControlIsRegistered) {
+		return;
+	}
+
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -201,6 +207,8 @@ void RegisterMapControl(HINSTANCE hInstance) {
 	if (!RegisterClassEx(&wcex)) {
 		throw "Error registering map control";
 	}
+
+	mapControlIsRegistered = true;
 }
 
 HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE hInstance) {
