@@ -65,9 +65,7 @@ std::wstring getAttribute(IXMLDOMNamedNodeMap* attrs, const wchar_t* attributeNa
 	return value;
 }
 
-std::vector<SearchResult> SearchProvider::search(std::wstring locationName) {
-	std::vector<SearchResult> searchResults;
-
+std::vector<SearchResult> SearchProvider::search(std::wstring locationName, std::vector<SearchResult> searchResults) {
 	std::wstring* rawXml = doQuery(locationName);
 
 	CoInitialize(NULL);

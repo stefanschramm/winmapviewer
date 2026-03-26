@@ -127,7 +127,8 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 						break;
 
 					case IDM_SEARCH:
-						search(m_hInstance, m_hWnd);
+						// Freed by itself on WM_DESTORY
+						new SearchDialog(m_hInstance, m_hWnd);
 						break;
 
 					case IDM_NEW_WINDOW:

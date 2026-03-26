@@ -18,7 +18,7 @@ class SearchProvider {
   public:
 	SearchProvider();
 	~SearchProvider();
-	std::vector<SearchResult> search(std::wstring locationName);
+	std::vector<SearchResult> search(std::wstring locationName, std::vector<SearchResult> searchResults);
 
   private:
 	std::wstring* doQuery(std::wstring locationName);
