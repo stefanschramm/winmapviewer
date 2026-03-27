@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Settings.h"
 #include "TileCache.h"
 
 class ViewportRenderer {
@@ -16,6 +17,8 @@ class ViewportRenderer {
 	void zoomOut();
 	void setViewportSize(int width, int height);
 	void getLonLat(int x, int y, LonLat* lonLat) const;
+	void getSettings(Settings* settings) const;
+	void setSettings(Settings* settings);
 	void startDragging(int x, int y);
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);

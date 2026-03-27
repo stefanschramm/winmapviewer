@@ -188,6 +188,19 @@ void ViewportRenderer::getLonLat(int x, int y, LonLat* lonLat) const {
 	lonLat->lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
 }
 
+void ViewportRenderer::getSettings(Settings* settings) const {
+	settings->centerX = m_x + m_viewportWidth / 2;
+	settings->centerY = m_y + m_viewportHeight / 2;
+	settings->zoomLevel = m_zoomLevel;
+}
+
+void ViewportRenderer::setSettings(Settings* settings) {
+	m_x = settings->centerX - m_viewportWidth / 2;
+	m_y = settings->centerY - m_viewportHeight / 2;
+	m_zoomLevel = settings->zoomLevel;
+	restrictCoordinates(&m_x, &m_y);
+}
+
 void ViewportRenderer::restrictCoordinates(long* x, long* y) const {
 	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
 

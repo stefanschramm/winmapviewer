@@ -87,9 +87,8 @@ MainWindow::MainWindow(
 		MF_BYCOMMAND
 	);
 
-	// TODO: Pass other settings to map control (zoomLevel, lanLot)
-
 	changeStyle(m_settings.styleIdentifier);
+	SendMessage(m_hwndMap, WM_MAP_SET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
@@ -133,6 +132,7 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 					case IDM_NEW_WINDOW:
 						// Freed by itself on WM_DESTORY
+						SendMessage(m_hwndMap, WM_MAP_GET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
 						new MainWindow(m_hInstance, SW_SHOWNORMAL, m_styleDatabase, m_settings);
 						break;
 
@@ -222,7 +222,8 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			case WM_DESTROY:
+			case WM_DESTROY: {
+				SendMessage(m_hwndMap, WM_MAP_GET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
 				storeSettingsInRegistry(m_settings);
 				mainWindowCount--;
 				if (mainWindowCount == 0) {
@@ -232,6 +233,7 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 				// Would be bad if the window continues to receive messages.
 				delete this;
 				break;
+			}
 
 			default:
 				return DefWindowProc(m_hWnd, message, wParam, lParam);

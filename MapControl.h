@@ -10,6 +10,8 @@
 #define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
 #define WM_MAP_SET_STYLE (WM_USER + 15)
 #define WM_MAP_SET_LONLAT (WM_USER + 16)
+#define WM_MAP_GET_SETTINGS (WM_USER + 17)
+#define WM_MAP_SET_SETTINGS (WM_USER + 18)
 
 void RegisterMapControl(HINSTANCE hInstance);
 HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE hInstance);

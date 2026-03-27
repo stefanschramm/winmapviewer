@@ -4,14 +4,19 @@
 #include "resource.h"
 
 const char* SUB_KEY = "Software\\stefanschramm.net\\winmapviewer";
+const char* VALUE_NAME_CENTER_X = "centerX";
+const char* VALUE_NAME_CENTER_Y = "centerY";
 const char* VALUE_NAME_STYLE_IDENTIFIER = "styleIdentifier";
+const char* VALUE_NAME_ZOOMLEVEL = "zoomLevel";
 
 Settings getDefaultSettings() {
 	Settings settings;
-	settings.lonLat = {52.0, 13.0};
 	settings.styleIdentifier = IDM_STYLE_OSM_STANDARD;
 	settings.useTls = false;
-	settings.zoomLevel = 13;
+	// Put some eurocentrism in here
+	settings.zoomLevel = 4;
+	settings.centerX = 2211;
+	settings.centerY = 1353;
 
 	return settings;
 }
@@ -63,6 +68,24 @@ void closeRegistryKey(HKEY hKey) {
 	}
 }
 
+void loadInt(HKEY& hKey, const char* valueName, int* value) {
+	DWORD pwdType;
+	DWORD dwSize = sizeof(*value);
+	LRESULT lResult = RegGetValue(
+		hKey,
+		"",
+		valueName,
+		RRF_RT_REG_DWORD,
+		&pwdType,
+		reinterpret_cast<BYTE*>(value),
+		&dwSize
+	);
+
+	if (lResult != ERROR_SUCCESS) {
+		throw "Unable to read integer value from registry.";
+	}
+}
+
 Settings loadSettingsFromRegistry() {
 	Settings settings = getDefaultSettings();
 
@@ -72,47 +95,38 @@ Settings loadSettingsFromRegistry() {
 		return settings;
 	}
 
-	DWORD pwdType;
-	DWORD dwSize = sizeof(settings.styleIdentifier);
-	LRESULT lResult = RegGetValue(
-		hKey,
-		"",
-		VALUE_NAME_STYLE_IDENTIFIER,
-		RRF_RT_REG_DWORD,
-		&pwdType,
-		reinterpret_cast<BYTE*>(&(settings.styleIdentifier)),
-		&dwSize
-	);
-
-	if (lResult != ERROR_SUCCESS) {
-		throw "Unable to read style identifier from registry.";
-	}
-
-	// TODO: load other values into struct
+	loadInt(hKey, VALUE_NAME_STYLE_IDENTIFIER, &(settings.styleIdentifier));
+	loadInt(hKey, VALUE_NAME_CENTER_X, &(settings.centerX));
+	loadInt(hKey, VALUE_NAME_CENTER_Y, &(settings.centerY));
+	loadInt(hKey, VALUE_NAME_ZOOMLEVEL, &(settings.zoomLevel));
 
 	closeRegistryKey(hKey);
 
 	return settings;
 }
 
-void storeSettingsInRegistry(Settings settings) {
-	HKEY hKey = createRegistryKey();
-
+void storeInt(HKEY& hKey, const char* valueName, int value) {
 	LRESULT lResult = RegSetValueEx(
 		hKey,
-		VALUE_NAME_STYLE_IDENTIFIER,
+		valueName,
 		0,
 		REG_DWORD,
-		reinterpret_cast<BYTE*>(&(settings.styleIdentifier)),
-		sizeof(settings.styleIdentifier)
+		reinterpret_cast<BYTE*>(&(value)),
+		sizeof(value)
 	);
 
 	if (lResult != ERROR_SUCCESS) {
-		throw "Unable to store style identifier in registry.";
+		throw "Unable to store integer value in registry.";
 	}
+}
 
-	// TODO: store other values from struct
-	// TODO: store complete struct instead of individual values?
+void storeSettingsInRegistry(Settings settings) {
+	HKEY hKey = createRegistryKey();
+
+	storeInt(hKey, VALUE_NAME_STYLE_IDENTIFIER, settings.styleIdentifier);
+	storeInt(hKey, VALUE_NAME_CENTER_X, settings.centerX);
+	storeInt(hKey, VALUE_NAME_CENTER_Y, settings.centerY);
+	storeInt(hKey, VALUE_NAME_ZOOMLEVEL, settings.zoomLevel);
 
 	closeRegistryKey(hKey);
 }

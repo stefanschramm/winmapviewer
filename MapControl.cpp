@@ -103,6 +103,14 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				InvalidateRect(hWnd, NULL, FALSE);
 				break;
 
+			case WM_MAP_GET_SETTINGS:
+				viewportRenderer->getSettings((Settings*)lParam);
+				break;
+
+			case WM_MAP_SET_SETTINGS:
+				viewportRenderer->setSettings((Settings*)lParam);
+				break;
+
 			case WM_LBUTTONDOWN:
 				viewportRenderer->startDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				SetCapture(hWnd);

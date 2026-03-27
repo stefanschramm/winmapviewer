@@ -5,8 +5,9 @@
 struct Settings {
 	int styleIdentifier;
 	int zoomLevel;
+	int centerX;
+	int centerY;
 	bool useTls;
-	LonLat lonLat;
 };
 
 Settings loadSettingsFromRegistry();
