@@ -7,6 +7,7 @@ const char* SUB_KEY = "Software\\stefanschramm.net\\winmapviewer";
 const char* VALUE_NAME_CENTER_X = "centerX";
 const char* VALUE_NAME_CENTER_Y = "centerY";
 const char* VALUE_NAME_STYLE_IDENTIFIER = "styleIdentifier";
+const char* VALUE_NAME_USE_TLS = "useTls";
 const char* VALUE_NAME_ZOOMLEVEL = "zoomLevel";
 
 Settings getDefaultSettings() {
@@ -68,7 +69,7 @@ void closeRegistryKey(HKEY hKey) {
 	}
 }
 
-void loadInt(HKEY& hKey, const char* valueName, int* value) {
+bool loadInt(HKEY& hKey, const char* valueName, int* value) {
 	DWORD pwdType;
 	DWORD dwSize = sizeof(*value);
 	LRESULT lResult = RegGetValue(
@@ -82,8 +83,10 @@ void loadInt(HKEY& hKey, const char* valueName, int* value) {
 	);
 
 	if (lResult != ERROR_SUCCESS) {
-		throw "Unable to read integer value from registry.";
+		return false;
 	}
+
+	return true;
 }
 
 Settings loadSettingsFromRegistry() {
@@ -95,10 +98,16 @@ Settings loadSettingsFromRegistry() {
 		return settings;
 	}
 
+	// Errors on loading are ignored - causes usage of defaults
+
 	loadInt(hKey, VALUE_NAME_STYLE_IDENTIFIER, &(settings.styleIdentifier));
 	loadInt(hKey, VALUE_NAME_CENTER_X, &(settings.centerX));
 	loadInt(hKey, VALUE_NAME_CENTER_Y, &(settings.centerY));
 	loadInt(hKey, VALUE_NAME_ZOOMLEVEL, &(settings.zoomLevel));
+
+	int iUseTls = settings.useTls ? 1 : 0;
+	loadInt(hKey, VALUE_NAME_USE_TLS, &iUseTls);
+	settings.useTls = iUseTls != 0;
 
 	closeRegistryKey(hKey);
 
@@ -127,6 +136,7 @@ void storeSettingsInRegistry(Settings settings) {
 	storeInt(hKey, VALUE_NAME_CENTER_X, settings.centerX);
 	storeInt(hKey, VALUE_NAME_CENTER_Y, settings.centerY);
 	storeInt(hKey, VALUE_NAME_ZOOMLEVEL, settings.zoomLevel);
+	storeInt(hKey, VALUE_NAME_USE_TLS, settings.useTls ? 1 : 0);
 
 	closeRegistryKey(hKey);
 }
