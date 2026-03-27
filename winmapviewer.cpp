@@ -20,7 +20,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
 
 		// Freed by itself on WM_DESTORY
-		new MainWindow(hInstance, nCmdShow, styleDatabase, loadSettingsFromRegistry());
+		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry());
+		mainWindow->create(nCmdShow);
 
 		HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
 		MSG msg;

@@ -19,20 +19,43 @@
 
 const int ARROW_KEYS_MOVE_DISTANCE = 40;
 
-bool MainWindow::mainWindowIsRegistered = false;
 int MainWindow::mainWindowCount = 0;
 
 MainWindow::MainWindow(
 	HINSTANCE hInstance,
-	int nCmdShow,
 	StyleDatabase& styleDatabase,
 	Settings settings
 ) : m_hInstance(hInstance),
 	m_styleDatabase(styleDatabase),
 	m_settings(settings) {
+}
+
+bool MainWindow::create(int nCmdShow) {
+	static bool mainWindowIsRegistered = false;
 
 	if (!mainWindowIsRegistered) {
-		MainWindow::registerWindow(m_hInstance);
+		std::cout << "Registering main window" << std::endl;
+		WNDCLASSEX wcex;
+
+		wcex.cbSize = sizeof(WNDCLASSEX);
+
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = (WNDPROC)MainWindow::wndProcStatic;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = m_hInstance;
+		wcex.hIcon = LoadIcon(m_hInstance, (LPCTSTR)IDI_WINMAPVIEWER);
+		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.lpszMenuName = (LPCSTR)IDC_WINMAPVIEWER;
+		wcex.lpszClassName = TEXT("winmapviewer");
+		wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+
+		if (!RegisterClassEx(&wcex)) {
+			throw "Error registering main window";
+		}
+
+		mainWindowIsRegistered = true;
 	}
 
 	m_hWnd = CreateWindowEx(
@@ -51,13 +74,11 @@ MainWindow::MainWindow(
 	);
 
 	if (!m_hWnd) {
+		std::cout << GetLastError() << std::endl;
 		throw "Unable to create main window.";
 	}
 
 	mainWindowCount++;
-
-	// Store "this"-pointer for keeping the association in static WndProc
-	SetWindowLong(m_hWnd, GWL_USERDATA, reinterpret_cast<long>(this));
 
 	// TODO: Create MapControl class
 	RegisterMapControl(m_hInstance);
@@ -74,7 +95,6 @@ MainWindow::MainWindow(
 	int partSizes[] = {100, 200, -1};
 	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
 	SendMessage(m_hwndStatusBar, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Copyright OpenStreetMap.org contributors")));
 
 	// menu status
 	HMENU hMenu = GetMenu(m_hWnd);
@@ -92,22 +112,33 @@ MainWindow::MainWindow(
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
+
+	return true;
 }
 
 LRESULT CALLBACK MainWindow::wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	MainWindow* self = reinterpret_cast<MainWindow*>(GetWindowLong(hWnd, GWL_USERDATA));
+	MainWindow* self = NULL;
 
-	if (self == NULL) {
-		// Some messages are being generated on window creation where the pointer is not set yet.
-		// Not sure if this is guaranteed to be NULL initially. Maybe it's safer, to call
-		// SetWindowLong during the WM_CREATE(?) message.
+	if (message == WM_NCCREATE) {
+		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
+		self = reinterpret_cast<MainWindow*>(cs->lpCreateParams);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+	} else {
+		self = reinterpret_cast<MainWindow*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	}
+
+	if (!self) {
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
-	return self->wndProc(message, wParam, lParam);
+	if (message == WM_NCDESTROY) {
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+	}
+
+	return self->wndProc(hWnd, message, wParam, lParam);
 }
 
-LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	int wmId;
 	int wmEvent;
 
@@ -130,11 +161,13 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 						new SearchDialog(m_hInstance, m_hWnd);
 						break;
 
-					case IDM_NEW_WINDOW:
+					case IDM_NEW_WINDOW: {
 						// Freed by itself on WM_DESTORY
 						SendMessage(m_hwndMap, WM_MAP_GET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
-						new MainWindow(m_hInstance, SW_SHOWNORMAL, m_styleDatabase, m_settings);
+						MainWindow* newWindow = new MainWindow(m_hInstance, m_styleDatabase, m_settings);
+						newWindow->create(SW_SHOWNORMAL);
 						break;
+					}
 
 					case IDM_ZOOMIN:
 						SendMessage(m_hwndMap, WM_MAP_ZOOM_IN, 0, 0);
@@ -231,12 +264,13 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				// Not sure if this will break something :)
 				// Would be bad if the window continues to receive messages.
+				// TODO: delete it on WM_NCDESTROY?
 				delete this;
 				break;
 			}
 
 			default:
-				return DefWindowProc(m_hWnd, message, wParam, lParam);
+				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 	} catch (char const* e) {
 		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
@@ -245,30 +279,6 @@ LRESULT CALLBACK MainWindow::wndProc(UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
-}
-
-void MainWindow::registerWindow(HINSTANCE hInstance) {
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = (WNDPROC)MainWindow::wndProcStatic;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, (LPCTSTR)IDI_WINMAPVIEWER);
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = (LPCSTR)IDC_WINMAPVIEWER;
-	wcex.lpszClassName = TEXT("winmapviewer");
-	wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
-
-	if (!RegisterClassEx(&wcex)) {
-		throw "Error registering main window";
-	}
-
-	mainWindowIsRegistered = true;
 }
 
 LRESULT CALLBACK MainWindow::aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
