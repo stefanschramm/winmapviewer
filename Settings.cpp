@@ -24,7 +24,6 @@ Settings getDefaultSettings() {
 
 HKEY openRegistryKey() {
 	HKEY hKey;
-	DWORD dwDisposition;
 	LONG lResult = RegOpenKeyEx(
 		HKEY_CURRENT_USER,
 		SUB_KEY,
@@ -63,26 +62,26 @@ HKEY createRegistryKey() {
 }
 
 void closeRegistryKey(HKEY hKey) {
-	LSTATUS closeResult = RegCloseKey(hKey);
+	LONG closeResult = RegCloseKey(hKey);
 	if (closeResult != ERROR_SUCCESS) {
 		throw "Unable to close registry key for writing settings.";
 	}
 }
 
 bool loadInt(HKEY& hKey, const char* valueName, int* value) {
-	DWORD pwdType;
+	DWORD dwType;
 	DWORD dwSize = sizeof(*value);
-	LRESULT lResult = RegGetValue(
+	// Can not use RegGetValue here for VC++6 compatibility
+	LONG lResult = RegQueryValueEx(
 		hKey,
-		"",
 		valueName,
-		RRF_RT_REG_DWORD,
-		&pwdType,
+		NULL,
+		&dwType,
 		reinterpret_cast<BYTE*>(value),
 		&dwSize
 	);
 
-	if (lResult != ERROR_SUCCESS) {
+	if (lResult != ERROR_SUCCESS || dwType != REG_DWORD) {
 		return false;
 	}
 

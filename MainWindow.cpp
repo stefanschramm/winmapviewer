@@ -122,9 +122,9 @@ LRESULT CALLBACK MainWindow::wndProcStatic(HWND hWnd, UINT message, WPARAM wPara
 	if (message == WM_NCCREATE) {
 		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
 		self = reinterpret_cast<MainWindow*>(cs->lpCreateParams);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+		SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(self));
 	} else {
-		self = reinterpret_cast<MainWindow*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+		self = reinterpret_cast<MainWindow*>(GetWindowLong(hWnd, GWL_USERDATA));
 	}
 
 	if (!self) {
@@ -132,7 +132,7 @@ LRESULT CALLBACK MainWindow::wndProcStatic(HWND hWnd, UINT message, WPARAM wPara
 	}
 
 	if (message == WM_NCDESTROY) {
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
+		SetWindowLong(hWnd, GWL_USERDATA, 0);
 	}
 
 	return self->wndProc(hWnd, message, wParam, lParam);
