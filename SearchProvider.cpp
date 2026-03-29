@@ -24,9 +24,10 @@ SearchProvider::~SearchProvider() {
 }
 
 std::wstring* SearchProvider::doQuery(std::wstring locationName) {
-	// TODO: set up proxy and use proxy URL
 	std::stringstream strstr;
-	strstr << "http://nominatim.openstreetmap.org/search?format=xml&limit=35&q=" << urlEncode(locationName);
+	// Reverse proxy server URL is used to be able to centrally disable/change usage if required.
+	// TODO: add option to (not) use TLS
+	strstr << "http://osm.kesto.de/nominatim/search?format=xml&limit=35&q=" << urlEncode(locationName);
 
 	// TODO: Add user agent and explicit referer header
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, strstr.str().c_str(), NULL, 0, 0, 0);
