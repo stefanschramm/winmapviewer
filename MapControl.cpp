@@ -1,15 +1,12 @@
 #include <cstdlib>
 #include <iostream>
+#include <math.h>
 #include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>
 
-#include "DownloadWorker.h"
-#include "GdiPlusWrapper.h"
 #include "MapControl.h"
-#include "TileCache.h"
-#include "TileDownloader.h"
-#include "ViewportRenderer.h"
+#include "TileRange.h"
 
 // Compatibility with VC++6
 #ifndef WM_MOUSEWHEEL
@@ -18,36 +15,110 @@
 
 #define IDM_COPY_LON_LAT 10001
 
-bool mapControlIsRegistered = false;
-
-std::map<HWND, ViewportRenderer*> renderers;
-
-static const LonLat INITIAL_LON_LAT = {13.377222, 52.526944};
-
-LonLat clickLonLat;
-
 void putTextIntoClipboard(char* text);
 
-LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	PAINTSTRUCT ps;
-	HDC hdc;
-	ViewportRenderer* viewportRenderer = NULL;
+// used for optimized multiplication
+const int TILE_SIZE_BITS = 8;
 
-	try {
+// == 256 px
+const int TILE_SIZE = 1 << TILE_SIZE_BITS;
+const int TILE_INNER_OFFSET_MAP = 0xff;
 
-		if (message != WM_CREATE && !renderers.count(hWnd)) {
-			// should not happen
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		} else {
-			viewportRenderer = renderers[hWnd];
+// M_PI and asinh are missing in math.h of VC++ 6
+#if !defined M_PI
+const double M_PI = 3.141592653589793;
+#endif
+
+double asinh(double x) {
+	return log(x + sqrt(x * x + 1));
+}
+
+// std::min() is missing in VC++ 6
+int myMin(int a, int b) {
+	return a < b ? a : b;
+}
+
+MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
+	: m_hInstance(hInstance),
+	  m_hwndMain(hwndMain),
+	  m_offsetX(0),
+	  m_offsetY(0),
+	  m_zoomLevel(0),
+	  m_x(0),
+	  m_y(0),
+	  m_dragging(false) {
+
+	// TODO: Probably one GdiPlusWrapper instance can be reused across multiple map windows (is it thread safe?)
+	m_gdi = new GdiPlusWrapper();
+	m_tileDownloader = new TileDownloader(m_gdi);
+	// m_downloadWorker and m_tileCache is instantiated in WM_CREATE because it needs m_hwndMap
+
+	static bool registered = false;
+	if (!registered) {
+		WNDCLASSEX wcex;
+
+		wcex.cbSize = sizeof(WNDCLASSEX);
+
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = (WNDPROC)MapControl::wndProcStatic;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = m_hInstance;
+		wcex.hIcon = NULL;
+		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.lpszMenuName = NULL;
+		wcex.lpszClassName = TEXT("MapControl");
+		wcex.hIconSm = NULL;
+
+		if (!RegisterClassEx(&wcex)) {
+			throw "Error registering map control";
 		}
 
+		registered = true;
+	}
+}
+
+MapControl::~MapControl() {
+	delete m_tileCache;
+	delete m_downloadWorker;
+	delete m_tileDownloader;
+	delete m_gdi;
+}
+
+LRESULT CALLBACK MapControl::wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	MapControl* self = NULL;
+
+	if (message == WM_NCCREATE) {
+		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
+		self = reinterpret_cast<MapControl*>(cs->lpCreateParams);
+		SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(self));
+	} else {
+		self = reinterpret_cast<MapControl*>(GetWindowLong(hWnd, GWL_USERDATA));
+	}
+
+	if (!self) {
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+
+	if (message == WM_NCDESTROY) {
+		SetWindowLong(hWnd, GWL_USERDATA, 0);
+	}
+
+	return self->wndProc(hWnd, message, wParam, lParam);
+}
+
+LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+	PAINTSTRUCT ps;
+	HDC hdc;
+
+	try {
 		switch (message) {
 			case WM_COMMAND:
 				switch (LOWORD(wParam)) {
 					case IDM_COPY_LON_LAT: {
 						char latLonTxt[256];
-						sprintf(latLonTxt, TEXT("%.8f %.8f"), clickLonLat.lat, clickLonLat.lon);
+						sprintf(latLonTxt, TEXT("%.8f %.8f"), m_clickLonLat.lat, m_clickLonLat.lon);
 						putTextIntoClipboard(latLonTxt);
 						break;
 					}
@@ -57,15 +128,21 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				}
 				break;
 
-			case WM_CREATE:
-				viewportRenderer = new ViewportRenderer(4, hWnd);
-				viewportRenderer->setCenterLonLat(&INITIAL_LON_LAT);
-				renderers[hWnd] = viewportRenderer;
+			case WM_CREATE: {
+				m_hwndMap = hWnd;
+				m_downloadWorker = new DownloadWorker(m_tileDownloader, m_hwndMap);
+				m_tileCache = new TileCache(m_tileDownloader, m_downloadWorker);
+
+				RECT clientRect;
+				GetClientRect(m_hwndMap, &clientRect);
+				m_viewportWidth = clientRect.right;
+				m_viewportHeight = clientRect.bottom;
 
 				break;
+			}
 
 			case WM_SIZE:
-				viewportRenderer->setViewportSize(LOWORD(lParam), HIWORD(lParam));
+				setViewportSize(LOWORD(lParam), HIWORD(lParam));
 				break;
 
 			case WM_ERASEBKGND:
@@ -76,7 +153,7 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				RECT updateRect;
 				bool hasUpdateRect = GetUpdateRect(hWnd, &updateRect, false);
 				hdc = BeginPaint(hWnd, &ps);
-				viewportRenderer->render(hdc, hasUpdateRect ? &updateRect : NULL);
+				render(hdc, hasUpdateRect ? &updateRect : NULL);
 				EndPaint(hWnd, &ps);
 				break;
 			}
@@ -89,41 +166,28 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 
 			case WM_MOUSEMOVE: {
-				if (viewportRenderer->mouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) {
+				if (mouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) {
 					InvalidateRect(hWnd, NULL, FALSE);
 				}
 				LonLat myLonLat;
-				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &myLonLat);
+				getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &myLonLat);
 				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, reinterpret_cast<LPARAM>(&myLonLat));
 				break;
 			}
 
-			case WM_MAP_SET_LONLAT:
-				viewportRenderer->setCenterLonLat((LonLat*)lParam);
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_GET_SETTINGS:
-				viewportRenderer->getSettings((Settings*)lParam);
-				break;
-
-			case WM_MAP_SET_SETTINGS:
-				viewportRenderer->setSettings((Settings*)lParam);
-				break;
-
 			case WM_LBUTTONDOWN:
-				viewportRenderer->startDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				startDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				SetCapture(hWnd);
 				break;
 
 			case WM_LBUTTONUP:
-				viewportRenderer->endDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				InvalidateRect(hWnd, NULL, FALSE);
+				endDragging(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				requestRedraw();
 				ReleaseCapture();
 				break;
 
 			case WM_RBUTTONDOWN: {
-				viewportRenderer->getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &clickLonLat);
+				getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &m_clickLonLat);
 
 				HMENU hMenu = CreatePopupMenu();
 				AppendMenu(hMenu, MF_STRING, IDM_COPY_LON_LAT, "Copy coordinates to clipboard (Format: lat lon)");
@@ -134,48 +198,9 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 			}
 
-			case WM_MOUSEWHEEL:
-				// TODO: Pass position and adjust new center; coords may be shifted when widget is not at 0;0
-				if ((short)HIWORD(wParam) > 0) {
-					viewportRenderer->zoomIn();
-				} else {
-					viewportRenderer->zoomOut();
-				}
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_ZOOM_IN:
-				viewportRenderer->zoomIn();
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_ZOOM_OUT:
-				viewportRenderer->zoomOut();
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_MOVE_X:
-				viewportRenderer->setOffset(wParam, 0);
-				viewportRenderer->moveToOffset();
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_MOVE_Y:
-				viewportRenderer->setOffset(0, wParam);
-				viewportRenderer->moveToOffset();
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-
-			case WM_MAP_SET_STYLE: {
-				std::string* urlTemplate = (std::string*)wParam;
-				viewportRenderer->setStyle(*urlTemplate);
-				InvalidateRect(hWnd, NULL, FALSE);
-				break;
-			}
-
 			case WM_DESTROY:
-				delete viewportRenderer;
-				renderers.erase(hWnd);
+				// TODO: delete it on WM_NCDESTROY?
+				delete this;
 
 				break;
 
@@ -191,36 +216,8 @@ LRESULT CALLBACK MapWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-void RegisterMapControl(HINSTANCE hInstance) {
-	if (mapControlIsRegistered) {
-		return;
-	}
-
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = (WNDPROC)MapWndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = NULL;
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = TEXT("MapControl");
-	wcex.hIconSm = NULL;
-
-	if (!RegisterClassEx(&wcex)) {
-		throw "Error registering map control";
-	}
-
-	mapControlIsRegistered = true;
-}
-
-HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE hInstance) {
-	return CreateWindowEx(
+HWND MapControl::create(int x, int y, int width, int height) {
+	m_hwndMap = CreateWindowEx(
 		0,
 		TEXT("MapControl"),
 		NULL,
@@ -229,11 +226,215 @@ HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE h
 		y,
 		width,
 		height,
-		hWnd,
+		m_hwndMain,
 		NULL,
-		hInstance,
-		NULL
+		m_hInstance,
+		this
 	);
+
+	return m_hwndMap;
+}
+
+void MapControl::requestRedraw() {
+	InvalidateRect(m_hwndMap, NULL, FALSE);
+}
+
+void MapControl::render(HDC hdcDestination, RECT* updateRect) {
+	// top left corner of complete map
+	long originX = m_x + m_offsetX;
+	long originY = m_y + m_offsetY;
+
+	restrictCoordinates(&originX, &originY);
+
+	// top left tile
+	int originTileX = originX >> TILE_SIZE_BITS;
+	int originTileY = originY >> TILE_SIZE_BITS;
+
+	// offset within the top left tile
+	long offsetX = originX & TILE_INNER_OFFSET_MAP;
+	long offsetY = originY & TILE_INNER_OFFSET_MAP;
+
+	int maxExtend = 1 << m_zoomLevel;
+	int widthInTiles = (m_viewportWidth >> TILE_SIZE_BITS) + 2;
+	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
+
+	TileRange visibleTiles(
+		m_zoomLevel,
+		originTileX,
+		originTileX + widthInTiles,
+		originTileY,
+		myMin(originTileY + heightInTiles, maxExtend)
+	);
+
+	m_tileCache->unqueueInvisible(visibleTiles);
+
+	HDC hMemDC = CreateCompatibleDC(hdcDestination);
+
+	// TODO: Check if there is an update region and use it
+	// if (updateRect != NULL) {
+	// }
+
+	// render one additional row/column of tiles at each edge
+	for (int x = 0; x < widthInTiles; x++) {
+		for (int y = 0; y < heightInTiles; y++) {
+			int tileX = (originTileX + x) % maxExtend;
+			int tileY = originTileY + y;
+			if (tileY > maxExtend - 1) {
+				// south out of bounds
+				RECT rect = {
+					-offsetX + (x << TILE_SIZE_BITS),
+					-offsetY + (y << TILE_SIZE_BITS),
+					-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
+					-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE
+				};
+				HBRUSH hBrush = CreateSolidBrush(RGB(128, 128, 128));
+				FillRect(hdcDestination, &rect, hBrush);
+				DeleteObject(hBrush);
+
+				continue;
+			}
+
+			TileKey tileKey(m_zoomLevel, tileX, tileY);
+
+			HBITMAP hBitmap = m_tileCache->get(tileKey);
+			SelectObject(hMemDC, hBitmap);
+			BitBlt(
+				hdcDestination,
+				-offsetX + (x << TILE_SIZE_BITS),
+				-offsetY + (y << TILE_SIZE_BITS),
+				TILE_SIZE,
+				TILE_SIZE,
+				hMemDC,
+				0,
+				0,
+				SRCCOPY
+			);
+		}
+	}
+
+	DeleteDC(hMemDC);
+}
+
+void MapControl::setOffset(int offsetX, int offsetY) {
+	m_offsetX = offsetX;
+	m_offsetY = offsetY;
+}
+
+void MapControl::moveToOffset() {
+	m_x += m_offsetX;
+	m_y += m_offsetY;
+	restrictCoordinates(&m_x, &m_y);
+	m_offsetX = 0;
+	m_offsetY = 0;
+}
+
+void MapControl::setCenterLonLat(const LonLat* lonLat) {
+	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	m_x = mapSize * (lonLat->lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
+	m_y = mapSize * (1.0 - asinh(tan(lonLat->lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
+	restrictCoordinates(&m_x, &m_y);
+}
+
+void MapControl::zoomIn() {
+	// TODO: Actually depends on the style
+	if (m_zoomLevel >= 19) {
+		return;
+	}
+
+	m_zoomLevel++;
+	m_x = m_x << 1;
+	m_y = m_y << 1;
+	m_x = m_x + (m_viewportWidth >> 1);
+	m_y = m_y + (m_viewportHeight >> 1);
+	restrictCoordinates(&m_x, &m_y);
+}
+
+void MapControl::zoomOut() {
+	if (m_zoomLevel <= 0) {
+		return;
+	}
+
+	m_zoomLevel--;
+	m_x = m_x - (m_viewportWidth >> 1);
+	m_y = m_y - (m_viewportHeight >> 1);
+	m_x = m_x >> 1;
+	m_y = m_y >> 1;
+	restrictCoordinates(&m_x, &m_y);
+}
+
+void MapControl::setViewportSize(int width, int height) {
+	// re-center
+	// m_x = m_x - ((width - m_viewportWidth) / 2.0);
+	// m_y = m_y - ((height - m_viewportHeight) / 2.0);
+	// restrictCoordinates(&m_x, &m_y);
+
+	m_viewportWidth = width;
+	m_viewportHeight = height;
+}
+
+void MapControl::getLonLat(int x, int y, LonLat* lonLat) const {
+	int mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	lonLat->lon = ((m_x + x + m_offsetX) % mapSize) / (double)mapSize * 360.0 - 180.0;
+	lonLat->lat = atan(sinh(M_PI * (1.0 - 2.0 * (m_y + y + m_offsetY) / mapSize))) * 180.0 / M_PI;
+}
+
+void MapControl::getSettings(Settings* settings) const {
+	settings->centerX = m_x + m_viewportWidth / 2;
+	settings->centerY = m_y + m_viewportHeight / 2;
+	settings->zoomLevel = m_zoomLevel;
+}
+
+void MapControl::setSettings(Settings* settings) {
+	m_x = settings->centerX - m_viewportWidth / 2;
+	m_y = settings->centerY - m_viewportHeight / 2;
+	m_zoomLevel = settings->zoomLevel;
+	restrictCoordinates(&m_x, &m_y);
+}
+
+void MapControl::restrictCoordinates(long* x, long* y) const {
+	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+
+	// normalize x position
+	if (*x < 0) {
+		*x = (1 + mapSize) + *x;
+	}
+	*x = *x % mapSize;
+
+	// restrict y position
+	// Note: Depending on the viewportHeight and zoomLevel there still will be undrawn areas at the bottom.
+	if (*y + m_viewportHeight > mapSize) {
+		*y = mapSize - m_viewportHeight;
+	}
+	if (*y < 0) {
+		*y = 0;
+	}
+}
+
+void MapControl::startDragging(int x, int y) {
+	m_dragging = true;
+	m_dragStartX = x;
+	m_dragStartY = y;
+}
+
+bool MapControl::mouseMove(int x, int y) {
+	if (m_dragging) {
+		setOffset(m_dragStartX - x, m_dragStartY - y);
+		return true;
+	}
+
+	return false;
+}
+
+void MapControl::endDragging(int x, int y) {
+	setOffset(m_dragStartX - x, m_dragStartY - y);
+	moveToOffset();
+	m_dragging = false;
+}
+
+void MapControl::setStyle(const std::string& urlTemplate) {
+	m_tileCache->clear();
+	// TODO: cancel downloading / queued tiles
+	m_tileDownloader->setStyle(urlTemplate);
 }
 
 void putTextIntoClipboard(char* text) {

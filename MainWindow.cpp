@@ -6,7 +6,6 @@
 #include <windowsx.h>
 
 #include "MainWindow.h"
-#include "MapControl.h"
 #include "SearchDialog.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -80,11 +79,11 @@ bool MainWindow::create(int nCmdShow) {
 
 	mainWindowCount++;
 
-	// TODO: Create MapControl class
-	RegisterMapControl(m_hInstance);
+	m_mapControl = new MapControl(m_hInstance, m_hWnd);
+
 	RECT clientRect;
 	GetClientRect(m_hWnd, &clientRect);
-	m_hwndMap = CreateMapWindow(0, 0, clientRect.right, clientRect.bottom, m_hWnd, m_hInstance);
+	m_mapControl->create(0, 0, clientRect.right, clientRect.bottom);
 
 	m_hwndStatusBar = CreateStatusWindow(
 		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
@@ -108,7 +107,7 @@ bool MainWindow::create(int nCmdShow) {
 	);
 
 	changeStyle(m_settings.styleIdentifier);
-	SendMessage(m_hwndMap, WM_MAP_SET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
+	m_mapControl->setSettings(&m_settings);
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
@@ -162,35 +161,45 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 
 					case IDM_NEW_WINDOW: {
+						m_mapControl->getSettings(&m_settings);
 						// Freed by itself on WM_DESTORY
-						SendMessage(m_hwndMap, WM_MAP_GET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
 						MainWindow* newWindow = new MainWindow(m_hInstance, m_styleDatabase, m_settings);
 						newWindow->create(SW_SHOWNORMAL);
 						break;
 					}
 
 					case IDM_ZOOMIN:
-						SendMessage(m_hwndMap, WM_MAP_ZOOM_IN, 0, 0);
+						m_mapControl->zoomIn();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_ZOOMOUT:
-						SendMessage(m_hwndMap, WM_MAP_ZOOM_OUT, 0, 0);
+						m_mapControl->zoomOut();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_RIGHT:
-						SendMessage(m_hwndMap, WM_MAP_MOVE_X, ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->setOffset(ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->moveToOffset();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_LEFT:
-						SendMessage(m_hwndMap, WM_MAP_MOVE_X, -ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->setOffset(-ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->moveToOffset();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_UP:
-						SendMessage(m_hwndMap, WM_MAP_MOVE_Y, -ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->setOffset(0, -ARROW_KEYS_MOVE_DISTANCE);
+						m_mapControl->moveToOffset();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_DOWN:
-						SendMessage(m_hwndMap, WM_MAP_MOVE_Y, ARROW_KEYS_MOVE_DISTANCE, 0);
+						m_mapControl->setOffset(0, ARROW_KEYS_MOVE_DISTANCE);
+						m_mapControl->moveToOffset();
+						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_STYLE_OSM_STANDARD:
@@ -219,7 +228,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				SendMessage(m_hwndStatusBar, WM_SIZE, 0, 0);
 				RECT rect;
 				SendMessage(m_hwndStatusBar, SB_GETRECT, 0, reinterpret_cast<LPARAM>(&rect));
-				MoveWindow(m_hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
+				MoveWindow(m_mapControl->m_hwndMap, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) - (rect.bottom - rect.top + 2), TRUE);
 				break;
 			}
 
@@ -237,7 +246,12 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_MOUSEWHEEL:
-				SendMessage(m_hwndMap, WM_MOUSEWHEEL, wParam, lParam);
+				if ((short)HIWORD(wParam) > 0) {
+					m_mapControl->zoomIn();
+				} else {
+					m_mapControl->zoomOut();
+				}
+				m_mapControl->requestRedraw();
 				break;
 
 			case WM_MAP_LONLAT_UPDATE: {
@@ -251,12 +265,13 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_SEARCH_SET_LONLAT: {
-				SendMessage(m_hwndMap, WM_MAP_SET_LONLAT, 0, lParam);
+				m_mapControl->setCenterLonLat((LonLat*)lParam);
+				m_mapControl->requestRedraw();
 				break;
 			}
 
 			case WM_DESTROY: {
-				SendMessage(m_hwndMap, WM_MAP_GET_SETTINGS, 0, reinterpret_cast<LPARAM>(&m_settings));
+				m_mapControl->getSettings(&m_settings);
 				storeSettingsInRegistry(m_settings);
 				mainWindowCount--;
 				if (mainWindowCount == 0) {
@@ -313,9 +328,10 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 				urlTemplate.resize(length);
 				GetWindowTextA(hInputField, &urlTemplate[0], length);
 				EndDialog(hwndDialog, LOWORD(wParam));
-				SendMessage(mainWindow->m_hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
-				SendMessage(mainWindow->m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 				// TODO: Verify urlTemplate (currently an exception occurs when placehoders are missing etc.)
+				mainWindow->m_mapControl->setStyle(urlTemplate);
+				mainWindow->m_mapControl->requestRedraw();
+				SendMessage(mainWindow->m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 
 				return TRUE;
 			}
@@ -335,7 +351,8 @@ void MainWindow::changeStyle(int styleIdentifier) {
 	} else {
 		const Style* style = m_styleDatabase.get(styleIdentifier);
 		std::string urlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
-		SendMessage(m_hwndMap, WM_MAP_SET_STYLE, (WPARAM)&urlTemplate, 0);
+		m_mapControl->setStyle(urlTemplate);
+		m_mapControl->requestRedraw();
 		SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	}
 

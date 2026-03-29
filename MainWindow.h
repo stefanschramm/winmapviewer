@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include "MapControl.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
@@ -25,5 +26,5 @@ class MainWindow {
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;
-	HWND m_hwndMap;
+	MapControl* m_mapControl;
 };

@@ -1,17 +1,64 @@
 #pragma once
 
 #include "Common.h"
+#include "DownloadWorker.h"
+#include "GdiPlusWrapper.h"
+#include "Settings.h"
+#include "TileCache.h"
+#include "TileDownloader.h"
 
 // TODO: Put all messages in same include (s. SearchDialog.h)? - Probably not required because messages are control-dependent.
-#define WM_MAP_ZOOM_IN (WM_USER + 10)
-#define WM_MAP_ZOOM_OUT (WM_USER + 11)
-#define WM_MAP_MOVE_X (WM_USER + 12)
-#define WM_MAP_MOVE_Y (WM_USER + 13)
 #define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
 #define WM_MAP_SET_STYLE (WM_USER + 15)
 #define WM_MAP_SET_LONLAT (WM_USER + 16)
-#define WM_MAP_GET_SETTINGS (WM_USER + 17)
-#define WM_MAP_SET_SETTINGS (WM_USER + 18)
 
-void RegisterMapControl(HINSTANCE hInstance);
-HWND CreateMapWindow(int x, int y, int width, int height, HWND hWnd, HINSTANCE hInstance);
+class MapControl {
+  public:
+	MapControl(HINSTANCE hInstance, HWND hwndMain);
+	~MapControl();
+
+	static LRESULT CALLBACK wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	HWND create(int x, int y, int width, int height);
+	void requestRedraw();
+	void setOffset(int offsetX, int offsetY);
+	void moveToOffset();
+	void setCenterLonLat(const LonLat* lonLat);
+	void zoomIn();
+	void zoomOut();
+	void getSettings(Settings* settings) const;
+	void setSettings(Settings* settings);
+	void setStyle(const std::string& urlTemplate);
+
+	HINSTANCE m_hInstance;
+	HWND m_hwndMap;
+	HWND m_hwndMain;
+
+  private:
+	GdiPlusWrapper* m_gdi;
+	TileDownloader* m_tileDownloader;
+	DownloadWorker* m_downloadWorker;
+	TileCache* m_tileCache;
+
+	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	void render(HDC hdcDestination, RECT* updateRect);
+	void setViewportSize(int width, int height);
+	void getLonLat(int x, int y, LonLat* lonLat) const;
+	void startDragging(int x, int y);
+	bool mouseMove(int x, int y);
+	void endDragging(int x, int y);
+	void restrictCoordinates(long* x, long* y) const;
+
+	int m_zoomLevel;
+	long m_x;
+	long m_y;
+	long m_viewportWidth;
+	long m_viewportHeight;
+	int m_offsetX;
+	int m_offsetY;
+	bool m_dragging;
+	int m_dragStartX;
+	int m_dragStartY;
+	LonLat m_clickLonLat;
+};
