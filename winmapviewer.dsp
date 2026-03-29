@@ -137,10 +137,6 @@ SOURCE=.\TileDownloader.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ViewportRenderer.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\winmapviewer.cpp
 # End Source File
 # Begin Source File
@@ -206,10 +202,6 @@ SOURCE=.\TileKey.h
 # Begin Source File
 
 SOURCE=.\TileRange.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ViewportRenderer.h
 # End Source File
 # Begin Source File
 
