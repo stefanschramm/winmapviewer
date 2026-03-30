@@ -9,8 +9,6 @@
 
 // TODO: Put all messages in same include (s. SearchDialog.h)? - Probably not required because messages are control-dependent.
 #define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
-#define WM_MAP_SET_STYLE (WM_USER + 15)
-#define WM_MAP_SET_LONLAT (WM_USER + 16)
 
 class MapControl {
   public:
