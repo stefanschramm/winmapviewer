@@ -11,30 +11,59 @@ TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
 	if (!m_hInternet) {
 		throw "Unable to initialize WinINet.";
 	}
-
-	setStyle("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
 }
 
 TileDownloader::~TileDownloader() {
 	InternetCloseHandle(m_hInternet);
 }
 
+std::string parseStyleUrlTemplate(std::string styleUrlTemplate, TileKey tileKey) {
+	static const char* invalidPlaceholder = "Invalid URL template: Encountered invalid placeholder. Valid placeholders: {z}, {x}, {y}";
+
+	std::stringstream strstr;
+	size_t from = 0;
+	for (int i = 0; i < 3; i++) {
+		size_t placeholderStart = styleUrlTemplate.find("{", from);
+		if (placeholderStart == std::string::npos) {
+			throw "Invalid URL template: Expected to find (another) placeholder. Placeholders {z}, {x} and {y} should be set.";
+		}
+		size_t placeholderEnd = styleUrlTemplate.find("}", placeholderStart);
+		if (placeholderEnd == std::string::npos) {
+			throw "Invalid URL template: Closing bracket of placeholder not found.";
+		}
+		if (placeholderEnd - placeholderStart != 2) {
+			throw invalidPlaceholder;
+		}
+		char c = styleUrlTemplate[placeholderStart + 1];
+		int value;
+		switch (c) {
+			case 'z':
+				value = tileKey.zoomLevel;
+				break;
+			case 'x':
+				value = tileKey.x;
+				break;
+			case 'y':
+				value = tileKey.y;
+				break;
+			default:
+				throw invalidPlaceholder;
+				break;
+		}
+		strstr << styleUrlTemplate.substr(from, placeholderStart - from) << value;
+		from = placeholderEnd + 1;
+	}
+	strstr << styleUrlTemplate.substr(from);
+
+	return strstr.str();
+}
+
 // Returns bitmap for specified tile
 // The caller is responsible to DeleteObject after usage.
 HBITMAP TileDownloader::get(TileKey tileKey) const {
-	int tmp[3] = {tileKey.zoomLevel, tileKey.x, tileKey.y};
+	std::string url = parseStyleUrlTemplate(tileKey.styleUrlTemplate, tileKey);
 
-	// TODO: prevent buffer overflow
-	char url[512];
-	wsprintf(
-		url,
-		TEXT(m_urlFormatString.c_str()),
-		tmp[m_urlFormatMap[0]],
-		tmp[m_urlFormatMap[1]],
-		tmp[m_urlFormatMap[2]]
-	);
-
-	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url, NULL, 0, 0, 0);
+	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url.c_str(), NULL, 0, 0, 0);
 	if (!hUrl) {
 		return createPlaceholderBitmap(true);
 	}
@@ -67,47 +96,4 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 	InternetCloseHandle(hUrl);
 
 	return hBitmap;
-}
-
-// Set URL template for tiles in the form like
-// https://tile.openstreetmap.org/{z}/{x}/{y}.png
-//
-// A sprintf format string will be generated once to prevent parsing the URL template on every get() call
-void TileDownloader::setStyle(const std::string& urlTemplate) {
-	static const char* invalidPlaceholder = "Invalid URL template: Encountered invalid placeholder. Valid placeholders: {z}, {x}, {y}";
-
-	std::stringstream strstr;
-	size_t from = 0;
-	for (int i = 0; i < 3; i++) {
-		size_t placeholderStart = urlTemplate.find("{", from);
-		if (placeholderStart == std::string::npos) {
-			throw "Invalid URL template: Expected to find (another) placeholder. Placeholders {z}, {x} and {y} should be set.";
-		}
-		size_t placeholderEnd = urlTemplate.find("}", placeholderStart);
-		if (placeholderEnd == std::string::npos) {
-			throw "Invalid URL template: Closing bracket of placeholder not found.";
-		}
-		if (placeholderEnd - placeholderStart != 2) {
-			throw invalidPlaceholder;
-		}
-		char c = urlTemplate[placeholderStart + 1];
-		switch (c) {
-			case 'z':
-				m_urlFormatMap[0] = i;
-				break;
-			case 'x':
-				m_urlFormatMap[1] = i;
-				break;
-			case 'y':
-				m_urlFormatMap[2] = i;
-				break;
-			default:
-				throw invalidPlaceholder;
-				break;
-		}
-		strstr << urlTemplate.substr(from, placeholderStart - from) << "%i";
-		from = placeholderEnd + 1;
-	}
-	strstr << urlTemplate.substr(from);
-	m_urlFormatString = strstr.str();
 }

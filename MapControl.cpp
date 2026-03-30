@@ -46,7 +46,8 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
 	  m_zoomLevel(0),
 	  m_x(0),
 	  m_y(0),
-	  m_dragging(false) {
+	  m_dragging(false),
+	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
 
 	// TODO: Probably one GdiPlusWrapper instance can be reused across multiple map windows (is it thread safe?)
 	m_gdi = new GdiPlusWrapper();
@@ -237,6 +238,7 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
 
 	TileRange visibleTiles(
+		m_styleUrlTemplate,
 		m_zoomLevel,
 		originTileX,
 		originTileX + widthInTiles,
@@ -272,7 +274,7 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 				continue;
 			}
 
-			TileKey tileKey(m_zoomLevel, tileX, tileY);
+			TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
 
 			HBITMAP hBitmap = m_tileCache->get(tileKey);
 			SelectObject(hMemDC, hBitmap);
@@ -409,10 +411,8 @@ void MapControl::endDragging(int x, int y) {
 	m_dragging = false;
 }
 
-void MapControl::setStyle(const std::string& urlTemplate) {
-	m_tileCache->clear();
-	// TODO: cancel downloading / queued tiles
-	m_tileDownloader->setStyle(urlTemplate);
+void MapControl::setStyle(const std::string& styleUrlTemplate) {
+	m_styleUrlTemplate = styleUrlTemplate;
 }
 
 void putTextIntoClipboard(char* text) {

@@ -4,21 +4,22 @@
 #include <iostream>
 
 /**
- * Represents a range (rectangle) of tiles for a specific zoom level
+ * Represents a range (rectangle) of tiles for a specific zoom level and style
  *
  * Left will be larger then right when international date line is visible.
  * Left and right being equal means complete span (from East to West) is visible.
  */
 class TileRange {
   public:
+	std::string styleUrlTemplate;
 	int zoomLevel;
 	int left;
 	int right;
 	int top;
 	int bottom;
 
-	TileRange(int zoomLevel, int xMin, int xMax, int yMin, int yMax)
-		: zoomLevel(zoomLevel), left(xMin), right(xMax), top(yMin), bottom(yMax) {
+	TileRange(std::string styleUrlTemplate, int zoomLevel, int xMin, int xMax, int yMin, int yMax)
+		: styleUrlTemplate(styleUrlTemplate), zoomLevel(zoomLevel), left(xMin), right(xMax), top(yMin), bottom(yMax) {
 
 		maxExtend = 1 << zoomLevel;
 
@@ -41,7 +42,7 @@ class TileRange {
 	};
 
 	bool contains(const TileKey& tile) const {
-		if (tile.zoomLevel != zoomLevel) {
+		if (tile.zoomLevel != zoomLevel || tile.styleUrlTemplate != styleUrlTemplate) {
 			return false;
 		}
 		if (tile.x < 0 || tile.y < 0 || tile.x >= maxExtend || tile.y >= maxExtend) {

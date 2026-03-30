@@ -26,7 +26,7 @@ class MapControl {
 	void zoomOut();
 	void getSettings(Settings* settings) const;
 	void setSettings(Settings* settings);
-	void setStyle(const std::string& urlTemplate);
+	void setStyle(const std::string& styleUrlTemplate);
 
 	HINSTANCE m_hInstance;
 	HWND m_hwndMap;
@@ -46,6 +46,7 @@ class MapControl {
 	void endDragging(int x, int y);
 	void restrictCoordinates(long* x, long* y) const;
 
+	std::string m_styleUrlTemplate;
 	int m_zoomLevel;
 	long m_x;
 	long m_y;

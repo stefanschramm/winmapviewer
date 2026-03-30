@@ -2,11 +2,12 @@
 
 class TileKey {
   public:
+	std::string styleUrlTemplate;
 	int zoomLevel;
 	int x;
 	int y;
 
-	TileKey(int zoomLevel, int x, int y) : zoomLevel(zoomLevel), x(x), y(y) {};
+	TileKey(std::string styleUrlTemplate, int zoomLevel, int x, int y) : styleUrlTemplate(styleUrlTemplate), zoomLevel(zoomLevel), x(x), y(y) {};
 
 	bool operator<(const TileKey& other) const {
 		if (x != other.x) {
@@ -15,6 +16,9 @@ class TileKey {
 		if (y != other.y) {
 			return y < other.y;
 		}
-		return zoomLevel < other.zoomLevel;
+		if (zoomLevel != other.zoomLevel) {
+			return zoomLevel < other.zoomLevel;
+		}
+		return styleUrlTemplate < other.styleUrlTemplate;
 	}
 };

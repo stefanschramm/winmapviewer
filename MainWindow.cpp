@@ -107,6 +107,7 @@ bool MainWindow::create(int nCmdShow) {
 		MF_BYCOMMAND
 	);
 
+	// TODO: Fix handling of custom style (also needs to be stored in registry)
 	changeStyle(m_settings.styleIdentifier);
 	m_mapControl->setSettings(&m_settings);
 
@@ -329,8 +330,8 @@ void MainWindow::changeStyle(int styleIdentifier) {
 		DialogBoxParam(m_hInstance, (LPCTSTR)IDD_CUSTOMSTYLE, m_hWnd, (DLGPROC)MainWindow::customStyleDialogWndProcStatic, reinterpret_cast<LPARAM>(this));
 	} else {
 		const Style* style = m_styleDatabase.get(styleIdentifier);
-		std::string urlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
-		m_mapControl->setStyle(urlTemplate);
+		std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
+		m_mapControl->setStyle(styleUrlTemplate);
 		m_mapControl->requestRedraw();
 		SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	}
