@@ -11,12 +11,11 @@ class MainWindow {
   public:
 	MainWindow(HINSTANCE hInstance, StyleDatabase& styleDatabase, Settings settings);
 	bool create(int nCmdShow);
-	static LRESULT CALLBACK wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
-	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void changeStyle(int styleIdentifier);
 
 	static int mainWindowCount;

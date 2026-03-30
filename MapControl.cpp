@@ -60,7 +60,7 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
 		wcex.cbSize = sizeof(WNDCLASSEX);
 
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = (WNDPROC)MapControl::wndProcStatic;
+		wcex.lpfnWndProc = wndProcStatic<MapControl>;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;
@@ -84,28 +84,6 @@ MapControl::~MapControl() {
 	delete m_downloadWorker;
 	delete m_tileDownloader;
 	delete m_gdi;
-}
-
-LRESULT CALLBACK MapControl::wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	MapControl* self = NULL;
-
-	if (message == WM_NCCREATE) {
-		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
-		self = reinterpret_cast<MapControl*>(cs->lpCreateParams);
-		SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(self));
-	} else {
-		self = reinterpret_cast<MapControl*>(GetWindowLong(hWnd, GWL_USERDATA));
-	}
-
-	if (!self) {
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-
-	if (message == WM_NCDESTROY) {
-		SetWindowLong(hWnd, GWL_USERDATA, 0);
-	}
-
-	return self->wndProc(hWnd, message, wParam, lParam);
 }
 
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {

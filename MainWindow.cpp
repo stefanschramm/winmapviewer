@@ -5,6 +5,7 @@
 #include <iostream>
 #include <windowsx.h>
 
+#include "Common.h"
 #include "MainWindow.h"
 #include "SearchDialog.h"
 #include "Settings.h"
@@ -39,7 +40,7 @@ bool MainWindow::create(int nCmdShow) {
 		wcex.cbSize = sizeof(WNDCLASSEX);
 
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = (WNDPROC)MainWindow::wndProcStatic;
+		wcex.lpfnWndProc = wndProcStatic<MainWindow>;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;
@@ -113,28 +114,6 @@ bool MainWindow::create(int nCmdShow) {
 	UpdateWindow(m_hWnd);
 
 	return true;
-}
-
-LRESULT CALLBACK MainWindow::wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	MainWindow* self = NULL;
-
-	if (message == WM_NCCREATE) {
-		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
-		self = reinterpret_cast<MainWindow*>(cs->lpCreateParams);
-		SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(self));
-	} else {
-		self = reinterpret_cast<MainWindow*>(GetWindowLong(hWnd, GWL_USERDATA));
-	}
-
-	if (!self) {
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-
-	if (message == WM_NCDESTROY) {
-		SetWindowLong(hWnd, GWL_USERDATA, 0);
-	}
-
-	return self->wndProc(hWnd, message, wParam, lParam);
 }
 
 LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {

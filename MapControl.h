@@ -17,7 +17,7 @@ class MapControl {
 	MapControl(HINSTANCE hInstance, HWND hwndMain);
 	~MapControl();
 
-	static LRESULT CALLBACK wndProcStatic(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	HWND create(int x, int y, int width, int height);
 	void requestRedraw();
@@ -39,8 +39,6 @@ class MapControl {
 	TileDownloader* m_tileDownloader;
 	DownloadWorker* m_downloadWorker;
 	TileCache* m_tileCache;
-
-	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	void render(HDC hdcDestination, RECT* updateRect);
 	void setViewportSize(int width, int height);
