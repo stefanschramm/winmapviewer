@@ -16,7 +16,9 @@ class MainWindow {
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
-	void changeStyle(int styleIdentifier);
+	void selectIntegratedStyle(int styleIdentifier);
+	void selectCustomStyle();
+	void updateStyleMenu();
 
 	static int mainWindowCount;
 

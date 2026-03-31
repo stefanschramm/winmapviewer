@@ -8,6 +8,7 @@ struct Settings {
 	int centerX;
 	int centerY;
 	bool useTls;
+	std::string customStyleUrlTemplate;
 };
 
 Settings loadSettingsFromRegistry();

@@ -9,6 +9,7 @@ const char* VALUE_NAME_CENTER_Y = "centerY";
 const char* VALUE_NAME_STYLE_IDENTIFIER = "styleIdentifier";
 const char* VALUE_NAME_USE_TLS = "useTls";
 const char* VALUE_NAME_ZOOMLEVEL = "zoomLevel";
+const char* VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE = "customStyleUrlTemplate";
 
 Settings getDefaultSettings() {
 	Settings settings;
@@ -18,6 +19,7 @@ Settings getDefaultSettings() {
 	settings.zoomLevel = 4;
 	settings.centerX = 2211;
 	settings.centerY = 1353;
+	settings.customStyleUrlTemplate = "";
 
 	return settings;
 }
@@ -64,11 +66,11 @@ HKEY createRegistryKey() {
 void closeRegistryKey(HKEY hKey) {
 	LONG closeResult = RegCloseKey(hKey);
 	if (closeResult != ERROR_SUCCESS) {
-		throw "Unable to close registry key for writing settings.";
+		throw "Unable to close registry key.";
 	}
 }
 
-bool loadInt(HKEY& hKey, const char* valueName, int* value) {
+bool loadInt(HKEY hKey, const char* valueName, int* value) {
 	DWORD dwType;
 	DWORD dwSize = sizeof(*value);
 	// Can not use RegGetValue here for VC++6 compatibility
@@ -88,6 +90,45 @@ bool loadInt(HKEY& hKey, const char* valueName, int* value) {
 	return true;
 }
 
+bool loadString(HKEY hKey, const char* valueName, std::string* value) {
+	DWORD dwType;
+	DWORD dwSize = 0;
+	LONG lResult;
+
+	lResult = RegQueryValueEx(
+		hKey,
+		valueName,
+		NULL,
+		&dwType,
+		NULL,
+		&dwSize
+	);
+
+	if (lResult != ERROR_SUCCESS || dwType != REG_SZ || dwSize < 1) {
+		return false;
+	}
+
+	value->resize(dwSize);
+
+	lResult = RegQueryValueEx(
+		hKey,
+		valueName,
+		NULL,
+		&dwType,
+		reinterpret_cast<BYTE*>(&(*value)[0]),
+		&dwSize
+	);
+
+	if (lResult != ERROR_SUCCESS || dwType != REG_SZ) {
+		return false;
+	}
+
+	size_t actualLength = strnlen(value->c_str(), dwSize);
+	value->resize(actualLength);
+
+	return true;
+}
+
 Settings loadSettingsFromRegistry() {
 	Settings settings = getDefaultSettings();
 
@@ -103,6 +144,7 @@ Settings loadSettingsFromRegistry() {
 	loadInt(hKey, VALUE_NAME_CENTER_X, &(settings.centerX));
 	loadInt(hKey, VALUE_NAME_CENTER_Y, &(settings.centerY));
 	loadInt(hKey, VALUE_NAME_ZOOMLEVEL, &(settings.zoomLevel));
+	loadString(hKey, VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE, &(settings.customStyleUrlTemplate));
 
 	int iUseTls = settings.useTls ? 1 : 0;
 	loadInt(hKey, VALUE_NAME_USE_TLS, &iUseTls);
@@ -113,7 +155,7 @@ Settings loadSettingsFromRegistry() {
 	return settings;
 }
 
-void storeInt(HKEY& hKey, const char* valueName, int value) {
+void storeInt(HKEY hKey, const char* valueName, int value) {
 	LRESULT lResult = RegSetValueEx(
 		hKey,
 		valueName,
@@ -128,6 +170,21 @@ void storeInt(HKEY& hKey, const char* valueName, int value) {
 	}
 }
 
+void storeString(HKEY hKey, const char* valueName, std::string& value) {
+	LRESULT lResult = RegSetValueEx(
+		hKey,
+		valueName,
+		0,
+		REG_SZ,
+		reinterpret_cast<const BYTE*>(value.c_str()),
+		value.size() + 1
+	);
+
+	if (lResult != ERROR_SUCCESS) {
+		throw "Unable to store string value in registry.";
+	}
+}
+
 void storeSettingsInRegistry(Settings settings) {
 	HKEY hKey = createRegistryKey();
 
@@ -136,6 +193,7 @@ void storeSettingsInRegistry(Settings settings) {
 	storeInt(hKey, VALUE_NAME_CENTER_Y, settings.centerY);
 	storeInt(hKey, VALUE_NAME_ZOOMLEVEL, settings.zoomLevel);
 	storeInt(hKey, VALUE_NAME_USE_TLS, settings.useTls ? 1 : 0);
+	storeString(hKey, VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE, settings.customStyleUrlTemplate);
 
 	closeRegistryKey(hKey);
 }

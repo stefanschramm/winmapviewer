@@ -34,7 +34,6 @@ bool MainWindow::create(int nCmdShow) {
 	static bool mainWindowIsRegistered = false;
 
 	if (!mainWindowIsRegistered) {
-		std::cout << "Registering main window" << std::endl;
 		WNDCLASSEX wcex;
 
 		wcex.cbSize = sizeof(WNDCLASSEX);
@@ -96,20 +95,13 @@ bool MainWindow::create(int nCmdShow) {
 	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
 	SendMessage(m_hwndStatusBar, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
 
-	// menu status
-	HMENU hMenu = GetMenu(m_hWnd);
-	CheckMenuItem(hMenu, IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
-	CheckMenuRadioItem(
-		GetMenu(m_hWnd),
-		IDM_STYLE_OSM_STANDARD,
-		IDM_STYLE_CUSTOM,
-		m_settings.styleIdentifier,
-		MF_BYCOMMAND
-	);
-
-	// TODO: Fix handling of custom style (also needs to be stored in registry)
-	changeStyle(m_settings.styleIdentifier);
 	m_mapControl->setSettings(&m_settings);
+
+	if (m_settings.styleIdentifier == IDM_STYLE_CUSTOM) {
+		selectCustomStyle();
+	} else {
+		selectIntegratedStyle(m_settings.styleIdentifier);
+	}
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
@@ -186,13 +178,25 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 					case IDM_STYLE_OSM_GERMAN:
 					case IDM_STYLE_OEPNV:
 					case IDM_STYLE_OPENTOPO:
-					case IDM_STYLE_CUSTOM:
-						changeStyle(wmId);
+						selectIntegratedStyle(wmId);
 						break;
+
+					case IDM_STYLE_CUSTOM: {
+						int result = DialogBoxParam(m_hInstance, (LPCTSTR)IDD_CUSTOMSTYLE, m_hWnd, (DLGPROC)MainWindow::customStyleDialogWndProcStatic, reinterpret_cast<LPARAM>(this));
+						if (result == IDOK) {
+							m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
+							selectCustomStyle();
+						}
+						break;
+					}
+
 					case IDM_USE_TLS:
 						m_settings.useTls = !m_settings.useTls;
-						CheckMenuItem(GetMenu(m_hWnd), IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
-						changeStyle(m_settings.styleIdentifier);
+						if (m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
+							selectIntegratedStyle(m_settings.styleIdentifier);
+						} else {
+							updateStyleMenu();
+						}
 						break;
 
 					default:
@@ -304,14 +308,12 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 			if (LOWORD(wParam) == IDOK) {
 				HWND hInputField = GetDlgItem(hwndDialog, IDC_DLG_TEXT);
 				int length = GetWindowTextLength(hInputField) + 1;
-				std::string urlTemplate;
-				urlTemplate.resize(length);
-				GetWindowTextA(hInputField, &urlTemplate[0], length);
-				EndDialog(hwndDialog, LOWORD(wParam));
+				std::string customStyleUrlTemplate;
+				customStyleUrlTemplate.resize(length);
+				GetWindowTextA(hInputField, &customStyleUrlTemplate[0], length);
 				// TODO: Verify urlTemplate (currently an exception occurs when placehoders are missing etc.)
-				mainWindow->m_mapControl->setStyle(urlTemplate);
-				mainWindow->m_mapControl->requestRedraw();
-				SendMessage(mainWindow->m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
+				mainWindow->m_settings.customStyleUrlTemplate = customStyleUrlTemplate;
+				EndDialog(hwndDialog, LOWORD(wParam));
 
 				return TRUE;
 			}
@@ -325,21 +327,28 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 	return FALSE;
 }
 
-void MainWindow::changeStyle(int styleIdentifier) {
-	if (styleIdentifier == IDM_STYLE_CUSTOM) {
-		DialogBoxParam(m_hInstance, (LPCTSTR)IDD_CUSTOMSTYLE, m_hWnd, (DLGPROC)MainWindow::customStyleDialogWndProcStatic, reinterpret_cast<LPARAM>(this));
-	} else {
-		const Style* style = m_styleDatabase.get(styleIdentifier);
-		std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
-		m_mapControl->setStyle(styleUrlTemplate);
-		m_mapControl->requestRedraw();
-		SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
-	}
-
+void MainWindow::selectIntegratedStyle(int styleIdentifier) {
+	const Style* style = m_styleDatabase.get(styleIdentifier);
 	m_settings.styleIdentifier = styleIdentifier;
+	std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
+	m_mapControl->setStyle(styleUrlTemplate);
+	m_mapControl->requestRedraw();
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
+	updateStyleMenu();
+}
 
+void MainWindow::selectCustomStyle() {
+	m_mapControl->setStyle(m_settings.customStyleUrlTemplate);
+	m_mapControl->requestRedraw();
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
+	updateStyleMenu();
+}
+
+void MainWindow::updateStyleMenu() {
+	HMENU hMenu = GetMenu(m_hWnd);
+	CheckMenuItem(hMenu, IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
 	CheckMenuRadioItem(
-		GetMenu(m_hWnd),
+		hMenu,
 		IDM_STYLE_OSM_STANDARD,
 		IDM_STYLE_CUSTOM,
 		m_settings.styleIdentifier,
