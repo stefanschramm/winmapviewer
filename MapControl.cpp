@@ -53,31 +53,6 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
 	m_gdi = new GdiPlusWrapper();
 	m_tileDownloader = new TileDownloader(m_gdi);
 	// m_downloadWorker and m_tileCache is instantiated in WM_CREATE because it needs m_hwndMap
-
-	static bool registered = false;
-	if (!registered) {
-		WNDCLASSEX wcex;
-
-		wcex.cbSize = sizeof(WNDCLASSEX);
-
-		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = wndProcStatic<MapControl>;
-		wcex.cbClsExtra = 0;
-		wcex.cbWndExtra = 0;
-		wcex.hInstance = m_hInstance;
-		wcex.hIcon = NULL;
-		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-		wcex.lpszMenuName = NULL;
-		wcex.lpszClassName = TEXT("MapControl");
-		wcex.hIconSm = NULL;
-
-		if (!RegisterClassEx(&wcex)) {
-			throw "Error registering map control";
-		}
-
-		registered = true;
-	}
 }
 
 MapControl::~MapControl() {
@@ -196,6 +171,31 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 }
 
 HWND MapControl::create(int x, int y, int width, int height) {
+	static bool registered = false;
+	if (!registered) {
+		WNDCLASSEX wcex;
+
+		wcex.cbSize = sizeof(WNDCLASSEX);
+
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = wndProcStatic<MapControl>;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = m_hInstance;
+		wcex.hIcon = NULL;
+		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.lpszMenuName = NULL;
+		wcex.lpszClassName = TEXT("MapControl");
+		wcex.hIconSm = NULL;
+
+		if (!RegisterClassEx(&wcex)) {
+			throw "Error registering map control";
+		}
+
+		registered = true;
+	}
+
 	m_hwndMap = CreateWindowEx(
 		0,
 		TEXT("MapControl"),
