@@ -6,7 +6,7 @@
 #include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
 
-TileDownloader::TileDownloader(const GdiPlusWrapper* gdi) : m_gdi(gdi) {
+TileDownloader::TileDownloader(const GdiPlusWrapper& gdi) : m_gdi(gdi) {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (!m_hInternet) {
 		throw "Unable to initialize WinINet.";
@@ -17,7 +17,7 @@ TileDownloader::~TileDownloader() {
 	InternetCloseHandle(m_hInternet);
 }
 
-std::string parseStyleUrlTemplate(std::string styleUrlTemplate, TileKey tileKey) {
+std::string parseStyleUrlTemplate(std::string styleUrlTemplate, const TileKey& tileKey) {
 	static const char* invalidPlaceholder = "Invalid URL template: Encountered invalid placeholder. Valid placeholders: {z}, {x}, {y}";
 
 	std::stringstream strstr;
@@ -60,7 +60,7 @@ std::string parseStyleUrlTemplate(std::string styleUrlTemplate, TileKey tileKey)
 
 // Returns bitmap for specified tile
 // The caller is responsible to DeleteObject after usage.
-HBITMAP TileDownloader::get(TileKey tileKey) const {
+HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 	std::string url = parseStyleUrlTemplate(tileKey.styleUrlTemplate, tileKey);
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url.c_str(), NULL, 0, 0, 0);
@@ -88,7 +88,7 @@ HBITMAP TileDownloader::get(TileKey tileKey) const {
 	LARGE_INTEGER liZero = {0, 0};
 	memoryStream->Seek(liZero, STREAM_SEEK_SET, NULL);
 
-	HBITMAP hBitmap = m_gdi->loadPng(memoryStream);
+	HBITMAP hBitmap = m_gdi.loadPng(memoryStream);
 	if (hBitmap == NULL) {
 		return createPlaceholderBitmap(true);
 	}

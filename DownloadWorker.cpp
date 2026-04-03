@@ -1,8 +1,9 @@
 #include <cstdlib>
+#include <iostream>
 
 #include "DownloadWorker.h"
 
-DownloadWorker::DownloadWorker(const TileDownloader* tileDownloader, HWND hwndMain) : m_tileDownloader(tileDownloader), m_hwndMain(hwndMain) {
+DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader, DWORD uiThreadId) : m_tileDownloader(tileDownloader), m_uiThreadId(uiThreadId) {
 	InitializeCriticalSection(&m_mutex);
 
 	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);
@@ -26,13 +27,14 @@ void DownloadWorker::run() {
 				m_queuedDownloads.pop_front();
 				LeaveCriticalSection(&m_mutex);
 
-				HBITMAP hBitmap = m_tileDownloader->get(tileKey);
+				HBITMAP hBitmap = m_tileDownloader.get(tileKey);
 
 				EnterCriticalSection(&m_mutex);
 				m_finishedDownloads[tileKey] = hBitmap;
 				LeaveCriticalSection(&m_mutex);
 
-				PostMessage(m_hwndMain, WM_USER_TILE_READY, 0, 0);
+				// TODO: defined WM_APP + 1 somewhere
+				PostThreadMessage(m_uiThreadId, WM_APP + 1, 0, 0);
 			}
 			if (m_queuedDownloads.empty()) {
 				// wait for further download requests
@@ -48,7 +50,7 @@ void DownloadWorker::run() {
 	}
 }
 
-void DownloadWorker::download(TileKey tileKey) {
+void DownloadWorker::download(const TileKey& tileKey) {
 	// called from the main thread
 	EnterCriticalSection(&m_mutex);
 	m_queuedDownloads.push_back(tileKey);
@@ -59,26 +61,25 @@ void DownloadWorker::download(TileKey tileKey) {
 	}
 }
 
-void DownloadWorker::transferFinishedDownloads(std::map<TileKey, HBITMAP>* pCacheMap) {
+void DownloadWorker::transferFinishedDownloads(std::map<TileKey, HBITMAP>* pFinishedDownloads) {
 	// called from the main thread
 	EnterCriticalSection(&m_mutex);
 
 	for (std::map<TileKey, HBITMAP>::iterator it = m_finishedDownloads.begin(); it != m_finishedDownloads.end(); ++it) {
-		(*pCacheMap)[it->first] = it->second;
+		(*pFinishedDownloads)[it->first] = it->second;
 	}
 	m_finishedDownloads.clear();
 
 	LeaveCriticalSection(&m_mutex);
 }
 
-void DownloadWorker::unqueueInvisible(TileRange visibleTiles, std::map<TileKey, HBITMAP>* pCacheMap) {
+void DownloadWorker::unqueue(const TileKey& tileKey) {
 	// called from the main thread
 	EnterCriticalSection(&m_mutex);
 
 	std::deque<TileKey>::iterator it = m_queuedDownloads.begin();
 	while (it != m_queuedDownloads.end()) {
-		if (!visibleTiles.contains(*it)) {
-			pCacheMap->erase(*it); // remove placeholder image reference
+		if (*it == tileKey) {
 			it = m_queuedDownloads.erase(it);
 		} else {
 			++it;

@@ -9,11 +9,11 @@
 
 class TileDownloader {
   public:
-	TileDownloader(const GdiPlusWrapper* gdi);
+	TileDownloader(const GdiPlusWrapper& gdi);
 	~TileDownloader();
-	HBITMAP get(TileKey tileKey) const;
+	HBITMAP get(const TileKey& tileKey) const;
 
   private:
-	const GdiPlusWrapper* m_gdi;
+	const GdiPlusWrapper& m_gdi;
 	HINTERNET m_hInternet;
 };

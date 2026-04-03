@@ -1,18 +1,15 @@
 #pragma once
 
 #include "Common.h"
-#include "DownloadWorker.h"
-#include "GdiPlusWrapper.h"
 #include "Settings.h"
 #include "TileCache.h"
-#include "TileDownloader.h"
 
 // TODO: Put all messages in same include (s. SearchDialog.h)? - Probably not required because messages are control-dependent.
 #define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
 
 class MapControl {
   public:
-	MapControl(HINSTANCE hInstance, HWND hwndMain);
+	MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache);
 	~MapControl();
 
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -33,10 +30,7 @@ class MapControl {
 	HWND m_hwndMain;
 
   private:
-	GdiPlusWrapper* m_gdi;
-	TileDownloader* m_tileDownloader;
-	DownloadWorker* m_downloadWorker;
-	TileCache* m_tileCache;
+	TileCache& m_tileCache;
 
 	void render(HDC hdcDestination, RECT* updateRect);
 	void setViewportSize(int width, int height);

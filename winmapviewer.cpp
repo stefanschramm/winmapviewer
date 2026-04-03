@@ -17,15 +17,24 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	try {
 		InitCommonControls();
 
-		StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
+		const StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
+		const GdiPlusWrapper gdiPlusWrapper;
+		const TileDownloader tileDownloader(gdiPlusWrapper);
+		DownloadWorker downloadWorker(tileDownloader, GetCurrentThreadId());
+		TileCache tileCache(downloadWorker);
 
-		// Freed by itself on WM_DESTORY
-		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry());
+		// Freed by itself on WM_DESTORY; Maybe creating some window management service would be useful
+		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry(), tileCache);
 		mainWindow->create(nCmdShow);
 
 		HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
 		MSG msg;
 		while (GetMessage(&msg, NULL, 0, 0)) {
+			// TODO: define constant for WM_APP + 1
+			if (msg.message == WM_APP + 1 && msg.hwnd == 0) {
+				tileCache.onDownloadFinished();
+				continue;
+			}
 			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);

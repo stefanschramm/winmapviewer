@@ -38,9 +38,10 @@ int myMin(int a, int b) {
 	return a < b ? a : b;
 }
 
-MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
+MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	: m_hInstance(hInstance),
 	  m_hwndMain(hwndMain),
+	  m_tileCache(tileCache),
 	  m_offsetX(0),
 	  m_offsetY(0),
 	  m_zoomLevel(0),
@@ -48,18 +49,9 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain)
 	  m_y(0),
 	  m_dragging(false),
 	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
-
-	// TODO: Probably one GdiPlusWrapper instance can be reused across multiple map windows (is it thread safe?)
-	m_gdi = new GdiPlusWrapper();
-	m_tileDownloader = new TileDownloader(m_gdi);
-	// m_downloadWorker and m_tileCache is instantiated in WM_CREATE because it needs m_hwndMap
 }
 
 MapControl::~MapControl() {
-	delete m_tileCache;
-	delete m_downloadWorker;
-	delete m_tileDownloader;
-	delete m_gdi;
 }
 
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -84,8 +76,6 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 			case WM_CREATE: {
 				m_hwndMap = hWnd;
-				m_downloadWorker = new DownloadWorker(m_tileDownloader, m_hwndMap);
-				m_tileCache = new TileCache(m_tileDownloader, m_downloadWorker);
 
 				RECT clientRect;
 				GetClientRect(m_hwndMap, &clientRect);
@@ -246,7 +236,8 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 		myMin(originTileY + heightInTiles, maxExtend)
 	);
 
-	m_tileCache->unqueueInvisible(visibleTiles);
+	// TODO: Don't do it on every render but just when moving?
+	m_tileCache.unqueueInvisible(visibleTiles, m_hwndMap);
 
 	HDC hMemDC = CreateCompatibleDC(hdcDestination);
 
@@ -276,7 +267,7 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 
 			TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
 
-			HBITMAP hBitmap = m_tileCache->get(tileKey);
+			HBITMAP hBitmap = m_tileCache.get(tileKey, m_hwndMap);
 			SelectObject(hMemDC, hBitmap);
 			BitBlt(
 				hdcDestination,

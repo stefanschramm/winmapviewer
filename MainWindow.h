@@ -9,7 +9,7 @@
 
 class MainWindow {
   public:
-	MainWindow(HINSTANCE hInstance, StyleDatabase& styleDatabase, Settings settings);
+	MainWindow(HINSTANCE hInstance, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache);
 	bool create(int nCmdShow);
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -22,8 +22,9 @@ class MainWindow {
 
 	static int mainWindowCount;
 
-	StyleDatabase& m_styleDatabase;
+	const StyleDatabase& m_styleDatabase;
 	Settings m_settings;
+	TileCache& m_tileCache;
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;

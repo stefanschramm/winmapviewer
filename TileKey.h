@@ -21,4 +21,8 @@ class TileKey {
 		}
 		return styleUrlTemplate < other.styleUrlTemplate;
 	}
+
+	bool operator==(const TileKey& other) const {
+		return x == other.x && y == other.y && zoomLevel == other.zoomLevel && styleUrlTemplate == other.styleUrlTemplate;
+	}
 };

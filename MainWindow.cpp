@@ -23,11 +23,13 @@ int MainWindow::mainWindowCount = 0;
 
 MainWindow::MainWindow(
 	HINSTANCE hInstance,
-	StyleDatabase& styleDatabase,
-	Settings settings
+	const StyleDatabase& styleDatabase,
+	Settings settings,
+	TileCache& tileCache
 ) : m_hInstance(hInstance),
 	m_styleDatabase(styleDatabase),
-	m_settings(settings) {
+	m_settings(settings),
+	m_tileCache(tileCache) {
 }
 
 bool MainWindow::create(int nCmdShow) {
@@ -79,7 +81,7 @@ bool MainWindow::create(int nCmdShow) {
 
 	mainWindowCount++;
 
-	m_mapControl = new MapControl(m_hInstance, m_hWnd);
+	m_mapControl = new MapControl(m_hInstance, m_hWnd, m_tileCache);
 
 	RECT clientRect;
 	GetClientRect(m_hWnd, &clientRect);
@@ -135,7 +137,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 					case IDM_NEW_WINDOW: {
 						m_mapControl->getSettings(&m_settings);
 						// Freed by itself on WM_DESTORY
-						MainWindow* newWindow = new MainWindow(m_hInstance, m_styleDatabase, m_settings);
+						MainWindow* newWindow = new MainWindow(m_hInstance, m_styleDatabase, m_settings, m_tileCache);
 						newWindow->create(SW_SHOWNORMAL);
 						break;
 					}

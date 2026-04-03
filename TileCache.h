@@ -6,24 +6,32 @@
 #include <map>
 
 #include "DownloadWorker.h"
-#include "TileDownloader.h"
 #include "TileKey.h"
 #include "TileRange.h"
 
-// TODO: Cache PNG data instead of bitmap to save memory.
-// TODO: Clean up cache (keep 100 tiles?)
+const UINT WM_USER_TILE_READY = WM_USER + 1;
+
+typedef std::vector<HWND> Subscribers;
+
+struct CacheContent {
+	bool available;
+	HBITMAP bitmap;
+	Subscribers subscribers;
+	// TODO: Remember last use and later clean up cache (keep 100 tiles)?
+};
+
 class TileCache {
   public:
-	TileCache(const TileDownloader* tileDownloader, DownloadWorker* downloadWorker);
+	TileCache(DownloadWorker& downloadWorker);
 	~TileCache();
-	HBITMAP get(TileKey tileKey);
-	void unqueueInvisible(TileRange visibleTiles);
+	HBITMAP get(const TileKey& tileKey, HWND hwndSubscriber);
+	void unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber);
 	void clear();
+	void onDownloadFinished();
 
   private:
-	const TileDownloader* const m_tileDownloader;
-	DownloadWorker* const m_downloadWorker;
+	DownloadWorker& m_downloadWorker;
 
-	std::map<TileKey, HBITMAP> m_map;
+	std::map<TileKey, CacheContent> m_cache;
 	HBITMAP m_hPlaceholderBitmap;
 };
