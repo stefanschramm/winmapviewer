@@ -1,5 +1,8 @@
 #pragma once
 
+// Disable long identifiers warning
+#pragma warning(disable : 4786)
+
 class TileKey {
   public:
 	std::string styleUrlTemplate;

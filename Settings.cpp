@@ -123,7 +123,8 @@ bool loadString(HKEY hKey, const char* valueName, std::string* value) {
 		return false;
 	}
 
-	size_t actualLength = strnlen(value->c_str(), dwSize);
+	// TODO: prevent strlen overflow / reimplement strnlen for VC++6?
+	size_t actualLength = strlen(value->c_str());
 	value->resize(actualLength);
 
 	return true;

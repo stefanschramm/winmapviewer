@@ -41,7 +41,7 @@ bool MainWindow::create(int nCmdShow) {
 		wcex.cbSize = sizeof(WNDCLASSEX);
 
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = wndProcStatic<MainWindow>;
+		wcex.lpfnWndProc = &WndProcStaticHelper<MainWindow>::wndProcStatic;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;

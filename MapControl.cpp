@@ -168,7 +168,7 @@ HWND MapControl::create(int x, int y, int width, int height) {
 		wcex.cbSize = sizeof(WNDCLASSEX);
 
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
-		wcex.lpfnWndProc = wndProcStatic<MapControl>;
+		wcex.lpfnWndProc = &WndProcStaticHelper<MapControl>::wndProcStatic;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;

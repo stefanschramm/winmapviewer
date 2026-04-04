@@ -1,5 +1,8 @@
 #pragma once
 
+// Disable long identifiers warning
+#pragma warning(disable : 4786)
+
 struct Style {
 	// Can't use const char* const in VC++6
 	const char* url;
