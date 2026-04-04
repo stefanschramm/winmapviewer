@@ -3,7 +3,7 @@
 
 #include "DownloadWorker.h"
 
-DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader, DWORD uiThreadId) : m_tileDownloader(tileDownloader), m_uiThreadId(uiThreadId) {
+DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader) : m_tileDownloader(tileDownloader), m_hwndNotificationReceiver(0) {
 	InitializeCriticalSection(&m_mutex);
 
 	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);
@@ -33,8 +33,10 @@ void DownloadWorker::run() {
 				m_finishedDownloads[tileKey] = hBitmap;
 				LeaveCriticalSection(&m_mutex);
 
-				// TODO: defined WM_APP + 1 somewhere
-				PostThreadMessage(m_uiThreadId, WM_APP + 1, 0, 0);
+				// TODO: define WM_USER + 23 somewhere
+				if (m_hwndNotificationReceiver != 0) {
+					PostMessage(m_hwndNotificationReceiver, WM_USER + 23, 0, 0);
+				}
 			}
 			if (m_queuedDownloads.empty()) {
 				// wait for further download requests
@@ -87,4 +89,8 @@ void DownloadWorker::unqueue(const TileKey& tileKey) {
 	}
 
 	LeaveCriticalSection(&m_mutex);
+}
+
+void DownloadWorker::setNotificationReceiver(HWND hwndNotificationReceiver) {
+	m_hwndNotificationReceiver = hwndNotificationReceiver;
 }

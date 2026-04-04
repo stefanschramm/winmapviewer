@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "HiddenWindow.h"
 #include "MainWindow.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -20,8 +21,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		const StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
 		const GdiPlusWrapper gdiPlusWrapper;
 		const TileDownloader tileDownloader(gdiPlusWrapper);
-		DownloadWorker downloadWorker(tileDownloader, GetCurrentThreadId());
+		DownloadWorker downloadWorker(tileDownloader);
 		TileCache tileCache(downloadWorker);
+		HiddenWindow hiddenWindow(hInstance, tileCache);
+		downloadWorker.setNotificationReceiver(hiddenWindow.create());
 
 		// Freed by itself on WM_DESTORY; Maybe creating some window management service would be useful
 		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry(), tileCache);
@@ -30,11 +33,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
 		MSG msg;
 		while (GetMessage(&msg, NULL, 0, 0)) {
-			// TODO: define constant for WM_APP + 1
-			if (msg.message == WM_APP + 1 && msg.hwnd == 0) {
-				tileCache.onDownloadFinished();
-				continue;
-			}
 			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);

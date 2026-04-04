@@ -11,11 +11,12 @@
 
 class DownloadWorker {
   public:
-	DownloadWorker(const TileDownloader& tileDownloader, DWORD uiThreadId);
+	DownloadWorker(const TileDownloader& tileDownloader);
 	~DownloadWorker();
 	void download(const TileKey& tileKey);
 	void transferFinishedDownloads(std::map<TileKey, HBITMAP>* pCacheMap);
 	void unqueue(const TileKey& tileKey);
+	void setNotificationReceiver(HWND hwndNotificationReceiver);
 
   private:
 	std::deque<TileKey> m_queuedDownloads;
@@ -23,7 +24,7 @@ class DownloadWorker {
 	CRITICAL_SECTION m_mutex;
 	HANDLE m_thread;
 	DWORD m_threadId;
-	DWORD m_uiThreadId;
+	HWND m_hwndNotificationReceiver;
 	const TileDownloader& m_tileDownloader;
 
 	static DWORD WINAPI threadEntry(LPVOID lpParam) {
