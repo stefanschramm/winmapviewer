@@ -3,17 +3,32 @@
 
 #include "DownloadWorker.h"
 
-DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader) : m_tileDownloader(tileDownloader), m_hwndNotificationReceiver(0) {
+DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader) : m_tileDownloader(tileDownloader), m_hwndNotificationReceiver(0), m_stop(false) {
 	InitializeCriticalSection(&m_mutex);
 
-	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &m_threadId);
+	m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (!m_event) {
+		throw "Failed to create event.";
+	}
+
+	DWORD threadId;
+	m_thread = CreateThread(NULL, 0, threadEntry, this, 0, &threadId);
 	if (!m_thread) {
+		CloseHandle(m_event);
 		throw "Failed to create download worker thread.";
 	}
 }
 
 DownloadWorker::~DownloadWorker() {
-	TerminateThread(m_thread, 0);
+	EnterCriticalSection(&m_mutex);
+	m_stop = true;
+	LeaveCriticalSection(&m_mutex);
+
+	SetEvent(m_event);
+
+	WaitForSingleObject(m_thread, INFINITE);
+	CloseHandle(m_thread);
+	CloseHandle(m_event);
 
 	DeleteCriticalSection(&m_mutex);
 }
@@ -21,28 +36,31 @@ DownloadWorker::~DownloadWorker() {
 void DownloadWorker::run() {
 	try {
 		while (true) {
-			if (!m_queuedDownloads.empty()) {
-				EnterCriticalSection(&m_mutex);
-				TileKey tileKey = m_queuedDownloads.front();
-				m_queuedDownloads.pop_front();
+			EnterCriticalSection(&m_mutex);
+			if (m_stop) {
 				LeaveCriticalSection(&m_mutex);
-
-				HBITMAP hBitmap = m_tileDownloader.get(tileKey);
-
-				EnterCriticalSection(&m_mutex);
-				m_finishedDownloads[tileKey] = hBitmap;
-				LeaveCriticalSection(&m_mutex);
-
-				// TODO: define WM_USER + 23 somewhere
-				if (m_hwndNotificationReceiver != 0) {
-					PostMessage(m_hwndNotificationReceiver, WM_USER + 23, 0, 0);
-				}
+				break;
 			}
 			if (m_queuedDownloads.empty()) {
-				// wait for further download requests
-				if (SuspendThread(m_thread) == 0xFFFFFFFF) {
-					throw "Unable to suspend myself.";
+				LeaveCriticalSection(&m_mutex);
+				if (WaitForSingleObject(m_event, INFINITE) == WAIT_FAILED) {
+					throw "Failed to wait for event.";
 				}
+				continue;
+			}
+			TileKey tileKey = m_queuedDownloads.front();
+			m_queuedDownloads.pop_front();
+			LeaveCriticalSection(&m_mutex);
+
+			HBITMAP hBitmap = m_tileDownloader.get(tileKey);
+
+			EnterCriticalSection(&m_mutex);
+			m_finishedDownloads[tileKey] = hBitmap;
+			LeaveCriticalSection(&m_mutex);
+
+			// TODO: define WM_USER + 23 somewhere
+			if (m_hwndNotificationReceiver != 0) {
+				PostMessage(m_hwndNotificationReceiver, WM_USER + 23, 0, 0);
 			}
 		}
 	} catch (char const* e) {
@@ -57,9 +75,8 @@ void DownloadWorker::download(const TileKey& tileKey) {
 	EnterCriticalSection(&m_mutex);
 	m_queuedDownloads.push_back(tileKey);
 	LeaveCriticalSection(&m_mutex);
-	if (ResumeThread(m_thread) == 0xFFFFFFFF) {
-		// Disabling because for some reason Windows 95 fails this check all the time...
-		// throw "Unable to resume worker thread.";
+	if (!SetEvent(m_event)) {
+		throw "Failed to set event.";
 	}
 }
 

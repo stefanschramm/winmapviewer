@@ -23,7 +23,8 @@ class DownloadWorker {
 	std::map<TileKey, HBITMAP> m_finishedDownloads;
 	CRITICAL_SECTION m_mutex;
 	HANDLE m_thread;
-	DWORD m_threadId;
+	HANDLE m_event;
+	bool m_stop;
 	HWND m_hwndNotificationReceiver;
 	const TileDownloader& m_tileDownloader;
 
