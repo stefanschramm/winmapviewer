@@ -42,6 +42,7 @@ class MapControl {
 	bool mouseMove(int x, int y);
 	void endDragging(int x, int y);
 	void restrictCoordinates(long* x, long* y) const;
+	void invalidateUpdateRects(const TileKey& tileKey) const;
 
 	std::string m_styleUrlTemplate;
 	int m_zoomLevel;

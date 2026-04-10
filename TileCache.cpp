@@ -72,10 +72,9 @@ void TileCache::clear() {
 	m_cache.clear();
 }
 
-void notifySubscribers(std::vector<HWND>& subscribers) {
+void notifySubscribers(const TileKey& tileKey, std::vector<HWND>& subscribers) {
 	for (std::vector<HWND>::iterator it = subscribers.begin(); it != subscribers.end(); ++it) {
-		// TODO: Pass specific tile key
-		SendMessage(*it, WM_USER_TILE_READY, 0, 0);
+		SendMessage(*it, WM_USER_TILE_READY, 0, reinterpret_cast<LPARAM>(&tileKey));
 	}
 }
 
@@ -88,7 +87,7 @@ void TileCache::onDownloadFinished() {
 		if (cacheIterator != m_cache.end()) {
 			cacheIterator->second.bitmap = finishedIterator->second;
 			cacheIterator->second.available = true;
-			notifySubscribers(cacheIterator->second.subscribers);
+			notifySubscribers(cacheIterator->first, cacheIterator->second.subscribers);
 			cacheIterator->second.subscribers.clear();
 		} else {
 			// TODO: Currently this should not happen, because on every download start a cache entry is created.

@@ -102,12 +102,11 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_USER_TILE_READY:
-				hdc = BeginPaint(hWnd, &ps);
-				// TODO: render only tile(s) that have finished downloading
-				InvalidateRect(hWnd, NULL, FALSE);
-				EndPaint(hWnd, &ps);
+			case WM_USER_TILE_READY: {
+				const TileKey* updatedTile = reinterpret_cast<const TileKey*>(lParam);
+				invalidateUpdateRects(*updatedTile);
 				break;
+			}
 
 			case WM_MOUSEMOVE: {
 				if (mouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) {
@@ -241,25 +240,28 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 
 	HDC hMemDC = CreateCompatibleDC(hdcDestination);
 
-	// TODO: Check if there is an update region and use it
-	// if (updateRect != NULL) {
-	// }
-
 	// render one additional row/column of tiles at each edge
 	for (int x = 0; x < widthInTiles; x++) {
 		for (int y = 0; y < heightInTiles; y++) {
 			int tileX = (originTileX + x) % maxExtend;
 			int tileY = originTileY + y;
+
+			RECT tileRect = {
+				-offsetX + (x << TILE_SIZE_BITS),
+				-offsetY + (y << TILE_SIZE_BITS),
+				-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
+				-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE
+			};
+
+			RECT intersectRect;
+			if (updateRect != NULL && !IntersectRect(&intersectRect, &tileRect, updateRect)) {
+				continue;
+			}
+
 			if (tileY > maxExtend - 1) {
 				// south out of bounds
-				RECT rect = {
-					-offsetX + (x << TILE_SIZE_BITS),
-					-offsetY + (y << TILE_SIZE_BITS),
-					-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
-					-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE
-				};
 				HBRUSH hBrush = CreateSolidBrush(RGB(128, 128, 128));
-				FillRect(hdcDestination, &rect, hBrush);
+				FillRect(hdcDestination, &tileRect, hBrush);
 				DeleteObject(hBrush);
 
 				continue;
@@ -378,6 +380,47 @@ void MapControl::restrictCoordinates(long* x, long* y) const {
 	}
 	if (*y < 0) {
 		*y = 0;
+	}
+}
+
+// Invalidate areas in which the tile is visible. On low zoom levels a tile can be visible multiple times due to the wrapping of the map.
+void MapControl::invalidateUpdateRects(const TileKey& tileKey) const {
+	// top left corner of complete map
+	long originX = m_x + m_offsetX;
+	long originY = m_y + m_offsetY;
+
+	restrictCoordinates(&originX, &originY);
+
+	// top left tile
+	int originTileX = originX >> TILE_SIZE_BITS;
+	int originTileY = originY >> TILE_SIZE_BITS;
+
+	// offset within the top left tile
+	long offsetX = originX & TILE_INNER_OFFSET_MAP;
+	long offsetY = originY & TILE_INNER_OFFSET_MAP;
+
+	int maxExtend = 1 << m_zoomLevel;
+	int widthInTiles = (m_viewportWidth >> TILE_SIZE_BITS) + 2;
+	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
+
+	// Check if the tile is visible in y direction
+	if (tileKey.y < originTileY || tileKey.y >= originTileY + heightInTiles || tileKey.y > maxExtend - 1) {
+		return;
+	}
+
+	int yOffset = tileKey.y - originTileY;
+	int pixelYTop = -offsetY + (yOffset << TILE_SIZE_BITS);
+	int pixelYBottom = pixelYTop + TILE_SIZE;
+
+	for (int x = 0; x < widthInTiles; x++) {
+		int tileX = (originTileX + x) % maxExtend;
+		if (tileX == tileKey.x) {
+			int pixelX_left = -offsetX + (x << TILE_SIZE_BITS);
+			int pixelX_right = pixelX_left + TILE_SIZE;
+
+			RECT updateRect = {pixelX_left, pixelYTop, pixelX_right, pixelYBottom};
+			InvalidateRect(m_hwndMap, &updateRect, FALSE);
+		}
 	}
 }
 
