@@ -5,11 +5,11 @@
 
 struct Style {
 	// Can't use const char* const in VC++6
-	const char* url;
-	const char* urlInsecure;
-	const char* attributionText;
-	const char* attributionLink;
-	const int maxZoomLevel;
+	char* url;
+	char* urlInsecure;
+	char* attributionText;
+	char* attributionLink;
+	int maxZoomLevel;
 };
 
 class StyleDatabase {
