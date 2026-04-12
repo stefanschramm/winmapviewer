@@ -9,6 +9,7 @@ struct Style {
 	const char* urlInsecure;
 	const char* attributionText;
 	const char* attributionLink;
+	const int maxZoomLevel;
 };
 
 class StyleDatabase {

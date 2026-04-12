@@ -309,8 +309,7 @@ void MapControl::setCenterLonLat(const LonLat* lonLat) {
 }
 
 void MapControl::zoomIn() {
-	// TODO: Actually depends on the style
-	if (m_zoomLevel >= 19) {
+	if (m_zoomLevel >= m_maxZoomLevel) {
 		return;
 	}
 
@@ -447,6 +446,10 @@ void MapControl::endDragging(int x, int y) {
 
 void MapControl::setStyle(const std::string& styleUrlTemplate) {
 	m_styleUrlTemplate = styleUrlTemplate;
+}
+
+void MapControl::setMaxZoomLevel(int maxZoomLevel) {
+	m_maxZoomLevel = maxZoomLevel;
 }
 
 void putTextIntoClipboard(char* text) {

@@ -9,7 +9,8 @@ const Style* StyleDatabase::get(int styleIdentifier) const {
 			"https://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
 			"http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png",
 			"Map (C) OpenStreetMap",
-			"http://openstreetmap.org/copyright"
+			"http://openstreetmap.org/copyright",
+			19
 		},
 		// 401 IDM_STYLE_OSM_GERMAN
 		// https://tile.openstreetmap.de/{z}/{x}/{y}.png
@@ -17,7 +18,8 @@ const Style* StyleDatabase::get(int styleIdentifier) const {
 			"https://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
 			"http://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
 			"Map (C) OpenStreetMap",
-			"http://openstreetmap.org/copyright"
+			"http://openstreetmap.org/copyright",
+			20
 		},
 		// 402 IDM_STYLE_OEPNV
 		// https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png
@@ -25,7 +27,8 @@ const Style* StyleDatabase::get(int styleIdentifier) const {
 			"https://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
 			"http://osm.kesto.de/tile/oepnv/{z}/{x}/{y}.png",
 			"Map (C) OpenStreetMap / Tiles: OEPNVkarte.de",
-			"https://xn--pnvkarte-m4a.de"
+			"https://xn--pnvkarte-m4a.de",
+			18
 		},
 		// 403 IDM_STYLE_OPENTOPO
 		// https://a.tile.opentopomap.org/{z}/{x}/{y}.png
@@ -33,7 +36,8 @@ const Style* StyleDatabase::get(int styleIdentifier) const {
 			"https://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png",
 			"http://osm.kesto.de/tile/opentopo/{z}/{x}/{y}.png",
 			"Map (C) OpenStreetMap / Tiles: opentopomap.org",
-			"https://opentopomap.org/"
+			"https://opentopomap.org/",
+			17
 		}
 	};
 

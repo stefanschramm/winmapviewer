@@ -24,6 +24,8 @@ const int STATUS_BAR_PART_LAT = 1;
 const int STATUS_BAR_PART_ZOOM = 2;
 const int STATUS_BAR_PART_ATTRIBUTION = 3;
 
+const int CUSTOM_STYLE_MAX_ZOOM_LEVEL = 30;
+
 int MainWindow::mainWindowCount = 0;
 
 MainWindow::MainWindow(
@@ -345,6 +347,17 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 	m_settings.styleIdentifier = styleIdentifier;
 	std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
 	m_mapControl->setStyle(styleUrlTemplate);
+	m_mapControl->setMaxZoomLevel(style->maxZoomLevel);
+
+	do {
+		m_mapControl->getSettings(&m_settings);
+		if (m_settings.zoomLevel <= style->maxZoomLevel) {
+			break;
+		}
+		m_mapControl->zoomOut();
+	} while (true);
+	updateStatusBarZoom();
+
 	m_mapControl->requestRedraw();
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	updateStyleMenu();
@@ -352,6 +365,7 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 
 void MainWindow::selectCustomStyle() {
 	m_mapControl->setStyle(m_settings.customStyleUrlTemplate);
+	m_mapControl->setMaxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL);
 	m_mapControl->requestRedraw();
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 	updateStyleMenu();

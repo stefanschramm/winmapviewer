@@ -24,6 +24,7 @@ class MapControl {
 	void getSettings(Settings* settings) const;
 	void setSettings(Settings* settings);
 	void setStyle(const std::string& styleUrlTemplate);
+	void setMaxZoomLevel(int maxZoomLevel);
 
 	HINSTANCE m_hInstance;
 	HWND m_hwndMap;
@@ -42,6 +43,8 @@ class MapControl {
 	void invalidateUpdateRects(const TileKey& tileKey) const;
 
 	std::string m_styleUrlTemplate;
+	int m_maxZoomLevel;
+
 	int m_zoomLevel;
 	long m_x;
 	long m_y;
