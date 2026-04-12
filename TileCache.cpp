@@ -82,6 +82,7 @@ void TileCache::onDownloadFinished() {
 	std::map<TileKey, HBITMAP> finishedDownloads;
 	m_downloadWorker.transferFinishedDownloads(&finishedDownloads);
 
+	// Check all finished downloads and notify their subscribers
 	for (std::map<TileKey, HBITMAP>::iterator finishedIterator = finishedDownloads.begin(); finishedIterator != finishedDownloads.end(); ++finishedIterator) {
 		std::map<TileKey, CacheContent>::iterator cacheIterator = m_cache.find(finishedIterator->first);
 		if (cacheIterator != m_cache.end()) {

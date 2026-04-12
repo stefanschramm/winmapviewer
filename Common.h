@@ -15,6 +15,9 @@ const int WM_USER_TILE_DOWNLOAD_FINISHED = WM_USER + 2;
 // Tile cache notifies specific window that a tile can now be rendered
 const int WM_USER_TILE_AVAILABLE = WM_USER + 3;
 
+// Search dialog notifies main window that a search result was selected and the map should be centered to it
+const int WM_USER_SEARCH_SET_LONLAT = WM_USER + 4;
+
 struct LonLat {
 	double lon;
 	double lat;

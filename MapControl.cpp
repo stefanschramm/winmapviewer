@@ -48,16 +48,14 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_x(0),
 	  m_y(0),
 	  m_dragging(false),
-	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
+	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png"),
+	  m_maxZoomLevel(19) {
 }
 
 MapControl::~MapControl() {
 }
 
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	PAINTSTRUCT ps;
-	HDC hdc;
-
 	try {
 		switch (message) {
 			case WM_COMMAND:
@@ -94,6 +92,8 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				return TRUE;
 
 			case WM_PAINT: {
+				PAINTSTRUCT ps;
+				HDC hdc;
 				RECT updateRect;
 				bool hasUpdateRect = GetUpdateRect(hWnd, &updateRect, false);
 				hdc = BeginPaint(hWnd, &ps);
@@ -243,9 +243,6 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 	// render one additional row/column of tiles at each edge
 	for (int x = 0; x < widthInTiles; x++) {
 		for (int y = 0; y < heightInTiles; y++) {
-			int tileX = (originTileX + x) % maxExtend;
-			int tileY = originTileY + y;
-
 			RECT tileRect = {
 				-offsetX + (x << TILE_SIZE_BITS),
 				-offsetY + (y << TILE_SIZE_BITS),
@@ -257,6 +254,9 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 			if (updateRect != NULL && !IntersectRect(&intersectRect, &tileRect, updateRect)) {
 				continue;
 			}
+
+			int tileX = (originTileX + x) % maxExtend;
+			int tileY = originTileY + y;
 
 			if (tileY > maxExtend - 1) {
 				// south out of bounds
@@ -273,8 +273,8 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 			SelectObject(hMemDC, hBitmap);
 			BitBlt(
 				hdcDestination,
-				-offsetX + (x << TILE_SIZE_BITS),
-				-offsetY + (y << TILE_SIZE_BITS),
+				tileRect.left,
+				tileRect.top,
 				TILE_SIZE,
 				TILE_SIZE,
 				hMemDC,
@@ -335,11 +335,6 @@ void MapControl::zoomOut() {
 }
 
 void MapControl::setViewportSize(int width, int height) {
-	// re-center
-	// m_x = m_x - ((width - m_viewportWidth) / 2.0);
-	// m_y = m_y - ((height - m_viewportHeight) / 2.0);
-	// restrictCoordinates(&m_x, &m_y);
-
 	m_viewportWidth = width;
 	m_viewportHeight = height;
 }

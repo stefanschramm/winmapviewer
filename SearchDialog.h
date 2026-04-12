@@ -7,9 +7,6 @@
 
 #include "SearchProvider.h"
 
-// TODO: Put all messages in same include (s. MapControl.h)?
-#define WM_SEARCH_SET_LONLAT (WM_USER + 30)
-
 class SearchDialog {
   public:
 	SearchDialog(HINSTANCE hInst, HWND hWnd);

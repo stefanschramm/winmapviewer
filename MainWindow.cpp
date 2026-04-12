@@ -19,6 +19,8 @@
 
 const int ARROW_KEYS_MOVE_DISTANCE = 40;
 
+const int STATUS_BAR_CONTROL_IDENTIFIER = 1001;
+
 const int STATUS_BAR_PART_LON = 0;
 const int STATUS_BAR_PART_LAT = 1;
 const int STATUS_BAR_PART_ZOOM = 2;
@@ -98,7 +100,7 @@ bool MainWindow::create(int nCmdShow) {
 		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
 		TEXT(""),
 		m_hWnd,
-		1001
+		STATUS_BAR_CONTROL_IDENTIFIER
 	);
 	int partSizes[] = {100, 200, 260, -1};
 	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
@@ -197,7 +199,13 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 
 					case IDM_STYLE_CUSTOM: {
-						int result = DialogBoxParam(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic), reinterpret_cast<LPARAM>(this));
+						int result = DialogBoxParam(
+							m_hInstance,
+							reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE),
+							m_hWnd,
+							reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic),
+							reinterpret_cast<LPARAM>(this)
+						);
 						if (result == IDOK) {
 							m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
 							selectCustomStyle();
@@ -233,7 +241,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 			case WM_NOTIFY: {
 				LPNMHDR nm = reinterpret_cast<LPNMHDR>(lParam);
-				if (nm->idFrom == 1001 && nm->code == NM_CLICK) {
+				if (nm->idFrom == STATUS_BAR_CONTROL_IDENTIFIER && nm->code == NM_CLICK) {
 					LPNMMOUSE mouse = reinterpret_cast<LPNMMOUSE>(lParam);
 					RECT rect;
 					SendMessage(m_hwndStatusBar, SB_GETRECT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(&rect));
@@ -263,7 +271,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_SEARCH_SET_LONLAT: {
+			case WM_USER_SEARCH_SET_LONLAT: {
 				m_mapControl->setCenterLonLat(reinterpret_cast<LonLat*>(lParam));
 				m_mapControl->requestRedraw();
 				break;

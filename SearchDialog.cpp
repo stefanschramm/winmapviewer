@@ -217,6 +217,6 @@ void SearchDialog::selectItem() {
 	int row = ListView_GetNextItem(m_hwndListView, -1, LVNI_SELECTED);
 	if (row >= 0) {
 		SearchResult selectedResult = m_searchResults.at(row);
-		SendMessage(m_hwndMain, WM_SEARCH_SET_LONLAT, 0, reinterpret_cast<LPARAM>(&selectedResult.m_lonLat));
+		SendMessage(m_hwndMain, WM_USER_SEARCH_SET_LONLAT, 0, reinterpret_cast<LPARAM>(&selectedResult.m_lonLat));
 	}
 }
