@@ -30,7 +30,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry(), tileCache);
 		mainWindow->create(nCmdShow);
 
-		HACCEL hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_WINMAPVIEWER);
+		HACCEL hAccelTable = LoadAccelerators(hInstance, reinterpret_cast<LPCTSTR>(IDC_WINMAPVIEWER));
 		MSG msg;
 		while (GetMessage(&msg, NULL, 0, 0)) {
 			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {

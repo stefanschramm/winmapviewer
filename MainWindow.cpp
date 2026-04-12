@@ -131,7 +131,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				wmEvent = HIWORD(wParam);
 				switch (wmId) {
 					case IDM_ABOUT:
-					DialogBox(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_ABOUTBOX), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::aboutDialogWndProcStatic));
+						DialogBox(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_ABOUTBOX), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::aboutDialogWndProcStatic));
 						break;
 
 					case IDM_EXIT:
@@ -197,7 +197,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 
 					case IDM_STYLE_CUSTOM: {
-					int result = DialogBoxParam(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic), reinterpret_cast<LPARAM>(this));
+						int result = DialogBoxParam(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic), reinterpret_cast<LPARAM>(this));
 						if (result == IDOK) {
 							m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
 							selectCustomStyle();
@@ -245,7 +245,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_MOUSEWHEEL:
-				if ((short)HIWORD(wParam) > 0) {
+				if (static_cast<short>(HIWORD(wParam)) > 0) {
 					m_mapControl->zoomIn();
 				} else {
 					m_mapControl->zoomOut();

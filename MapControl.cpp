@@ -460,7 +460,7 @@ void putTextIntoClipboard(char* text) {
 	size_t size = strlen(text) + 1;
 	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, size);
 	if (hMem) {
-		char* pMem = (char*)GlobalLock(hMem);
+		char* pMem = reinterpret_cast<char*>(GlobalLock(hMem));
 		if (pMem) {
 			memcpy(pMem, text, size);
 			GlobalUnlock(hMem);
