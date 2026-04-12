@@ -19,7 +19,7 @@ const Style* StyleDatabase::get(int styleIdentifier) const {
 			"http://osm.kesto.de/tile/german/{z}/{x}/{y}.png",
 			"Map (C) OpenStreetMap",
 			"http://openstreetmap.org/copyright",
-			20
+			19
 		},
 		// 402 IDM_STYLE_OEPNV
 		// https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png

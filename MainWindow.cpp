@@ -258,6 +258,8 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				} else {
 					m_mapControl->zoomOut();
 				}
+				m_mapControl->getSettings(&m_settings);
+				updateStatusBarZoom();
 				m_mapControl->requestRedraw();
 				break;
 
