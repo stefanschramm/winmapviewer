@@ -8,11 +8,6 @@
 #include "MapControl.h"
 #include "TileRange.h"
 
-// Compatibility with VC++6
-#ifndef WM_MOUSEWHEEL
-#define WM_MOUSEWHEEL 0x020A
-#endif
-
 #define IDM_COPY_LON_LAT 10001
 
 void putTextIntoClipboard(char* text);
@@ -24,16 +19,17 @@ const int TILE_SIZE_BITS = 8;
 const int TILE_SIZE = 1 << TILE_SIZE_BITS;
 const int TILE_INNER_OFFSET_MAP = 0xff;
 
-// M_PI and asinh are missing in math.h of VC++ 6
+// VC++ 6 compatibility
 #if !defined M_PI
 const double M_PI = 3.141592653589793;
 #endif
 
+// VC++ 6 compatibility: asinh is missing in math.h
 double asinh(double x) {
 	return log(x + sqrt(x * x + 1));
 }
 
-// std::min() is missing in VC++ 6
+// VC++ 6 compatibility
 int myMin(int a, int b) {
 	return a < b ? a : b;
 }

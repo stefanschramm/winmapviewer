@@ -73,7 +73,7 @@ void closeRegistryKey(HKEY hKey) {
 bool loadInt(HKEY hKey, const char* valueName, int* value) {
 	DWORD dwType;
 	DWORD dwSize = sizeof(*value);
-	// Can not use RegGetValue here for VC++6 compatibility
+	// VC++ 6 compatibility: Can not use RegGetValue here
 	LONG lResult = RegQueryValueEx(
 		hKey,
 		valueName,
@@ -123,7 +123,7 @@ bool loadString(HKEY hKey, const char* valueName, std::string* value) {
 		return false;
 	}
 
-	// TODO: prevent strlen overflow / reimplement strnlen for VC++6?
+	// TODO: prevent strlen overflow / reimplement strnlen for VC++ 6?
 	size_t actualLength = strlen(value->c_str());
 	value->resize(actualLength);
 

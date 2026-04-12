@@ -12,7 +12,7 @@
 #include "StyleDatabase.h"
 #include "resource.h"
 
-// Compatibility with VC++6
+// VC++ 6 compatibility
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020A
 #endif

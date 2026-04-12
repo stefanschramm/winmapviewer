@@ -32,7 +32,7 @@ std::string urlEncode(const std::wstring& url);
 std::string parseStyleUrlTemplate(const TileKey& tileKey);
 
 // Template for wrapper that calls the wndProc instance method of the object corresponding to the window.
-// It needs to be in a class because VC++ 6 can't use a function template directly.
+// VC++ 6 compatibility: It needs to be in a class because VC++ 6 can't use a function template directly.
 template <class T>
 class WndProcStaticHelper {
   public:

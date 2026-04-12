@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "HiddenWindow.h"
 
-// VC++6 compatibility
+// VC++ 6 compatibility
 #ifndef HWND_MESSAGE
 #define HWND_MESSAGE ((HWND) - 3)
 #endif

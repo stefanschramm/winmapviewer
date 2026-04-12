@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 
-// Just differentiating V C++ 6 vs. everything else here.
+// VC++ 6 compatibility
 #if _MSC_VER == 1200
 #import "msxml6.dll" raw_interfaces_only
 using namespace MSXML2;
