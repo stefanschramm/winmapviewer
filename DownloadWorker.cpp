@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "Common.h"
 #include "DownloadWorker.h"
 
 DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader) : m_tileDownloader(tileDownloader), m_hwndNotificationReceiver(0), m_stop(false) {
@@ -58,9 +59,8 @@ void DownloadWorker::run() {
 			m_finishedDownloads[tileKey] = hBitmap;
 			LeaveCriticalSection(&m_mutex);
 
-			// TODO: define WM_USER + 23 somewhere
 			if (m_hwndNotificationReceiver != 0) {
-				PostMessage(m_hwndNotificationReceiver, WM_USER + 23, 0, 0);
+				PostMessage(m_hwndNotificationReceiver, WM_USER_TILE_DOWNLOAD_FINISHED, 0, 0);
 			}
 		}
 	} catch (char const* e) {

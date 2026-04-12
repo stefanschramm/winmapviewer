@@ -102,7 +102,7 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_USER_TILE_READY: {
+			case WM_USER_TILE_AVAILABLE: {
 				const TileKey* updatedTile = reinterpret_cast<const TileKey*>(lParam);
 				invalidateUpdateRects(*updatedTile);
 				break;
@@ -114,7 +114,7 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				}
 				LonLat myLonLat;
 				getLonLat(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), &myLonLat);
-				SendMessage(GetParent(hWnd), WM_MAP_LONLAT_UPDATE, 0, reinterpret_cast<LPARAM>(&myLonLat));
+				SendMessage(m_hwndMain, WM_USER_MAP_LONLAT_UPDATE, 0, reinterpret_cast<LPARAM>(&myLonLat));
 				break;
 			}
 

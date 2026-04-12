@@ -9,8 +9,6 @@
 #include "TileKey.h"
 #include "TileRange.h"
 
-const UINT WM_USER_TILE_READY = WM_USER + 1;
-
 typedef std::vector<HWND> Subscribers;
 
 struct CacheContent {

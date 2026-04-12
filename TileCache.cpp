@@ -74,7 +74,7 @@ void TileCache::clear() {
 
 void notifySubscribers(const TileKey& tileKey, std::vector<HWND>& subscribers) {
 	for (std::vector<HWND>::iterator it = subscribers.begin(); it != subscribers.end(); ++it) {
-		SendMessage(*it, WM_USER_TILE_READY, 0, reinterpret_cast<LPARAM>(&tileKey));
+		SendMessage(*it, WM_USER_TILE_AVAILABLE, 0, reinterpret_cast<LPARAM>(&tileKey));
 	}
 }
 

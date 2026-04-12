@@ -42,8 +42,7 @@ HWND HiddenWindow::create() {
 }
 
 LRESULT CALLBACK HiddenWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) const {
-	// TODO: Define WM_USER + 23 somewhere
-	if (message == WM_USER + 23) {
+	if (message == WM_USER_TILE_DOWNLOAD_FINISHED) {
 		m_tileCache.onDownloadFinished();
 	}
 	return DefWindowProc(hWnd, message, wParam, lParam);

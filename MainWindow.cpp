@@ -240,8 +240,8 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				m_mapControl->requestRedraw();
 				break;
 
-			case WM_MAP_LONLAT_UPDATE: {
-				LonLat* updatedLonLat = (LonLat*)lParam;
+			case WM_USER_MAP_LONLAT_UPDATE: {
+				LonLat* updatedLonLat = reinterpret_cast<LonLat*>(lParam);
 				char statusText[128];
 				sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
 				SendMessage(m_hwndStatusBar, SB_SETTEXT, 0, reinterpret_cast<LPARAM>(statusText));

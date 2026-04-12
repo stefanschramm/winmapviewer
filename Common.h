@@ -6,6 +6,15 @@
 #include <string>
 #include <windows.h>
 
+// Map control notifies parent window about current cursor position
+const int WM_USER_MAP_LONLAT_UPDATE = WM_USER + 1;
+
+// Tile downloader notifies main thread about a new available tile
+const int WM_USER_TILE_DOWNLOAD_FINISHED = WM_USER + 2;
+
+// Tile cache notifies specific window that a tile can now be rendered
+const int WM_USER_TILE_AVAILABLE = WM_USER + 3;
+
 struct LonLat {
 	double lon;
 	double lat;

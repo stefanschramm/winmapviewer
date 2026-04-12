@@ -7,9 +7,6 @@
 #include "Settings.h"
 #include "TileCache.h"
 
-// TODO: Put all messages in same include (s. SearchDialog.h)? - Probably not required because messages are control-dependent.
-#define WM_MAP_LONLAT_UPDATE (WM_USER + 14)
-
 class MapControl {
   public:
 	MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache);
