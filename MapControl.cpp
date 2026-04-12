@@ -91,7 +91,7 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				PAINTSTRUCT ps;
 				HDC hdc;
 				RECT updateRect;
-				bool hasUpdateRect = GetUpdateRect(hWnd, &updateRect, false);
+				BOOL hasUpdateRect = GetUpdateRect(hWnd, &updateRect, false);
 				hdc = BeginPaint(hWnd, &ps);
 				render(hdc, hasUpdateRect ? &updateRect : NULL);
 				EndPaint(hWnd, &ps);
