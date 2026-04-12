@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "Common.h"
 
 HBITMAP createPlaceholderBitmap(bool error) {
@@ -40,4 +42,45 @@ std::string urlEncode(const std::wstring& url) {
 	}
 
 	return encoded;
+}
+
+std::string parseStyleUrlTemplate(const TileKey& tileKey) {
+	static const char* invalidPlaceholder = "Encountered invalid placeholder. Valid placeholders: {z}, {x}, {y}";
+
+	std::stringstream strstr;
+	size_t from = 0;
+	for (int i = 0; i < 3; i++) {
+		size_t placeholderStart = tileKey.styleUrlTemplate.find("{", from);
+		if (placeholderStart == std::string::npos) {
+			throw "Expected to find (another) placeholder. Placeholders {z}, {x} and {y} should be set.";
+		}
+		size_t placeholderEnd = tileKey.styleUrlTemplate.find("}", placeholderStart);
+		if (placeholderEnd == std::string::npos) {
+			throw "Closing bracket of placeholder not found.";
+		}
+		if (placeholderEnd - placeholderStart != 2) {
+			throw invalidPlaceholder;
+		}
+		char c = tileKey.styleUrlTemplate[placeholderStart + 1];
+		int value;
+		switch (c) {
+			case 'z':
+				value = tileKey.zoomLevel;
+				break;
+			case 'x':
+				value = tileKey.x;
+				break;
+			case 'y':
+				value = tileKey.y;
+				break;
+			default:
+				throw invalidPlaceholder;
+				break;
+		}
+		strstr << tileKey.styleUrlTemplate.substr(from, placeholderStart - from) << value;
+		from = placeholderEnd + 1;
+	}
+	strstr << tileKey.styleUrlTemplate.substr(from);
+
+	return strstr.str();
 }

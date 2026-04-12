@@ -6,6 +6,8 @@
 #include <string>
 #include <windows.h>
 
+#include "TileKey.h"
+
 // Map control notifies parent window about current cursor position
 const int WM_USER_MAP_LONLAT_UPDATE = WM_USER + 1;
 
@@ -26,6 +28,8 @@ struct LonLat {
 HBITMAP createPlaceholderBitmap(bool error);
 
 std::string urlEncode(const std::wstring& url);
+
+std::string parseStyleUrlTemplate(const TileKey& tileKey);
 
 // Template for wrapper that calls the wndProc instance method of the object corresponding to the window.
 // It needs to be in a class because VC++ 6 can't use a function template directly.

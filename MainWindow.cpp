@@ -334,7 +334,15 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 				std::string customStyleUrlTemplate;
 				customStyleUrlTemplate.resize(length);
 				GetWindowTextA(hInputField, &customStyleUrlTemplate[0], length);
-				// TODO: Verify urlTemplate (currently an exception occurs when placehoders are missing etc.)
+
+				TileKey dummyTileKey(customStyleUrlTemplate, 0, 0, 0);
+				try {
+					parseStyleUrlTemplate(dummyTileKey);
+				} catch (const char* e) {
+					MessageBox(NULL, e, TEXT("Invalid URL template"), MB_OK);
+					return TRUE;
+				}
+
 				mainWindow->m_settings.customStyleUrlTemplate = customStyleUrlTemplate;
 				EndDialog(hwndDialog, LOWORD(wParam));
 
