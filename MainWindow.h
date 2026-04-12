@@ -22,6 +22,7 @@ class MainWindow {
 	void selectIntegratedStyle(int styleIdentifier);
 	void selectCustomStyle();
 	void updateStyleMenu();
+	void updateStatusBarZoom();
 
 	static int mainWindowCount;
 

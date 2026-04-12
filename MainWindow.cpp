@@ -19,6 +19,11 @@
 
 const int ARROW_KEYS_MOVE_DISTANCE = 40;
 
+const int STATUS_BAR_PART_LON = 0;
+const int STATUS_BAR_PART_LAT = 1;
+const int STATUS_BAR_PART_ZOOM = 2;
+const int STATUS_BAR_PART_ATTRIBUTION = 3;
+
 int MainWindow::mainWindowCount = 0;
 
 MainWindow::MainWindow(
@@ -93,9 +98,11 @@ bool MainWindow::create(int nCmdShow) {
 		m_hWnd,
 		1001
 	);
-	int partSizes[] = {100, 200, -1};
+	int partSizes[] = {100, 200, 260, -1};
 	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
 	SendMessage(m_hwndStatusBar, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
+
+	updateStatusBarZoom();
 
 	m_mapControl->setSettings(&m_settings);
 
@@ -144,11 +151,15 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 					case IDM_ZOOMIN:
 						m_mapControl->zoomIn();
+						m_mapControl->getSettings(&m_settings);
+						updateStatusBarZoom();
 						m_mapControl->requestRedraw();
 						break;
 
 					case IDM_ZOOMOUT:
 						m_mapControl->zoomOut();
+						m_mapControl->getSettings(&m_settings);
+						updateStatusBarZoom();
 						m_mapControl->requestRedraw();
 						break;
 
@@ -223,7 +234,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				if (nm->idFrom == 1001 && nm->code == NM_CLICK) {
 					LPNMMOUSE mouse = (LPNMMOUSE)lParam;
 					RECT rect;
-					SendMessage(m_hwndStatusBar, SB_GETRECT, 2, (LPARAM)&rect);
+					SendMessage(m_hwndStatusBar, SB_GETRECT, STATUS_BAR_PART_ATTRIBUTION, (LPARAM)&rect);
 					if (PtInRect(&rect, mouse->pt) && m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
 						ShellExecute(NULL, "open", m_styleDatabase.get(m_settings.styleIdentifier)->attributionLink, NULL, NULL, SW_SHOWNORMAL);
 					}
@@ -244,9 +255,9 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				LonLat* updatedLonLat = reinterpret_cast<LonLat*>(lParam);
 				char statusText[128];
 				sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
-				SendMessage(m_hwndStatusBar, SB_SETTEXT, 0, reinterpret_cast<LPARAM>(statusText));
+				SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LON, reinterpret_cast<LPARAM>(statusText));
 				sprintf(statusText, TEXT("lat: %.6f"), updatedLonLat->lat);
-				SendMessage(m_hwndStatusBar, SB_SETTEXT, 1, reinterpret_cast<LPARAM>(statusText));
+				SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
 				break;
 			}
 
@@ -335,14 +346,14 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 	std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
 	m_mapControl->setStyle(styleUrlTemplate);
 	m_mapControl->requestRedraw();
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
 	updateStyleMenu();
 }
 
 void MainWindow::selectCustomStyle() {
 	m_mapControl->setStyle(m_settings.customStyleUrlTemplate);
 	m_mapControl->requestRedraw();
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, 2, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 	updateStyleMenu();
 }
 
@@ -356,4 +367,10 @@ void MainWindow::updateStyleMenu() {
 		m_settings.styleIdentifier,
 		MF_BYCOMMAND
 	);
+}
+
+void MainWindow::updateStatusBarZoom() {
+	char statusText[16];
+	sprintf(statusText, TEXT("Zoom: %i"), m_settings.zoomLevel);
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ZOOM, reinterpret_cast<LPARAM>(statusText));
 }
