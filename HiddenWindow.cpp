@@ -20,14 +20,16 @@ HWND HiddenWindow::create() {
 		wc.lpfnWndProc = &WndProcStaticHelper<HiddenWindow>::wndProcStatic;
 		wc.lpszClassName = "HiddenMessageWindow";
 		RegisterClass(&wc);
+		windowIsRegistered = true;
 	}
 
 	HWND hwnd = CreateWindowEx(
 		0,
 		wc.lpszClassName,
 		NULL,
-		0, 0, 0, 0, 0,
-		HWND_MESSAGE, // message-only window
+		WS_POPUP,
+		0, 0, 0, 0,
+		NULL,
 		NULL,
 		m_hInstance,
 		this
