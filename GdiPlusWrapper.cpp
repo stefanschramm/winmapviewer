@@ -7,11 +7,11 @@ GdiPlusWrapper::GdiPlusWrapper() {
 	}
 
 	// Get function pointers
-	m_GdiplusStartup = (GdiplusStartupFunc)GetProcAddress(m_lib, "GdiplusStartup");
-	m_GdipCreateBitmapFromStream = (GdipCreateBitmapFromStreamFunc)GetProcAddress(m_lib, "GdipCreateBitmapFromStream");
-	m_GdipCreateHBITMAPFromBitmap = (GdipCreateHBITMAPFromBitmapFunc)GetProcAddress(m_lib, "GdipCreateHBITMAPFromBitmap");
-	m_GdipDisposeImage = (GdipDisposeImageFunc)GetProcAddress(m_lib, "GdipDisposeImage");
-	m_GdiplusShutdown = (GdiplusShutdownFunc)GetProcAddress(m_lib, "GdiplusShutdown");
+	m_GdiplusStartup = reinterpret_cast<GdiplusStartupFunc>(GetProcAddress(m_lib, "GdiplusStartup"));
+	m_GdipCreateBitmapFromStream = reinterpret_cast<GdipCreateBitmapFromStreamFunc>(GetProcAddress(m_lib, "GdipCreateBitmapFromStream"));
+	m_GdipCreateHBITMAPFromBitmap = reinterpret_cast<GdipCreateHBITMAPFromBitmapFunc>(GetProcAddress(m_lib, "GdipCreateHBITMAPFromBitmap"));
+	m_GdipDisposeImage = reinterpret_cast<GdipDisposeImageFunc>(GetProcAddress(m_lib, "GdipDisposeImage"));
+	m_GdiplusShutdown = reinterpret_cast<GdiplusShutdownFunc>(GetProcAddress(m_lib, "GdiplusShutdown"));
 
 	if (!m_GdiplusStartup || !m_GdipCreateBitmapFromStream || !m_GdipCreateHBITMAPFromBitmap || !m_GdipDisposeImage || !m_GdiplusShutdown) {
 		throw "Unable to get GDI+ function pointers";

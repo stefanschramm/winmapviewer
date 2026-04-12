@@ -19,9 +19,9 @@ SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd) : m_hwndMain(hWnd), m
 
 	DialogBoxParam(
 		hInstance,
-		(LPCTSTR)IDD_SEARCH,
+		reinterpret_cast<LPCTSTR>(IDD_SEARCH),
 		m_hwndMain,
-		(DLGPROC)SearchDialog::wndProcStatic,
+		reinterpret_cast<DLGPROC>(SearchDialog::wndProcStatic),
 		reinterpret_cast<LPARAM>(this)
 	);
 }

@@ -173,7 +173,7 @@ HWND MapControl::create(int x, int y, int width, int height) {
 		wcex.hInstance = m_hInstance;
 		wcex.hIcon = NULL;
 		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
 		wcex.lpszMenuName = NULL;
 		wcex.lpszClassName = TEXT("MapControl");
 		wcex.hIconSm = NULL;

@@ -76,7 +76,7 @@ std::vector<SearchResult> SearchProvider::search(std::wstring locationName, std:
 		NULL,
 		CLSCTX_INPROC_SERVER,
 		__uuidof(IXMLDOMDocument2),
-		(void**)&doc
+		reinterpret_cast<void**>(&doc)
 	);
 
 	if (FAILED(hr)) {

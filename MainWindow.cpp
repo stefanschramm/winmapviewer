@@ -52,12 +52,12 @@ bool MainWindow::create(int nCmdShow) {
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;
-		wcex.hIcon = LoadIcon(m_hInstance, (LPCTSTR)IDI_WINMAPVIEWER);
+		wcex.hIcon = LoadIcon(m_hInstance, reinterpret_cast<LPCTSTR>(IDI_WINMAPVIEWER));
 		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-		wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-		wcex.lpszMenuName = (LPCSTR)IDC_WINMAPVIEWER;
+		wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+		wcex.lpszMenuName = reinterpret_cast<LPCSTR>(IDC_WINMAPVIEWER);
 		wcex.lpszClassName = TEXT("winmapviewer");
-		wcex.hIconSm = LoadIcon(wcex.hInstance, (LPCTSTR)IDI_SMALL);
+		wcex.hIconSm = LoadIcon(wcex.hInstance, reinterpret_cast<LPCTSTR>(IDI_SMALL));
 
 		if (!RegisterClassEx(&wcex)) {
 			throw "Error registering main window";
@@ -131,7 +131,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				wmEvent = HIWORD(wParam);
 				switch (wmId) {
 					case IDM_ABOUT:
-						DialogBox(m_hInstance, (LPCTSTR)IDD_ABOUTBOX, m_hWnd, (DLGPROC)MainWindow::aboutDialogWndProcStatic);
+					DialogBox(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_ABOUTBOX), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::aboutDialogWndProcStatic));
 						break;
 
 					case IDM_EXIT:
@@ -197,7 +197,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 
 					case IDM_STYLE_CUSTOM: {
-						int result = DialogBoxParam(m_hInstance, (LPCTSTR)IDD_CUSTOMSTYLE, m_hWnd, (DLGPROC)MainWindow::customStyleDialogWndProcStatic, reinterpret_cast<LPARAM>(this));
+					int result = DialogBoxParam(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic), reinterpret_cast<LPARAM>(this));
 						if (result == IDOK) {
 							m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
 							selectCustomStyle();
@@ -232,11 +232,11 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_NOTIFY: {
-				LPNMHDR nm = (LPNMHDR)lParam;
+				LPNMHDR nm = reinterpret_cast<LPNMHDR>(lParam);
 				if (nm->idFrom == 1001 && nm->code == NM_CLICK) {
-					LPNMMOUSE mouse = (LPNMMOUSE)lParam;
+					LPNMMOUSE mouse = reinterpret_cast<LPNMMOUSE>(lParam);
 					RECT rect;
-					SendMessage(m_hwndStatusBar, SB_GETRECT, STATUS_BAR_PART_ATTRIBUTION, (LPARAM)&rect);
+					SendMessage(m_hwndStatusBar, SB_GETRECT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(&rect));
 					if (PtInRect(&rect, mouse->pt) && m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
 						ShellExecute(NULL, "open", m_styleDatabase.get(m_settings.styleIdentifier)->attributionLink, NULL, NULL, SW_SHOWNORMAL);
 					}
@@ -264,7 +264,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_SEARCH_SET_LONLAT: {
-				m_mapControl->setCenterLonLat((LonLat*)lParam);
+				m_mapControl->setCenterLonLat(reinterpret_cast<LonLat*>(lParam));
 				m_mapControl->requestRedraw();
 				break;
 			}
