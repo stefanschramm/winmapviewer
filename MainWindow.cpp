@@ -264,8 +264,9 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				if (newZoomLevel > m_maxZoomLevel) {
 					break;
 				}
-				// TODO: X and Y are relative to main window - should be mapped to be relative to map control
-				m_mapControl->setZoomLevelKeepingFixPoint(newZoomLevel, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+				ScreenToClient(m_mapControl->m_hwndMap, &pt);
+				m_mapControl->setZoomLevelKeepingFixPoint(newZoomLevel, pt.x, pt.y);
 				m_mapControl->getSettings(&m_settings);
 				updateStatusBarZoom();
 				m_mapControl->requestRedraw();
