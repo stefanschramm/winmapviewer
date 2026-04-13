@@ -19,12 +19,11 @@ class MapControl {
 	void setOffset(int offsetX, int offsetY);
 	void moveToOffset();
 	void setCenterLonLat(const LonLat* lonLat);
-	void zoomIn();
-	void zoomOut();
+	void setZoomLevel(int zoomLevel);
+	void setZoomLevelKeepingFixPoint(int zoomLevel, int x, int y);
 	void getSettings(Settings* settings) const;
 	void setSettings(Settings* settings);
 	void setStyle(const std::string& styleUrlTemplate);
-	void setMaxZoomLevel(int maxZoomLevel);
 
 	HINSTANCE m_hInstance;
 	HWND m_hwndMap;

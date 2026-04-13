@@ -38,7 +38,8 @@ MainWindow::MainWindow(
 ) : m_hInstance(hInstance),
 	m_styleDatabase(styleDatabase),
 	m_settings(settings),
-	m_tileCache(tileCache) {
+	m_tileCache(tileCache),
+	m_maxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL) {
 }
 
 bool MainWindow::create(int nCmdShow) {
@@ -153,15 +154,20 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 					}
 
-					case IDM_ZOOMIN:
-						m_mapControl->zoomIn();
+					case IDM_ZOOMIN: {
+						int newZoomLevel = m_settings.zoomLevel + 1;
+						if (newZoomLevel > m_maxZoomLevel) {
+							break;
+						}
+						m_mapControl->setZoomLevel(newZoomLevel);
 						m_mapControl->getSettings(&m_settings);
 						updateStatusBarZoom();
 						m_mapControl->requestRedraw();
 						break;
+					}
 
 					case IDM_ZOOMOUT:
-						m_mapControl->zoomOut();
+						m_mapControl->setZoomLevel(m_settings.zoomLevel - 1);
 						m_mapControl->getSettings(&m_settings);
 						updateStatusBarZoom();
 						m_mapControl->requestRedraw();
@@ -252,16 +258,21 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_MOUSEWHEEL:
-				if (static_cast<short>(HIWORD(wParam)) > 0) {
-					m_mapControl->zoomIn();
-				} else {
-					m_mapControl->zoomOut();
+			case WM_MOUSEWHEEL: {
+				int x = GET_X_LPARAM(lParam);
+				int y = GET_Y_LPARAM(lParam);
+				bool zoomedIn = static_cast<short>(HIWORD(wParam)) > 0;
+				int newZoomLevel = m_settings.zoomLevel + (zoomedIn ? 1 : -1);
+				if (newZoomLevel > m_maxZoomLevel) {
+					break;
 				}
+				// TODO: X and Y are relative to main window - should be mapped to be relative to map control
+				m_mapControl->setZoomLevelKeepingFixPoint(newZoomLevel, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				m_mapControl->getSettings(&m_settings);
 				updateStatusBarZoom();
 				m_mapControl->requestRedraw();
 				break;
+			}
 
 			case WM_USER_MAP_LONLAT_UPDATE: {
 				LonLat* updatedLonLat = reinterpret_cast<LonLat*>(lParam);
@@ -365,16 +376,13 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 	m_settings.styleIdentifier = styleIdentifier;
 	std::string styleUrlTemplate(m_settings.useTls ? style->url : style->urlInsecure);
 	m_mapControl->setStyle(styleUrlTemplate);
-	m_mapControl->setMaxZoomLevel(style->maxZoomLevel);
-
-	do {
+	m_maxZoomLevel = style->maxZoomLevel;
+	if (m_settings.zoomLevel > style->maxZoomLevel) {
+		m_mapControl->setZoomLevel(style->maxZoomLevel);
+		// update x, y and zoomLevel
 		m_mapControl->getSettings(&m_settings);
-		if (m_settings.zoomLevel <= style->maxZoomLevel) {
-			break;
-		}
-		m_mapControl->zoomOut();
-	} while (true);
-	updateStatusBarZoom();
+		updateStatusBarZoom();
+	}
 
 	m_mapControl->requestRedraw();
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
@@ -383,7 +391,7 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 
 void MainWindow::selectCustomStyle() {
 	m_mapControl->setStyle(m_settings.customStyleUrlTemplate);
-	m_mapControl->setMaxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL);
+	m_maxZoomLevel = CUSTOM_STYLE_MAX_ZOOM_LEVEL;
 	m_mapControl->requestRedraw();
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 	updateStyleMenu();

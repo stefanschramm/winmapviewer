@@ -44,8 +44,7 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_x(0),
 	  m_y(0),
 	  m_dragging(false),
-	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png"),
-	  m_maxZoomLevel(19) {
+	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
 }
 
 MapControl::~MapControl() {
@@ -304,29 +303,31 @@ void MapControl::setCenterLonLat(const LonLat* lonLat) {
 	restrictCoordinates(&m_x, &m_y);
 }
 
-void MapControl::zoomIn() {
-	if (m_zoomLevel >= m_maxZoomLevel) {
-		return;
-	}
-
-	m_zoomLevel++;
-	m_x = m_x << 1;
-	m_y = m_y << 1;
-	m_x = m_x + (m_viewportWidth >> 1);
-	m_y = m_y + (m_viewportHeight >> 1);
-	restrictCoordinates(&m_x, &m_y);
+void MapControl::setZoomLevel(int zoomLevel) {
+	setZoomLevelKeepingFixPoint(zoomLevel, m_viewportWidth >> 1, m_viewportHeight >> 1);
 }
 
-void MapControl::zoomOut() {
-	if (m_zoomLevel <= 0) {
+void MapControl::setZoomLevelKeepingFixPoint(int zoomLevel, int x, int y) {
+	if (zoomLevel == m_zoomLevel || zoomLevel < 0) {
 		return;
 	}
 
-	m_zoomLevel--;
-	m_x = m_x - (m_viewportWidth >> 1);
-	m_y = m_y - (m_viewportHeight >> 1);
-	m_x = m_x >> 1;
-	m_y = m_y >> 1;
+	int absoluteX = m_x + x;
+	int absoluteY = m_y + y;
+
+	int deltaZoomLevel = zoomLevel - m_zoomLevel;
+	if (deltaZoomLevel > 0) {
+		absoluteX <<= deltaZoomLevel;
+		absoluteY <<= deltaZoomLevel;
+	} else if (deltaZoomLevel < 0) {
+		absoluteX >>= -deltaZoomLevel;
+		absoluteY >>= -deltaZoomLevel;
+	}
+
+	m_x = absoluteX - x;
+	m_y = absoluteY - y;
+	m_zoomLevel = zoomLevel;
+
 	restrictCoordinates(&m_x, &m_y);
 }
 
@@ -437,10 +438,6 @@ void MapControl::endDragging(int x, int y) {
 
 void MapControl::setStyle(const std::string& styleUrlTemplate) {
 	m_styleUrlTemplate = styleUrlTemplate;
-}
-
-void MapControl::setMaxZoomLevel(int maxZoomLevel) {
-	m_maxZoomLevel = maxZoomLevel;
 }
 
 void putTextIntoClipboard(char* text) {

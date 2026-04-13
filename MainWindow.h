@@ -33,4 +33,5 @@ class MainWindow {
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;
 	MapControl* m_mapControl;
+	int m_maxZoomLevel;
 };
