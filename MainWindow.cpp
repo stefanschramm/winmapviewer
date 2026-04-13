@@ -259,8 +259,6 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_MOUSEWHEEL: {
-				int x = GET_X_LPARAM(lParam);
-				int y = GET_Y_LPARAM(lParam);
 				bool zoomedIn = static_cast<short>(HIWORD(wParam)) > 0;
 				int newZoomLevel = m_settings.zoomLevel + (zoomedIn ? 1 : -1);
 				if (newZoomLevel > m_maxZoomLevel) {
