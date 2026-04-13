@@ -3,11 +3,6 @@
 #include "Common.h"
 #include "HiddenWindow.h"
 
-// VC++ 6 compatibility
-#ifndef HWND_MESSAGE
-#define HWND_MESSAGE ((HWND) - 3)
-#endif
-
 HiddenWindow::HiddenWindow(HINSTANCE hInstance, TileCache& tileCache) : m_hInstance(hInstance), m_tileCache(tileCache) {
 }
 
