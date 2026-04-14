@@ -8,6 +8,7 @@
 
 #include "HiddenWindow.h"
 #include "MainWindow.h"
+#include "MainWindowManager.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
@@ -25,10 +26,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		TileCache tileCache(downloadWorker);
 		HiddenWindow hiddenWindow(hInstance, tileCache);
 		downloadWorker.setNotificationReceiver(hiddenWindow.create());
+		MainWindowManager mainWindowManager(hInstance, styleDatabase, tileCache);
 
-		// Freed by itself on WM_DESTORY; Maybe creating some window management service would be useful
-		MainWindow* mainWindow = new MainWindow(hInstance, styleDatabase, loadSettingsFromRegistry(), tileCache);
-		mainWindow->create(nCmdShow);
+		mainWindowManager.create(loadSettingsFromRegistry(), nCmdShow);
 
 		HACCEL hAccelTable = LoadAccelerators(hInstance, reinterpret_cast<LPCTSTR>(IDC_WINMAPVIEWER));
 		MSG msg;

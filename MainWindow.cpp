@@ -32,10 +32,12 @@ int MainWindow::mainWindowCount = 0;
 
 MainWindow::MainWindow(
 	HINSTANCE hInstance,
+	MainWindowManager& mainWindowManager,
 	const StyleDatabase& styleDatabase,
 	Settings settings,
 	TileCache& tileCache
 ) : m_hInstance(hInstance),
+	m_mainWindowManager(mainWindowManager),
 	m_styleDatabase(styleDatabase),
 	m_settings(settings),
 	m_tileCache(tileCache),
@@ -160,9 +162,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 					case IDM_NEW_WINDOW: {
 						m_mapControl->getSettings(&m_settings);
-						// Freed by itself on WM_DESTORY
-						MainWindow* newWindow = new MainWindow(m_hInstance, m_styleDatabase, m_settings, m_tileCache);
-						newWindow->create(SW_SHOWNORMAL);
+						m_mainWindowManager.create(m_settings, SW_SHOWNORMAL);
 						break;
 					}
 
@@ -241,19 +241,11 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_DESTROY: {
+			case WM_NCDESTROY:
 				m_mapControl->getSettings(&m_settings);
 				storeSettingsInRegistry(m_settings);
-				mainWindowCount--;
-				if (mainWindowCount == 0) {
-					PostQuitMessage(0);
-				}
-				// Not sure if this will break something :)
-				// Would be bad if the window continues to receive messages.
-				// TODO: delete it on WM_NCDESTROY?
-				delete this;
+				m_mainWindowManager.destroy(this);
 				break;
-			}
 
 			default:
 				return DefWindowProc(hWnd, message, wParam, lParam);

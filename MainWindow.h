@@ -5,6 +5,7 @@
 
 #include <windows.h>
 
+#include "MainWindowManager.h"
 #include "MapControl.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -12,7 +13,7 @@
 
 class MainWindow {
   public:
-	MainWindow(HINSTANCE hInstance, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache);
+	MainWindow(HINSTANCE hInstance, MainWindowManager& mainWindowManager, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache);
 	bool create(int nCmdShow);
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -39,6 +40,7 @@ class MainWindow {
 
 	static int mainWindowCount;
 
+	MainWindowManager& m_mainWindowManager;
 	const StyleDatabase& m_styleDatabase;
 	Settings m_settings;
 	TileCache& m_tileCache;
