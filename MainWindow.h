@@ -19,8 +19,21 @@ class MainWindow {
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
+	void createMainWindow();
+	void createMapControl();
+	void createStatusBar();
+	void applyInitialSettings();
+
+	void zoom(int zoomLevelDelta);
+	void zoomByMouseWheel(int zoomLevelDelta, int x, int y);
+	void move(int direction);
+	void toggleTls();
+	void showCustomStyleDialog();
 	void selectIntegratedStyle(int styleIdentifier);
 	void selectCustomStyle();
+
+	void onLonLatUpdate(LonLat* updatedLonLat);
+
 	void updateStyleMenu();
 	void updateStatusBarZoom();
 

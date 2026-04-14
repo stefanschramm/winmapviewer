@@ -43,6 +43,22 @@ MainWindow::MainWindow(
 }
 
 bool MainWindow::create(int nCmdShow) {
+	createMainWindow();
+
+	createMapControl();
+
+	createStatusBar();
+	updateStatusBarZoom();
+
+	applyInitialSettings();
+
+	ShowWindow(m_hWnd, nCmdShow);
+	UpdateWindow(m_hWnd);
+
+	return true;
+}
+
+void MainWindow::createMainWindow() {
 	static bool mainWindowIsRegistered = false;
 
 	if (!mainWindowIsRegistered) {
@@ -90,13 +106,17 @@ bool MainWindow::create(int nCmdShow) {
 	}
 
 	mainWindowCount++;
+}
 
+void MainWindow::createMapControl() {
 	m_mapControl = new MapControl(m_hInstance, m_hWnd, m_tileCache);
 
 	RECT clientRect;
 	GetClientRect(m_hWnd, &clientRect);
 	m_mapControl->create(0, 0, clientRect.right, clientRect.bottom);
+}
 
+void MainWindow::createStatusBar() {
 	m_hwndStatusBar = CreateStatusWindow(
 		WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP,
 		TEXT(""),
@@ -106,9 +126,9 @@ bool MainWindow::create(int nCmdShow) {
 	int partSizes[] = {100, 200, 260, -1};
 	int numParts = sizeof(partSizes) / sizeof(partSizes[0]);
 	SendMessage(m_hwndStatusBar, SB_SETPARTS, numParts, reinterpret_cast<LPARAM>(partSizes));
+}
 
-	updateStatusBarZoom();
-
+void MainWindow::applyInitialSettings() {
 	m_mapControl->setSettings(&m_settings);
 
 	if (m_settings.styleIdentifier == IDM_STYLE_CUSTOM) {
@@ -116,22 +136,14 @@ bool MainWindow::create(int nCmdShow) {
 	} else {
 		selectIntegratedStyle(m_settings.styleIdentifier);
 	}
-
-	ShowWindow(m_hWnd, nCmdShow);
-	UpdateWindow(m_hWnd);
-
-	return true;
 }
 
 LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	int wmId;
-	int wmEvent;
-
 	try {
 		switch (message) {
 			case WM_COMMAND:
 				wmId = LOWORD(wParam);
-				wmEvent = HIWORD(wParam);
 				switch (wmId) {
 					case IDM_ABOUT:
 						DialogBox(m_hInstance, reinterpret_cast<LPCTSTR>(IDD_ABOUTBOX), m_hWnd, reinterpret_cast<DLGPROC>(MainWindow::aboutDialogWndProcStatic));
@@ -154,47 +166,19 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 					}
 
-					case IDM_ZOOMIN: {
-						int newZoomLevel = m_settings.zoomLevel + 1;
-						if (newZoomLevel > m_maxZoomLevel) {
-							break;
-						}
-						m_mapControl->setZoomLevel(newZoomLevel);
-						m_mapControl->getSettings(&m_settings);
-						updateStatusBarZoom();
-						m_mapControl->requestRedraw();
+					case IDM_ZOOMIN:
+						zoom(1);
 						break;
-					}
 
 					case IDM_ZOOMOUT:
-						m_mapControl->setZoomLevel(m_settings.zoomLevel - 1);
-						m_mapControl->getSettings(&m_settings);
-						updateStatusBarZoom();
-						m_mapControl->requestRedraw();
+						zoom(-1);
 						break;
 
 					case IDM_RIGHT:
-						m_mapControl->setOffset(ARROW_KEYS_MOVE_DISTANCE, 0);
-						m_mapControl->moveToOffset();
-						m_mapControl->requestRedraw();
-						break;
-
 					case IDM_LEFT:
-						m_mapControl->setOffset(-ARROW_KEYS_MOVE_DISTANCE, 0);
-						m_mapControl->moveToOffset();
-						m_mapControl->requestRedraw();
-						break;
-
 					case IDM_UP:
-						m_mapControl->setOffset(0, -ARROW_KEYS_MOVE_DISTANCE);
-						m_mapControl->moveToOffset();
-						m_mapControl->requestRedraw();
-						break;
-
 					case IDM_DOWN:
-						m_mapControl->setOffset(0, ARROW_KEYS_MOVE_DISTANCE);
-						m_mapControl->moveToOffset();
-						m_mapControl->requestRedraw();
+						move(wmId);
 						break;
 
 					case IDM_STYLE_OSM_STANDARD:
@@ -204,28 +188,12 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						selectIntegratedStyle(wmId);
 						break;
 
-					case IDM_STYLE_CUSTOM: {
-						int result = DialogBoxParam(
-							m_hInstance,
-							reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE),
-							m_hWnd,
-							reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic),
-							reinterpret_cast<LPARAM>(this)
-						);
-						if (result == IDOK) {
-							m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
-							selectCustomStyle();
-						}
+					case IDM_STYLE_CUSTOM:
+						showCustomStyleDialog();
 						break;
-					}
 
 					case IDM_USE_TLS:
-						m_settings.useTls = !m_settings.useTls;
-						if (m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
-							selectIntegratedStyle(m_settings.styleIdentifier);
-						} else {
-							updateStyleMenu();
-						}
+						toggleTls();
 						break;
 
 					default:
@@ -246,6 +214,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 			}
 
 			case WM_NOTIFY: {
+				// Check if notification was a click at the attribution text part of the status bar
 				LPNMHDR nm = reinterpret_cast<LPNMHDR>(lParam);
 				if (nm->idFrom == STATUS_BAR_CONTROL_IDENTIFIER && nm->code == NM_CLICK) {
 					LPNMMOUSE mouse = reinterpret_cast<LPNMMOUSE>(lParam);
@@ -258,30 +227,13 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_MOUSEWHEEL: {
-				bool zoomedIn = static_cast<short>(HIWORD(wParam)) > 0;
-				int newZoomLevel = m_settings.zoomLevel + (zoomedIn ? 1 : -1);
-				if (newZoomLevel > m_maxZoomLevel) {
-					break;
-				}
-				POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-				ScreenToClient(m_mapControl->m_hwndMap, &pt);
-				m_mapControl->setZoomLevelKeepingFixPoint(newZoomLevel, pt.x, pt.y);
-				m_mapControl->getSettings(&m_settings);
-				updateStatusBarZoom();
-				m_mapControl->requestRedraw();
+			case WM_MOUSEWHEEL:
+				zoomByMouseWheel(static_cast<short>(HIWORD(wParam)) > 0 ? 1 : -1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
-			}
 
-			case WM_USER_MAP_LONLAT_UPDATE: {
-				LonLat* updatedLonLat = reinterpret_cast<LonLat*>(lParam);
-				char statusText[128];
-				sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
-				SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LON, reinterpret_cast<LPARAM>(statusText));
-				sprintf(statusText, TEXT("lat: %.6f"), updatedLonLat->lat);
-				SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
+			case WM_USER_MAP_LONLAT_UPDATE:
+				onLonLatUpdate(reinterpret_cast<LonLat*>(lParam));
 				break;
-			}
 
 			case WM_USER_SEARCH_SET_LONLAT: {
 				m_mapControl->setCenterLonLat(reinterpret_cast<LonLat*>(lParam));
@@ -370,6 +322,74 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 	return FALSE;
 }
 
+void MainWindow::zoom(int zoomLevelDelta) {
+	int newZoomLevel = m_settings.zoomLevel + zoomLevelDelta;
+	if (newZoomLevel > m_maxZoomLevel || newZoomLevel < 0) {
+		return;
+	}
+	m_mapControl->setZoomLevel(newZoomLevel);
+	m_mapControl->getSettings(&m_settings);
+	updateStatusBarZoom();
+	m_mapControl->requestRedraw();
+}
+
+void MainWindow::zoomByMouseWheel(int zoomLevelDelta, int x, int y) {
+	int newZoomLevel = m_settings.zoomLevel + zoomLevelDelta;
+	if (newZoomLevel > m_maxZoomLevel || newZoomLevel < 0) {
+		return;
+	}
+	POINT pt = {x, y};
+	ScreenToClient(m_mapControl->m_hwndMap, &pt);
+	m_mapControl->setZoomLevelKeepingFixPoint(newZoomLevel, pt.x, pt.y);
+	m_mapControl->getSettings(&m_settings);
+	updateStatusBarZoom();
+	m_mapControl->requestRedraw();
+}
+
+void MainWindow::move(int direction) {
+	switch (direction) {
+		case IDM_UP:
+			m_mapControl->setOffset(0, -ARROW_KEYS_MOVE_DISTANCE);
+			break;
+		case IDM_RIGHT:
+			m_mapControl->setOffset(ARROW_KEYS_MOVE_DISTANCE, 0);
+			break;
+		case IDM_DOWN:
+			m_mapControl->setOffset(0, +ARROW_KEYS_MOVE_DISTANCE);
+			break;
+		case IDM_LEFT:
+			m_mapControl->setOffset(-ARROW_KEYS_MOVE_DISTANCE, 0);
+			break;
+		default:
+			throw "Unexpected move direction";
+	}
+	m_mapControl->moveToOffset();
+	m_mapControl->requestRedraw();
+}
+
+void MainWindow::toggleTls() {
+	m_settings.useTls = !m_settings.useTls;
+	if (m_settings.styleIdentifier != IDM_STYLE_CUSTOM) {
+		selectIntegratedStyle(m_settings.styleIdentifier);
+	} else {
+		updateStyleMenu();
+	}
+}
+
+void MainWindow::showCustomStyleDialog() {
+	int result = DialogBoxParam(
+		m_hInstance,
+		reinterpret_cast<LPCTSTR>(IDD_CUSTOMSTYLE),
+		m_hWnd,
+		reinterpret_cast<DLGPROC>(MainWindow::customStyleDialogWndProcStatic),
+		reinterpret_cast<LPARAM>(this)
+	);
+	if (result == IDOK) {
+		m_settings.styleIdentifier = IDM_STYLE_CUSTOM;
+		selectCustomStyle();
+	}
+}
+
 void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 	const Style* style = m_styleDatabase.get(styleIdentifier);
 	m_settings.styleIdentifier = styleIdentifier;
@@ -394,6 +414,14 @@ void MainWindow::selectCustomStyle() {
 	m_mapControl->requestRedraw();
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
 	updateStyleMenu();
+}
+
+void MainWindow::onLonLatUpdate(LonLat* updatedLonLat) {
+	char statusText[128];
+	sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LON, reinterpret_cast<LPARAM>(statusText));
+	sprintf(statusText, TEXT("lat: %.6f"), updatedLonLat->lat);
+	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
 }
 
 void MainWindow::updateStyleMenu() {
