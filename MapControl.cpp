@@ -46,9 +46,6 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
 }
 
-MapControl::~MapControl() {
-}
-
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	try {
 		switch (message) {
@@ -135,10 +132,8 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				break;
 			}
 
-			case WM_DESTROY:
-				// TODO: delete it on WM_NCDESTROY?
+			case WM_NCDESTROY:
 				delete this;
-
 				break;
 
 			default:

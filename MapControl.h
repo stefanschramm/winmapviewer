@@ -10,7 +10,6 @@
 class MapControl {
   public:
 	MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache);
-	~MapControl();
 
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
