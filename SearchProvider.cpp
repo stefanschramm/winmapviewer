@@ -23,7 +23,7 @@ SearchProvider::~SearchProvider() {
 	InternetCloseHandle(m_hInternet);
 }
 
-std::wstring* SearchProvider::doQuery(std::wstring locationName) {
+std::wstring* SearchProvider::doQuery(std::wstring locationName) const {
 	std::stringstream strstr;
 	// Reverse proxy server URL is used to be able to centrally disable/change usage if required.
 	// TODO: add option to (not) use TLS
@@ -66,7 +66,7 @@ std::wstring getAttribute(IXMLDOMNamedNodeMap* attrs, const wchar_t* attributeNa
 	return value;
 }
 
-std::vector<SearchResult> SearchProvider::search(std::wstring locationName, std::vector<SearchResult> searchResults) {
+std::vector<SearchResult> SearchProvider::search(std::wstring locationName, std::vector<SearchResult> searchResults) const {
 	std::wstring* rawXml = doQuery(locationName);
 
 	CoInitialize(NULL);

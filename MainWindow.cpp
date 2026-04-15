@@ -35,12 +35,14 @@ MainWindow::MainWindow(
 	MainWindowManager& mainWindowManager,
 	const StyleDatabase& styleDatabase,
 	Settings settings,
-	TileCache& tileCache
+	TileCache& tileCache,
+	const SearchProvider& searchProvider
 ) : m_hInstance(hInstance),
 	m_mainWindowManager(mainWindowManager),
 	m_styleDatabase(styleDatabase),
 	m_settings(settings),
 	m_tileCache(tileCache),
+	m_searchProvider(searchProvider),
 	m_maxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL) {
 }
 
@@ -157,7 +159,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 					case IDM_SEARCH:
 						// Freed by itself on WM_DESTORY
-						new SearchDialog(m_hInstance, m_hWnd);
+						new SearchDialog(m_hInstance, m_hWnd, m_searchProvider);
 						break;
 
 					case IDM_NEW_WINDOW: {

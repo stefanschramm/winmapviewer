@@ -14,8 +14,7 @@
 
 #define IDM_OPEN_IN_OSM 10002
 
-SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd) : m_hwndMain(hWnd), m_searchProvider(NULL) {
-	m_searchProvider = new SearchProvider();
+SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd, const SearchProvider& searchProvider) : m_hwndMain(hWnd), m_searchProvider(searchProvider) {
 
 	DialogBoxParam(
 		hInstance,
@@ -24,10 +23,6 @@ SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd) : m_hwndMain(hWnd), m
 		reinterpret_cast<DLGPROC>(SearchDialog::wndProcStatic),
 		reinterpret_cast<LPARAM>(this)
 	);
-}
-
-SearchDialog::~SearchDialog() {
-	delete m_searchProvider;
 }
 
 LRESULT CALLBACK SearchDialog::wndProcStatic(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -143,7 +138,7 @@ void SearchDialog::ok() {
 	GetWindowTextW(hInputField, &locationName[0], length);
 
 	// TODO: Do search in a thread
-	m_searchResults = m_searchProvider->search(locationName, m_searchResults);
+	m_searchResults = m_searchProvider.search(locationName, m_searchResults);
 	updateResultList();
 }
 

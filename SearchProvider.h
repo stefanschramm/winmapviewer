@@ -4,6 +4,7 @@
 #pragma warning(disable : 4786)
 
 #include <vector>
+#include <windows.h>
 #include <wininet.h>
 
 #include "Common.h"
@@ -21,10 +22,10 @@ class SearchProvider {
   public:
 	SearchProvider();
 	~SearchProvider();
-	std::vector<SearchResult> search(std::wstring locationName, std::vector<SearchResult> searchResults);
+	std::vector<SearchResult> search(std::wstring locationName, std::vector<SearchResult> searchResults) const;
 
   private:
-	std::wstring* doQuery(std::wstring locationName);
+	std::wstring* doQuery(std::wstring locationName) const;
 
 	HINTERNET m_hInternet;
 };

@@ -7,13 +7,14 @@
 
 #include "MainWindowManager.h"
 #include "MapControl.h"
+#include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
 
 class MainWindow {
   public:
-	MainWindow(HINSTANCE hInstance, MainWindowManager& mainWindowManager, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache);
+	MainWindow(HINSTANCE hInstance, MainWindowManager& mainWindowManager, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache, const SearchProvider& searchProvider);
 	bool create(int nCmdShow);
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -44,6 +45,7 @@ class MainWindow {
 	const StyleDatabase& m_styleDatabase;
 	Settings m_settings;
 	TileCache& m_tileCache;
+	const SearchProvider& m_searchProvider;
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;

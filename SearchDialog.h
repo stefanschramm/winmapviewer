@@ -9,12 +9,11 @@
 
 class SearchDialog {
   public:
-	SearchDialog(HINSTANCE hInst, HWND hWnd);
-	~SearchDialog();
+	SearchDialog(HINSTANCE hInst, HWND hWnd, const SearchProvider& searchProvider);
 	static LRESULT CALLBACK wndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
-	SearchProvider* m_searchProvider;
+	const SearchProvider& m_searchProvider;
 	// Not sure why I need to store it and why GetParent(hDlg) does not return this hWnd...
 	HWND m_hwndMain;
 	HWND m_hwndDialog;

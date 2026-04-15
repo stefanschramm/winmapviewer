@@ -9,6 +9,7 @@
 #include "HiddenWindow.h"
 #include "MainWindow.h"
 #include "MainWindowManager.h"
+#include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
 #include "resource.h"
@@ -26,7 +27,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		TileCache tileCache(downloadWorker);
 		HiddenWindow hiddenWindow(hInstance, tileCache);
 		downloadWorker.setNotificationReceiver(hiddenWindow.create());
-		MainWindowManager mainWindowManager(hInstance, styleDatabase, tileCache);
+		SearchProvider searchProvider;
+		MainWindowManager mainWindowManager(hInstance, styleDatabase, tileCache, searchProvider);
 
 		mainWindowManager.create(loadSettingsFromRegistry(), nCmdShow);
 
