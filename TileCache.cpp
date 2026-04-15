@@ -44,6 +44,10 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	// download asynchronously
 	m_downloadWorker.download(tileKey);
 
+	// TODO: Check if a nearby zoom level has the corresponding tile(-quadruple)
+	// and deliver a scaled version of it temporarily?
+	// CacheContent should have a flag if it's the actual tile or a scaled version.
+
 	return m_hPlaceholderBitmap;
 }
 
@@ -55,7 +59,6 @@ void TileCache::unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscri
 		if (!iterator->second.available && iterator->second.subscribers.empty()) {
 			// No one else was waiting for this tile
 			m_downloadWorker.unqueue(iterator->first);
-			// Remove entry with reference to placeholder image
 			m_cache.erase((iterator++)->first);
 		} else {
 			++iterator;
@@ -91,9 +94,11 @@ void TileCache::onDownloadFinished() {
 			notifySubscribers(cacheIterator->first, cacheIterator->second.subscribers);
 			cacheIterator->second.subscribers.clear();
 		} else {
-			// TODO: Currently this should not happen, because on every download start a cache entry is created.
-			// When cache invalidation gets implemented we probably need to take care of this.
-			// Directly Delete HBITMAP because it's not used anymore? Or just put it into cache?
+			// A download has finished that had no subscribers - keep tile for later usage
+			CacheContent cacheContent;
+			cacheContent.available = true;
+			cacheContent.bitmap = finishedIterator->second;
+			m_cache[finishedIterator->first] = cacheContent;
 		}
 	}
 }
