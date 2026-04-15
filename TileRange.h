@@ -4,7 +4,6 @@
 #pragma warning(disable : 4786)
 
 #include "TileKey.h"
-#include <iostream>
 
 /**
  * Represents a range (rectangle) of tiles for a specific zoom level and style

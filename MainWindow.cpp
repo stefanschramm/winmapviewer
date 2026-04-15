@@ -2,7 +2,6 @@
 #include <windows.h>
 #include <commctrl.h>
 // clang-format on
-#include <iostream>
 #include <windowsx.h>
 
 #include "Common.h"
@@ -105,7 +104,6 @@ void MainWindow::createMainWindow() {
 	);
 
 	if (!m_hWnd) {
-		std::cout << GetLastError() << std::endl;
 		throw "Unable to create main window.";
 	}
 
@@ -253,8 +251,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 	} catch (char const* e) {
-		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cerr << "Exception caught in main window procedure: " << e << std::endl;
+		panicMessage("main window procedure", e);
 		exit(EXIT_FAILURE);
 	}
 

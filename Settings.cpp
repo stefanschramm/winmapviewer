@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "Settings.h"
 #include "resource.h"
 

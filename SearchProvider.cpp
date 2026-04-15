@@ -1,4 +1,3 @@
-#include <iostream>
 #include <sstream>
 
 // VC++ 6 compatibility

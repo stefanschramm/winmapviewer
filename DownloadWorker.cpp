@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <iostream>
 
 #include "Common.h"
 #include "DownloadWorker.h"
@@ -64,8 +63,7 @@ void DownloadWorker::run() {
 			}
 		}
 	} catch (char const* e) {
-		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cerr << "Exception caught in download worker main loop: " << e << std::endl;
+		panicMessage("download worker main loop", e);
 		exit(EXIT_FAILURE);
 	}
 }

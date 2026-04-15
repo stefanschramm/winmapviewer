@@ -4,7 +4,6 @@
 #include <commctrl.h>
 // clang-format on
 #include <cstdlib>
-#include <iostream>
 
 #include "HiddenWindow.h"
 #include "MainWindow.h"
@@ -43,8 +42,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		return msg.wParam;
 	} catch (char const* e) {
-		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cerr << "Exception caught in WinMain: " << e << std::endl;
+		panicMessage("WinMain", e);
 		exit(EXIT_FAILURE);
 	}
 }

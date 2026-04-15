@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <windows.h>
@@ -146,8 +145,7 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 	} catch (char const* e) {
-		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cerr << "Exception caught in map control window procedure: " << e << std::endl;
+		panicMessage("map control window procedure", e);
 		exit(EXIT_FAILURE);
 	}
 

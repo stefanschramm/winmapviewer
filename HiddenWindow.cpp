@@ -1,7 +1,5 @@
-#include <iostream>
-
-#include "Common.h"
 #include "HiddenWindow.h"
+#include "Common.h"
 
 HiddenWindow::HiddenWindow(HINSTANCE hInstance, TileCache& tileCache) : m_hInstance(hInstance), m_tileCache(tileCache) {
 }
@@ -31,7 +29,6 @@ HWND HiddenWindow::create() {
 	);
 
 	if (!hwnd) {
-		std::cout << GetLastError() << std::endl;
 		throw "Unable to create hidden window.";
 	}
 

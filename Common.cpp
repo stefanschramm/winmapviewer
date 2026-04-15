@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 
 #include "Common.h"
@@ -83,4 +84,9 @@ std::string parseStyleUrlTemplate(const TileKey& tileKey) {
 	strstr << tileKey.styleUrlTemplate.substr(from);
 
 	return strstr.str();
+}
+
+void panicMessage(const char* place, const char* message) {
+	std::cerr << "Exception caught in " << place << ": " << message << std::endl;
+	MessageBox(NULL, message, TEXT("winmapviewer"), MB_OK);
 }

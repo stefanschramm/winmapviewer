@@ -3,7 +3,6 @@
 #include <windows.h>
 #include <commctrl.h>
 // clang-format on
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <windowsx.h>
@@ -41,8 +40,7 @@ LRESULT CALLBACK SearchDialog::wndProcStatic(HWND hDialog, UINT message, WPARAM 
 
 		return self->wndProc(hDialog, message, wParam, lParam);
 	} catch (char const* e) {
-		MessageBox(NULL, e, TEXT("winmapviewer"), MB_OK);
-		std::cerr << "Exception caught in search dialog procedure: " << e << std::endl;
+		panicMessage("search dialog procedure", e);
 		exit(EXIT_FAILURE);
 	}
 }
