@@ -44,7 +44,7 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	// download asynchronously
 	m_downloadWorker.download(tileKey);
 
-	return m_cache[tileKey].bitmap;
+	return m_hPlaceholderBitmap;
 }
 
 void TileCache::unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber) {
