@@ -23,6 +23,7 @@ class TileCache {
 	TileCache(DownloadWorker& downloadWorker);
 	~TileCache();
 	HBITMAP get(const TileKey& tileKey, HWND hwndSubscriber);
+	HBITMAP getFromCache(const TileKey& tileKey);
 	void unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber);
 	void clear();
 	void onDownloadFinished();

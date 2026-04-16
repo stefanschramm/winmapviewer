@@ -1,16 +1,31 @@
 #include "MainWindowManager.h"
 #include "MainWindow.h"
 
-MainWindowManager::MainWindowManager(HINSTANCE hInstance, const StyleDatabase& styleDatabase, TileCache& tileCache, const SearchProvider& searchProvider)
-	: m_styleDatabase(styleDatabase),
-	  m_tileCache(tileCache),
+MainWindowManager::MainWindowManager(
+	const MapPrinter& mapPrinter,
+	const SearchProvider& searchProvider,
+	const StyleDatabase& styleDatabase,
+	TileCache& tileCache,
+	HINSTANCE hInstance
+)
+	: m_mapPrinter(mapPrinter),
 	  m_searchProvider(searchProvider),
-	  m_windowCount(0),
-	  m_hInstance(hInstance) {
+	  m_styleDatabase(styleDatabase),
+	  m_tileCache(tileCache),
+	  m_hInstance(hInstance),
+	  m_windowCount(0) {
 }
 
 void MainWindowManager::create(Settings settings, int nCmdShow) {
-	MainWindow* mainWindow = new MainWindow(m_hInstance, *this, m_styleDatabase, settings, m_tileCache, m_searchProvider);
+	MainWindow* mainWindow = new MainWindow(
+		*this,
+		m_mapPrinter,
+		m_searchProvider,
+		m_styleDatabase,
+		m_tileCache,
+		m_hInstance,
+		settings
+	);
 	mainWindow->create(nCmdShow);
 	m_windowCount++;
 }

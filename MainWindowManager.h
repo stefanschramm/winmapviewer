@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MapPrinter.h"
 #include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -10,14 +11,22 @@ class MainWindow;
 
 class MainWindowManager {
   public:
-	MainWindowManager(HINSTANCE hInstance, const StyleDatabase& styleDatabase, TileCache& tileCache, const SearchProvider& searchProvider);
+	MainWindowManager(
+		const MapPrinter& mapPrinter,
+		const SearchProvider& searchProvider,
+		const StyleDatabase& styleDatabase,
+		TileCache& tileCache,
+		HINSTANCE hInstance
+	);
 	void create(Settings settings, int nCmdShow);
 	void destroy(MainWindow* mainWindow);
 
   private:
+	const MapPrinter& m_mapPrinter;
+	const SearchProvider& m_searchProvider;
 	const StyleDatabase& m_styleDatabase;
 	TileCache& m_tileCache;
-	const SearchProvider& m_searchProvider;
-	int m_windowCount;
+
 	HINSTANCE m_hInstance;
+	int m_windowCount;
 };

@@ -4,7 +4,9 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include "Common.h"
 #include "MapControl.h"
+#include "TileIterator.h"
 #include "TileRange.h"
 
 #define IDM_COPY_LON_LAT 10001
@@ -28,11 +30,6 @@ double asinh(double x) {
 	return log(x + sqrt(x * x + 1));
 }
 
-// VC++ 6 compatibility
-int myMin(int a, int b) {
-	return a < b ? a : b;
-}
-
 MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	: m_hInstance(hInstance),
 	  m_hwndMain(hwndMain),
@@ -44,6 +41,11 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_y(0),
 	  m_dragging(false),
 	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
+	m_unmappedBrush = CreateSolidBrush(RGB(128, 128, 128));
+}
+
+MapControl::~MapControl() {
+	DeleteObject(m_unmappedBrush);
 }
 
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -196,81 +198,54 @@ void MapControl::requestRedraw() {
 }
 
 void MapControl::render(HDC hdcDestination, RECT* updateRect) {
-	// top left corner of complete map
 	long originX = m_x + m_offsetX;
 	long originY = m_y + m_offsetY;
-
 	restrictCoordinates(&originX, &originY);
 
-	// top left tile
-	int originTileX = originX >> TILE_SIZE_BITS;
-	int originTileY = originY >> TILE_SIZE_BITS;
+	TileIterator tileIterator(m_zoomLevel, originX, originY, m_viewportWidth, m_viewportHeight);
 
-	// offset within the top left tile
-	long offsetX = originX & TILE_INNER_OFFSET_MAP;
-	long offsetY = originY & TILE_INNER_OFFSET_MAP;
-
-	int maxExtend = 1 << m_zoomLevel;
-	int widthInTiles = (m_viewportWidth >> TILE_SIZE_BITS) + 2;
-	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
-
-	TileRange visibleTiles(
-		m_styleUrlTemplate,
-		m_zoomLevel,
-		originTileX,
-		originTileX + widthInTiles,
-		originTileY,
-		myMin(originTileY + heightInTiles, maxExtend)
+	m_tileCache.unqueueInvisible(
+		tileIterator.getTileRange(m_styleUrlTemplate),
+		m_hwndMap
 	);
-
-	// TODO: Don't do it on every render but just when moving?
-	m_tileCache.unqueueInvisible(visibleTiles, m_hwndMap);
 
 	HDC hMemDC = CreateCompatibleDC(hdcDestination);
 
-	// render one additional row/column of tiles at each edge
-	for (int x = 0; x < widthInTiles; x++) {
-		for (int y = 0; y < heightInTiles; y++) {
-			RECT tileRect = {
-				-offsetX + (x << TILE_SIZE_BITS),
-				-offsetY + (y << TILE_SIZE_BITS),
-				-offsetX + (x << TILE_SIZE_BITS) + TILE_SIZE,
-				-offsetY + (y << TILE_SIZE_BITS) + TILE_SIZE
-			};
-
-			RECT intersectRect;
-			if (updateRect != NULL && !IntersectRect(&intersectRect, &tileRect, updateRect)) {
-				continue;
-			}
-
-			int tileX = (originTileX + x) % maxExtend;
-			int tileY = originTileY + y;
-
-			if (tileY > maxExtend - 1) {
-				// south out of bounds
-				HBRUSH hBrush = CreateSolidBrush(RGB(128, 128, 128));
-				FillRect(hdcDestination, &tileRect, hBrush);
-				DeleteObject(hBrush);
-
-				continue;
-			}
-
-			TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
-
-			HBITMAP hBitmap = m_tileCache.get(tileKey, m_hwndMap);
-			SelectObject(hMemDC, hBitmap);
-			BitBlt(
-				hdcDestination,
-				tileRect.left,
-				tileRect.top,
-				TILE_SIZE,
-				TILE_SIZE,
-				hMemDC,
-				0,
-				0,
-				SRCCOPY
-			);
+	int tileX;
+	int tileY;
+	RECT tileRect;
+	while (tileIterator.next(&tileX, &tileY, &tileRect)) {
+		RECT intersectRect;
+		if (updateRect != NULL && !IntersectRect(&intersectRect, &tileRect, updateRect)) {
+			continue;
 		}
+
+		TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
+
+		HBITMAP hBitmap = m_tileCache.get(tileKey, m_hwndMap);
+		SelectObject(hMemDC, hBitmap);
+		BitBlt(
+			hdcDestination,
+			tileRect.left,
+			tileRect.top,
+			TILE_SIZE,
+			TILE_SIZE,
+			hMemDC,
+			0,
+			0,
+			SRCCOPY
+		);
+	}
+
+	// On low zoom levels (or large viewports) there is an unmapped area at the bottom (south)
+	int outOfRangeYOffset = tileIterator.getOutOfRangeYOffset();
+	if (outOfRangeYOffset > 0) {
+		RECT outOfBoundsRect;
+		outOfBoundsRect.left = 0;
+		outOfBoundsRect.right = m_viewportWidth;
+		outOfBoundsRect.top = outOfRangeYOffset;
+		outOfBoundsRect.bottom = m_viewportHeight;
+		FillRect(hdcDestination, &outOfBoundsRect, m_unmappedBrush);
 	}
 
 	DeleteDC(hMemDC);
@@ -369,41 +344,18 @@ void MapControl::restrictCoordinates(long* x, long* y) const {
 
 // Invalidate areas in which the tile is visible. On low zoom levels a tile can be visible multiple times due to the wrapping of the map.
 void MapControl::invalidateUpdateRects(const TileKey& tileKey) const {
-	// top left corner of complete map
 	long originX = m_x + m_offsetX;
 	long originY = m_y + m_offsetY;
-
 	restrictCoordinates(&originX, &originY);
 
-	// top left tile
-	int originTileX = originX >> TILE_SIZE_BITS;
-	int originTileY = originY >> TILE_SIZE_BITS;
+	TileIterator tileIterator(m_zoomLevel, originX, originY, m_viewportWidth, m_viewportHeight);
 
-	// offset within the top left tile
-	long offsetX = originX & TILE_INNER_OFFSET_MAP;
-	long offsetY = originY & TILE_INNER_OFFSET_MAP;
-
-	int maxExtend = 1 << m_zoomLevel;
-	int widthInTiles = (m_viewportWidth >> TILE_SIZE_BITS) + 2;
-	int heightInTiles = (m_viewportHeight >> TILE_SIZE_BITS) + 2;
-
-	// Check if the tile is visible in y direction
-	if (tileKey.y < originTileY || tileKey.y >= originTileY + heightInTiles || tileKey.y > maxExtend - 1) {
-		return;
-	}
-
-	int yOffset = tileKey.y - originTileY;
-	int pixelYTop = -offsetY + (yOffset << TILE_SIZE_BITS);
-	int pixelYBottom = pixelYTop + TILE_SIZE;
-
-	for (int x = 0; x < widthInTiles; x++) {
-		int tileX = (originTileX + x) % maxExtend;
-		if (tileX == tileKey.x) {
-			int pixelX_left = -offsetX + (x << TILE_SIZE_BITS);
-			int pixelX_right = pixelX_left + TILE_SIZE;
-
-			RECT updateRect = {pixelX_left, pixelYTop, pixelX_right, pixelYBottom};
-			InvalidateRect(m_hwndMap, &updateRect, FALSE);
+	int tileX;
+	int tileY;
+	RECT tileRect;
+	while (tileIterator.next(&tileX, &tileY, &tileRect)) {
+		if (tileKey.x == tileX && tileKey.y == tileY) {
+			InvalidateRect(m_hwndMap, &tileRect, FALSE);
 		}
 	}
 }

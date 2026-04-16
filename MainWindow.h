@@ -7,6 +7,7 @@
 
 #include "MainWindowManager.h"
 #include "MapControl.h"
+#include "MapPrinter.h"
 #include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -14,7 +15,15 @@
 
 class MainWindow {
   public:
-	MainWindow(HINSTANCE hInstance, MainWindowManager& mainWindowManager, const StyleDatabase& styleDatabase, Settings settings, TileCache& tileCache, const SearchProvider& searchProvider);
+	MainWindow(
+		MainWindowManager& mainWindowManager,
+		const MapPrinter& mapPrinter,
+		const SearchProvider& searchProvider,
+		const StyleDatabase& styleDatabase,
+		TileCache& tileCache,
+		HINSTANCE hInstance,
+		Settings settings
+	);
 	bool create(int nCmdShow);
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -33,19 +42,20 @@ class MainWindow {
 	void showCustomStyleDialog();
 	void selectIntegratedStyle(int styleIdentifier);
 	void selectCustomStyle();
+	void print();
 
 	void onLonLatUpdate(LonLat* updatedLonLat);
 
 	void updateStyleMenu();
 	void updateStatusBarZoom();
 
-	static int mainWindowCount;
-
+	const MapPrinter& m_mapPrinter;
 	MainWindowManager& m_mainWindowManager;
-	const StyleDatabase& m_styleDatabase;
-	Settings m_settings;
-	TileCache& m_tileCache;
 	const SearchProvider& m_searchProvider;
+	Settings m_settings;
+	const StyleDatabase& m_styleDatabase;
+	TileCache& m_tileCache;
+
 	HINSTANCE m_hInstance;
 	HWND m_hWnd;
 	HWND m_hwndStatusBar;

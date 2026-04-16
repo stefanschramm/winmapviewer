@@ -34,6 +34,7 @@
 #define ID_VIEW 32779
 #define IDC_STATIC -1
 #define IDM_NEW_WINDOW 800
+#define IDM_PRINT 900
 
 // Next default values for new objects
 //

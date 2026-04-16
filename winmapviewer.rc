@@ -45,6 +45,7 @@ BEGIN
     BEGIN
         MENUITEM "&New window",                 IDM_NEW_WINDOW
         MENUITEM "&Search\tF3",                 IDM_SEARCH
+        MENUITEM "&Print",                      IDM_PRINT
         MENUITEM "E&xit",                       IDM_EXIT
     END
     POPUP "&View"
@@ -80,6 +81,7 @@ BEGIN
     "-",            IDM_ZOOMOUT,            ASCII,  NOINVERT
     "/",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
     "?",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
+    "P",            IDM_PRINT,              CONTROL, VIRTKEY
     VK_DOWN,        IDM_DOWN,               VIRTKEY, NOINVERT
     VK_LEFT,        IDM_LEFT,               VIRTKEY, NOINVERT
     VK_RIGHT,       IDM_RIGHT,              VIRTKEY, NOINVERT

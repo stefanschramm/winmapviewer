@@ -10,6 +10,7 @@
 class MapControl {
   public:
 	MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache);
+	~MapControl();
 
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -39,6 +40,8 @@ class MapControl {
 	void endDragging(int x, int y);
 	void restrictCoordinates(long* x, long* y) const;
 	void invalidateUpdateRects(const TileKey& tileKey) const;
+
+	HBRUSH m_unmappedBrush;
 
 	std::string m_styleUrlTemplate;
 	int m_maxZoomLevel;

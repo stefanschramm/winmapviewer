@@ -6,6 +6,7 @@
 
 #include "Common.h"
 #include "MainWindow.h"
+#include "MapPrinter.h"
 #include "SearchDialog.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -27,21 +28,21 @@ const int STATUS_BAR_PART_ATTRIBUTION = 3;
 
 const int CUSTOM_STYLE_MAX_ZOOM_LEVEL = 30;
 
-int MainWindow::mainWindowCount = 0;
-
 MainWindow::MainWindow(
-	HINSTANCE hInstance,
 	MainWindowManager& mainWindowManager,
+	const MapPrinter& mapPrinter,
+	const SearchProvider& searchProvider,
 	const StyleDatabase& styleDatabase,
-	Settings settings,
 	TileCache& tileCache,
-	const SearchProvider& searchProvider
-) : m_hInstance(hInstance),
-	m_mainWindowManager(mainWindowManager),
-	m_styleDatabase(styleDatabase),
-	m_settings(settings),
-	m_tileCache(tileCache),
+	HINSTANCE hInstance,
+	Settings settings
+) : m_mainWindowManager(mainWindowManager),
+	m_mapPrinter(mapPrinter),
 	m_searchProvider(searchProvider),
+	m_styleDatabase(styleDatabase),
+	m_tileCache(tileCache),
+	m_hInstance(hInstance),
+	m_settings(settings),
 	m_maxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL) {
 }
 
@@ -106,8 +107,6 @@ void MainWindow::createMainWindow() {
 	if (!m_hWnd) {
 		throw "Unable to create main window.";
 	}
-
-	mainWindowCount++;
 }
 
 void MainWindow::createMapControl() {
@@ -194,6 +193,10 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 					case IDM_USE_TLS:
 						toggleTls();
+						break;
+
+					case IDM_PRINT:
+						print();
 						break;
 
 					default:
@@ -431,4 +434,22 @@ void MainWindow::updateStatusBarZoom() {
 	char statusText[16];
 	sprintf(statusText, TEXT("Zoom: %i"), m_settings.zoomLevel);
 	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ZOOM, reinterpret_cast<LPARAM>(statusText));
+}
+
+void MainWindow::print() {
+	std::string styleUrlTemplate;
+	if (m_settings.styleIdentifier == IDM_STYLE_CUSTOM) {
+		styleUrlTemplate = m_settings.customStyleUrlTemplate;
+	} else {
+		const Style* style = m_styleDatabase.get(m_settings.styleIdentifier);
+		styleUrlTemplate = m_settings.useTls ? style->url : style->urlInsecure;
+	}
+
+	m_mapPrinter.print(
+		m_hWnd,
+		m_settings.zoomLevel,
+		m_settings.centerX,
+		m_settings.centerY,
+		styleUrlTemplate
+	);
 }

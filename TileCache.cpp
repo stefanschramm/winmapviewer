@@ -51,6 +51,21 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	return m_hPlaceholderBitmap;
 }
 
+HBITMAP TileCache::getFromCache(const TileKey& tileKey) {
+	if (tileKey.x < 0 || tileKey.y < 0 || tileKey.x > (1 << tileKey.zoomLevel) || tileKey.y > (1 << tileKey.zoomLevel)) {
+		throw "Invalid tile requested";
+	}
+
+	std::map<TileKey, CacheContent>::iterator iterator = m_cache.find(tileKey);
+	if (iterator != m_cache.end()) {
+		if (iterator->second.available) {
+			return iterator->second.bitmap;
+		}
+	}
+
+	return NULL;
+}
+
 void TileCache::unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber) {
 	for (std::map<TileKey, CacheContent>::iterator iterator = m_cache.begin(); iterator != m_cache.end();) {
 		if (!visibleTiles.contains(iterator->first) && contains(iterator->second.subscribers, hwndSubscriber)) {
