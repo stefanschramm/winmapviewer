@@ -437,6 +437,8 @@ void MainWindow::updateStatusBarZoom() {
 }
 
 void MainWindow::print() {
+	m_mapControl->getSettings(&m_settings);
+
 	std::string styleUrlTemplate;
 	if (m_settings.styleIdentifier == IDM_STYLE_CUSTOM) {
 		styleUrlTemplate = m_settings.customStyleUrlTemplate;

@@ -75,6 +75,7 @@ void MapPrinter::print(
 		HBITMAP hBitmap = m_tileCache.getFromCache(tileKey);
 		if (hBitmap == NULL) {
 			hBitmap = m_tileDownloader.get(tileKey);
+			// TODO: We should put it into the cache once we downloaded it / directly implement blocking download functionality in cache
 		}
 
 		SelectObject(hMemDC, hBitmap);
