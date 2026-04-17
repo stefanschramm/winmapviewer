@@ -16,4 +16,6 @@ class MapPrinter {
 
   private:
 	TileCache& m_tileCache;
+
+	void renderPage(HDC hdcPrint, int zoomLevel, long centerX, long centerY, const std::string& styleUrlTemplate) const;
 };

@@ -48,6 +48,22 @@ void MapPrinter::print(
 		return;
 	}
 
+	renderPage(hdcPrint, zoomLevel, centerX, centerY, styleUrlTemplate);
+
+	if (EndPage(hdcPrint) <= 0) {
+		MessageBox(NULL, TEXT("EndPage problem"), TEXT("winmapviewer"), MB_OK);
+		DeleteDC(hdcPrint);
+		return;
+	}
+
+	if (EndDoc(hdcPrint) <= 0) {
+		MessageBox(NULL, TEXT("EndDoc problem"), TEXT("winmapviewer"), MB_OK);
+	}
+
+	DeleteDC(hdcPrint);
+}
+
+void MapPrinter::renderPage(HDC hdcPrint, int zoomLevel, long centerX, long centerY, const std::string& styleUrlTemplate) const {
 	HDC hMemDC = CreateCompatibleDC(hdcPrint);
 
 	int width = GetDeviceCaps(hdcPrint, HORZRES);
@@ -89,16 +105,4 @@ void MapPrinter::print(
 	}
 
 	DeleteDC(hMemDC);
-
-	if (EndPage(hdcPrint) <= 0) {
-		MessageBox(NULL, TEXT("EndPage problem"), TEXT("winmapviewer"), MB_OK);
-		DeleteDC(hdcPrint);
-		return;
-	}
-
-	if (EndDoc(hdcPrint) <= 0) {
-		MessageBox(NULL, TEXT("EndDoc problem"), TEXT("winmapviewer"), MB_OK);
-	}
-
-	DeleteDC(hdcPrint);
 }
