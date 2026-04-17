@@ -28,7 +28,6 @@ std::wstring* SearchProvider::doQuery(std::wstring locationName) const {
 	// TODO: add option to (not) use TLS
 	strstr << "http://osm.kesto.de/nominatim/search?format=xml&limit=35&q=" << urlEncode(locationName);
 
-	// TODO: Add user agent and explicit referer header
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, strstr.str().c_str(), NULL, 0, 0, 0);
 	if (!hUrl) {
 		throw "Unable to do nominatim request.";
