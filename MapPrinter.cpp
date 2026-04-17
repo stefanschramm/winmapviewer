@@ -3,7 +3,7 @@
 #include "MapPrinter.h"
 #include "TileIterator.h"
 
-MapPrinter::MapPrinter(TileCache& tileCache, const TileDownloader& tileDownloader) : m_tileCache(tileCache), m_tileDownloader(tileDownloader) {
+MapPrinter::MapPrinter(TileCache& tileCache) : m_tileCache(tileCache) {
 }
 
 void MapPrinter::print(
@@ -72,11 +72,7 @@ void MapPrinter::print(
 			tileY
 		);
 
-		HBITMAP hBitmap = m_tileCache.getFromCache(tileKey);
-		if (hBitmap == NULL) {
-			hBitmap = m_tileDownloader.get(tileKey);
-			// TODO: We should put it into the cache once we downloaded it / directly implement blocking download functionality in cache
-		}
+		HBITMAP hBitmap = m_tileCache.getBlocking(tileKey);
 
 		SelectObject(hMemDC, hBitmap);
 		BitBlt(

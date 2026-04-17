@@ -3,8 +3,9 @@
 #include "Common.h"
 #include "TileCache.h"
 
-TileCache::TileCache(DownloadWorker& downloadWorker)
-	: m_downloadWorker(downloadWorker) {
+TileCache::TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileDownloader)
+	: m_downloadWorker(downloadWorker),
+	  m_tileDownloader(tileDownloader) {
 	m_hPlaceholderBitmap = createPlaceholderBitmap(false);
 }
 
@@ -51,19 +52,24 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	return m_hPlaceholderBitmap;
 }
 
-HBITMAP TileCache::getFromCache(const TileKey& tileKey) {
+HBITMAP TileCache::getBlocking(const TileKey& tileKey) {
 	if (tileKey.x < 0 || tileKey.y < 0 || tileKey.x > (1 << tileKey.zoomLevel) || tileKey.y > (1 << tileKey.zoomLevel)) {
 		throw "Invalid tile requested";
 	}
 
 	std::map<TileKey, CacheContent>::iterator iterator = m_cache.find(tileKey);
-	if (iterator != m_cache.end()) {
-		if (iterator->second.available) {
-			return iterator->second.bitmap;
-		}
+	if (iterator != m_cache.end() && iterator->second.available) {
+		return iterator->second.bitmap;
 	}
 
-	return NULL;
+	HBITMAP hBitmap = m_tileDownloader.get(tileKey);
+
+	CacheContent cacheContent;
+	cacheContent.available = true;
+	cacheContent.bitmap = hBitmap;
+	m_cache[tileKey] = cacheContent;
+
+	return hBitmap;
 }
 
 void TileCache::unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber) {

@@ -24,11 +24,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		const GdiPlusWrapper gdiPlusWrapper;
 		const TileDownloader tileDownloader(gdiPlusWrapper);
 		DownloadWorker downloadWorker(tileDownloader);
-		TileCache tileCache(downloadWorker);
+		TileCache tileCache(downloadWorker, tileDownloader);
 		HiddenWindow hiddenWindow(hInstance, tileCache);
 		downloadWorker.setNotificationReceiver(hiddenWindow.create());
 		const SearchProvider searchProvider;
-		const MapPrinter mapPrinter(tileCache, tileDownloader);
+		const MapPrinter mapPrinter(tileCache);
 		MainWindowManager mainWindowManager(mapPrinter, searchProvider, styleDatabase, tileCache, hInstance);
 
 		mainWindowManager.create(loadSettingsFromRegistry(), nCmdShow);

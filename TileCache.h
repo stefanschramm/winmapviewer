@@ -20,16 +20,17 @@ struct CacheContent {
 
 class TileCache {
   public:
-	TileCache(DownloadWorker& downloadWorker);
+	TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileDownloader);
 	~TileCache();
 	HBITMAP get(const TileKey& tileKey, HWND hwndSubscriber);
-	HBITMAP getFromCache(const TileKey& tileKey);
+	HBITMAP getBlocking(const TileKey& tileKey);
 	void unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber);
 	void clear();
 	void onDownloadFinished();
 
   private:
 	DownloadWorker& m_downloadWorker;
+	const TileDownloader& m_tileDownloader;
 
 	std::map<TileKey, CacheContent> m_cache;
 	HBITMAP m_hPlaceholderBitmap;

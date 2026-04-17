@@ -5,7 +5,7 @@
 
 class MapPrinter {
   public:
-	MapPrinter(TileCache& tileCache, const TileDownloader& m_tileDownloader);
+	MapPrinter(TileCache& tileCache);
 	void print(
 		HWND hwndParent,
 		int zoomLevel,
@@ -16,5 +16,4 @@ class MapPrinter {
 
   private:
 	TileCache& m_tileCache;
-	const TileDownloader& m_tileDownloader;
 };
