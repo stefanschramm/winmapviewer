@@ -1,8 +1,11 @@
 APPNAME = winmapviewer
 
+ARCH = i686
+# ARCH = x86_64
+
 # Install MinGW in Debian: apt-get install g++-mingw-w64
-CC = i686-w64-mingw32-g++
-RC = i686-w64-mingw32-windres
+CC = $(ARCH)-w64-mingw32-g++
+RC = $(ARCH)-w64-mingw32-windres
 
 CFLAGS = -mwindows -static-libgcc -static-libstdc++ -s -Os
 LFLAGS = -luser32 -lgdi32 -lole32 -lcomctl32 -lwininet -lmsxml2 -loleaut32

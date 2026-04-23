@@ -31,12 +31,12 @@ LRESULT CALLBACK SearchDialog::wndProcStatic(HWND hDialog, UINT message, WPARAM 
 		if (message == WM_INITDIALOG) {
 			// Store pointer to SearchDialog instance
 			self = reinterpret_cast<SearchDialog*>(lParam);
-			SetWindowLong(hDialog, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hDialog, GWLP_USERDATA, lParam);
 			self->init(hDialog);
 			return FALSE;
 		}
 
-		self = reinterpret_cast<SearchDialog*>(GetWindowLong(hDialog, GWL_USERDATA));
+		self = reinterpret_cast<SearchDialog*>(GetWindowLongPtr(hDialog, GWLP_USERDATA));
 
 		return self->wndProc(hDialog, message, wParam, lParam);
 	} catch (char const* e) {

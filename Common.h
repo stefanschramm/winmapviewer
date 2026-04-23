@@ -6,6 +6,21 @@
 #include <string>
 #include <windows.h>
 
+// VC++ 6 compatibility
+#if _MSC_VER == 1200
+typedef long LONG_PTR;
+typedef unsigned long ULONG_PTR;
+#endif
+
+#ifndef GWLP_USERDATA
+#define GWLP_USERDATA GWL_USERDATA
+#endif
+
+#ifndef SetWindowLongPtr
+#define SetWindowLongPtr(hwnd, index, value) SetWindowLong(hwnd, index, (LONG)(value))
+#define GetWindowLongPtr(hwnd, index) GetWindowLong(hwnd, index)
+#endif
+
 #include "TileKey.h"
 
 // Map control notifies parent window about current cursor position
@@ -44,9 +59,9 @@ class WndProcStaticHelper {
 		if (message == WM_NCCREATE) {
 			CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
 			self = reinterpret_cast<T*>(cs->lpCreateParams);
-			SetWindowLong(hWnd, GWL_USERDATA, reinterpret_cast<LONG>(self));
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)self);
 		} else {
-			self = reinterpret_cast<T*>(GetWindowLong(hWnd, GWL_USERDATA));
+			self = reinterpret_cast<T*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 		}
 
 		if (!self) {
@@ -54,7 +69,7 @@ class WndProcStaticHelper {
 		}
 
 		if (message == WM_NCDESTROY) {
-			SetWindowLong(hWnd, GWL_USERDATA, 0);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, 0);
 		}
 
 		return self->wndProc(hWnd, message, wParam, lParam);

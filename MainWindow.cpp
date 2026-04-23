@@ -281,11 +281,11 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 	switch (message) {
 		case WM_INITDIALOG:
 			// Store pointer to MainWindow instance
-			SetWindowLong(hwndDialog, GWL_USERDATA, lParam);
+			SetWindowLongPtr(hwndDialog, GWLP_USERDATA, lParam);
 			return TRUE;
 
 		case WM_COMMAND:
-			MainWindow* mainWindow = reinterpret_cast<MainWindow*>(GetWindowLong(hwndDialog, GWL_USERDATA));
+			MainWindow* mainWindow = reinterpret_cast<MainWindow*>(GetWindowLong(hwndDialog, GWLP_USERDATA));
 			if (LOWORD(wParam) == IDOK) {
 				HWND hInputField = GetDlgItem(hwndDialog, IDC_DLG_TEXT);
 				int length = GetWindowTextLength(hInputField) + 1;
@@ -297,7 +297,7 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 				try {
 					parseStyleUrlTemplate(dummyTileKey);
 				} catch (const char* e) {
-					MessageBox(NULL, e, TEXT("Invalid URL template"), MB_OK);
+					MessageBoxA(NULL, e, "Invalid URL template", MB_OK);
 					return TRUE;
 				}
 
@@ -398,7 +398,7 @@ void MainWindow::selectIntegratedStyle(int styleIdentifier) {
 	}
 
 	m_mapControl->requestRedraw();
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT(style->attributionText)));
+	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(style->attributionText));
 	updateStyleMenu();
 }
 
@@ -406,16 +406,16 @@ void MainWindow::selectCustomStyle() {
 	m_mapControl->setStyle(m_settings.customStyleUrlTemplate);
 	m_maxZoomLevel = CUSTOM_STYLE_MAX_ZOOM_LEVEL;
 	m_mapControl->requestRedraw();
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>(TEXT("Custom map style")));
+	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ATTRIBUTION, reinterpret_cast<LPARAM>("Custom map style"));
 	updateStyleMenu();
 }
 
 void MainWindow::onLonLatUpdate(LonLat* updatedLonLat) {
 	char statusText[128];
-	sprintf(statusText, TEXT("lon: %.6f"), updatedLonLat->lon);
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LON, reinterpret_cast<LPARAM>(statusText));
-	sprintf(statusText, TEXT("lat: %.6f"), updatedLonLat->lat);
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
+	sprintf(statusText, "lon: %.6f", updatedLonLat->lon);
+	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LON, reinterpret_cast<LPARAM>(statusText));
+	sprintf(statusText, "lat: %.6f", updatedLonLat->lat);
+	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
 }
 
 void MainWindow::updateStyleMenu() {
@@ -432,8 +432,8 @@ void MainWindow::updateStyleMenu() {
 
 void MainWindow::updateStatusBarZoom() {
 	char statusText[16];
-	sprintf(statusText, TEXT("Zoom: %i"), m_settings.zoomLevel);
-	SendMessage(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ZOOM, reinterpret_cast<LPARAM>(statusText));
+	sprintf(statusText, "Zoom: %i", m_settings.zoomLevel);
+	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_ZOOM, reinterpret_cast<LPARAM>(statusText));
 }
 
 void MainWindow::print() {

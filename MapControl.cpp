@@ -55,7 +55,7 @@ LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				switch (LOWORD(wParam)) {
 					case IDM_COPY_LON_LAT: {
 						char latLonTxt[256];
-						sprintf(latLonTxt, TEXT("%.8f %.8f"), m_clickLonLat.lat, m_clickLonLat.lon);
+						sprintf(latLonTxt, "%.8f %.8f", m_clickLonLat.lat, m_clickLonLat.lon);
 						putTextIntoClipboard(latLonTxt);
 						break;
 					}

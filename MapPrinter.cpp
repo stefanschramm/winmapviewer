@@ -1,3 +1,7 @@
+// clang-format off
+#include <windows.h>
+#include <commctrl.h>
+// clang-format on
 #include <iostream>
 
 #include "MapPrinter.h"
