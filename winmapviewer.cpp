@@ -14,8 +14,6 @@
 #include "StyleDatabase.h"
 #include "resource.h"
 
-#define MAX_LOADSTRING 100
-
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	try {
 		InitCommonControls();
