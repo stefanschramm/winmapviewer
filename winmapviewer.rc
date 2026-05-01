@@ -82,6 +82,7 @@ BEGIN
     "/",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
     "?",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
     "P",            IDM_PRINT,              CONTROL, VIRTKEY
+    "N",            IDM_NEW_WINDOW,         CONTROL, VIRTKEY
     VK_DOWN,        IDM_DOWN,               VIRTKEY, NOINVERT
     VK_LEFT,        IDM_LEFT,               VIRTKEY, NOINVERT
     VK_RIGHT,       IDM_RIGHT,              VIRTKEY, NOINVERT
