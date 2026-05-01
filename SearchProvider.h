@@ -25,7 +25,7 @@ class SearchProvider {
 	std::vector<SearchResult> search(std::wstring locationName, std::vector<SearchResult> searchResults) const;
 
   private:
-	std::wstring* doQuery(std::wstring locationName) const;
+	std::string doQuery(std::wstring locationName) const;
 
 	HINTERNET m_hInternet;
 };
