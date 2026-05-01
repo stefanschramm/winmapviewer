@@ -13,10 +13,15 @@
 
 #define IDM_OPEN_IN_OSM 10002
 
-SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd, const SearchProvider& searchProvider) : m_hwndMain(hWnd), m_searchProvider(searchProvider) {
+SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd, const SearchProvider& searchProvider)
+	: m_hInstance(hInstance),
+	  m_hwndMain(hWnd),
+	  m_searchProvider(searchProvider) {
+}
 
+void SearchDialog::show() {
 	DialogBoxParam(
-		hInstance,
+		m_hInstance,
 		reinterpret_cast<LPCTSTR>(IDD_SEARCH),
 		m_hwndMain,
 		reinterpret_cast<DLGPROC>(SearchDialog::wndProcStatic),
@@ -32,8 +37,7 @@ LRESULT CALLBACK SearchDialog::wndProcStatic(HWND hDialog, UINT message, WPARAM 
 			// Store pointer to SearchDialog instance
 			self = reinterpret_cast<SearchDialog*>(lParam);
 			SetWindowLongPtr(hDialog, GWLP_USERDATA, lParam);
-			self->init(hDialog);
-			return FALSE;
+			return self->init(hDialog);
 		}
 
 		self = reinterpret_cast<SearchDialog*>(GetWindowLongPtr(hDialog, GWLP_USERDATA));
@@ -92,7 +96,7 @@ LRESULT CALLBACK SearchDialog::wndProc(HWND hDialog, UINT message, WPARAM wParam
 	return FALSE;
 }
 
-void SearchDialog::init(HWND hwndDialog) {
+BOOL SearchDialog::init(HWND hwndDialog) {
 	m_hwndDialog = hwndDialog;
 	m_hwndListView = GetDlgItem(hwndDialog, IDC_SEARCH_RESULTS);
 
@@ -123,6 +127,8 @@ void SearchDialog::init(HWND hwndDialog) {
 	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 6, reinterpret_cast<LPARAM>(&col));
 
 	updateResultList();
+
+	return TRUE;
 }
 
 void SearchDialog::ok() {
@@ -138,13 +144,12 @@ void SearchDialog::ok() {
 	// TODO: Do search in a thread
 	m_searchResults = m_searchProvider.search(locationName, m_searchResults);
 	updateResultList();
+
+	SetFocus(GetDlgItem(m_hwndDialog, IDC_SEARCH_RESULTS));
 }
 
 void SearchDialog::cancel() {
 	EndDialog(m_hwndDialog, IDCANCEL);
-
-	// TODO: Is this OK?
-	delete this;
 }
 
 void SearchDialog::openInOsm() {

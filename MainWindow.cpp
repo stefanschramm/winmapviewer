@@ -154,10 +154,11 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						DestroyWindow(m_hWnd);
 						break;
 
-					case IDM_SEARCH:
-						// Freed by itself on WM_DESTORY
-						new SearchDialog(m_hInstance, m_hWnd, m_searchProvider);
+					case IDM_SEARCH: {
+						SearchDialog searchDialog(m_hInstance, m_hWnd, m_searchProvider);
+						searchDialog.show();
 						break;
+					}
 
 					case IDM_NEW_WINDOW: {
 						m_mapControl->getSettings(&m_settings);

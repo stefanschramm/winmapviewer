@@ -10,18 +10,19 @@
 class SearchDialog {
   public:
 	SearchDialog(HINSTANCE hInst, HWND hWnd, const SearchProvider& searchProvider);
+	void show();
 	static LRESULT CALLBACK wndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
 	const SearchProvider& m_searchProvider;
-	// Not sure why I need to store it and why GetParent(hDlg) does not return this hWnd...
+	HINSTANCE m_hInstance;
 	HWND m_hwndMain;
 	HWND m_hwndDialog;
 	HWND m_hwndListView;
 	std::vector<SearchResult> m_searchResults;
 	SearchResult m_clickedSearchResult;
 
-	void init(HWND hwndDialog);
+	BOOL init(HWND hwndDialog);
 	void ok();
 	void cancel();
 	void openInOsm();
