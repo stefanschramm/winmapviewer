@@ -40,6 +40,8 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_x(0),
 	  m_y(0),
 	  m_dragging(false),
+	  m_dragStartX(0),
+	  m_dragStartY(0),
 	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
 	m_unmappedBrush = CreateSolidBrush(RGB(128, 128, 128));
 }
@@ -376,9 +378,11 @@ bool MapControl::mouseMove(int x, int y) {
 }
 
 void MapControl::endDragging(int x, int y) {
-	setOffset(m_dragStartX - x, m_dragStartY - y);
-	moveToOffset();
-	m_dragging = false;
+	if (m_dragging) {
+		setOffset(m_dragStartX - x, m_dragStartY - y);
+		moveToOffset();
+		m_dragging = false;
+	}
 }
 
 void MapControl::setStyle(const std::string& styleUrlTemplate) {
