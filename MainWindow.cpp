@@ -280,10 +280,17 @@ LRESULT CALLBACK MainWindow::aboutDialogWndProcStatic(HWND hDlg, UINT message, W
 
 LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam) {
 	switch (message) {
-		case WM_INITDIALOG:
+		case WM_INITDIALOG: {
 			// Store pointer to MainWindow instance
 			SetWindowLongPtr(hwndDialog, GWLP_USERDATA, lParam);
+
+			MainWindow* mainWindow = reinterpret_cast<MainWindow*>(lParam);
+
+			HWND hInputField = GetDlgItem(hwndDialog, IDC_DLG_TEXT);
+			SetWindowTextA(hInputField, mainWindow->m_settings.customStyleUrlTemplate.c_str());
+
 			return TRUE;
+		}
 
 		case WM_COMMAND:
 			MainWindow* mainWindow = reinterpret_cast<MainWindow*>(GetWindowLong(hwndDialog, GWLP_USERDATA));
