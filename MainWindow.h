@@ -8,6 +8,7 @@
 #include "MainWindowManager.h"
 #include "MapControl.h"
 #include "MapPrinter.h"
+#include "SearchDialog.h"
 #include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
@@ -61,4 +62,6 @@ class MainWindow {
 	HWND m_hwndStatusBar;
 	MapControl* m_mapControl;
 	int m_maxZoomLevel;
+
+	SearchDialog* m_searchDialog;
 };

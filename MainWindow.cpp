@@ -43,7 +43,8 @@ MainWindow::MainWindow(
 	m_tileCache(tileCache),
 	m_hInstance(hInstance),
 	m_settings(settings),
-	m_maxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL) {
+	m_maxZoomLevel(CUSTOM_STYLE_MAX_ZOOM_LEVEL),
+	m_searchDialog(NULL) {
 }
 
 bool MainWindow::create(int nCmdShow) {
@@ -155,8 +156,14 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						break;
 
 					case IDM_SEARCH: {
-						SearchDialog searchDialog(m_hInstance, m_hWnd, m_searchProvider);
-						searchDialog.show();
+						if (m_searchDialog == NULL) {
+							m_searchDialog = new SearchDialog(m_hInstance, m_hWnd, m_searchProvider);
+							m_searchDialog->show();
+						} else {
+							// TODO
+							MessageBoxA(m_hWnd, "Dialog object already exists", "TODO", MB_OK);
+							// m_searchDialog->show();
+						}
 						break;
 					}
 

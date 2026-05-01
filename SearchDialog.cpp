@@ -20,13 +20,14 @@ SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd, const SearchProvider&
 }
 
 void SearchDialog::show() {
-	DialogBoxParam(
+	m_hwndDialog = CreateDialogParam(
 		m_hInstance,
 		reinterpret_cast<LPCTSTR>(IDD_SEARCH),
 		m_hwndMain,
 		reinterpret_cast<DLGPROC>(SearchDialog::wndProcStatic),
 		reinterpret_cast<LPARAM>(this)
 	);
+	ShowWindow(m_hwndDialog, SW_SHOW);
 }
 
 LRESULT CALLBACK SearchDialog::wndProcStatic(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam) {
