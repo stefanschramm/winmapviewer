@@ -56,7 +56,6 @@ In other files just include "xml.h".
 extern "C" {
 #endif // __cplusplus
 
-#include <stdbool.h>
 #include <stddef.h>
 
 // ---------- REDEFINE FUNCTIONS VISIBILITY  ---------- //
@@ -181,7 +180,6 @@ XML_H_API void xml_node_free(XMLNode *node);
 
 #include <ctype.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -413,7 +411,7 @@ static void xml__parse_tag_attributes(const char *xml, size_t *idx, XMLNode **cu
       break;
     }
     size_t attr_len = *idx - attr_start;
-    char attr_key[attr_len + 1];
+    char* attr_key = (char*)malloc(attr_len + 1);
     strncpy(attr_key, xml + attr_start, attr_len);
     attr_key[attr_len] = '\0';
     xml__skip_whitespace(xml, idx);
@@ -431,12 +429,14 @@ static void xml__parse_tag_attributes(const char *xml, size_t *idx, XMLNode **cu
     }
     if (xml[*idx] == '\0') break;
     size_t value_len = *idx - value_start;
-    char attr_value[value_len + 1];
+    char* attr_value = (char*)malloc(value_len + 1);
     strncpy(attr_value, xml + value_start, value_len);
     attr_value[value_len] = '\0';
     (*idx)++; // Skip closing quote
     xml_node_add_attr(*curr_node, attr_key, attr_value);
     xml__skip_whitespace(xml, idx);
+    free(attr_key);
+    free(attr_value);
   }
 }
 
@@ -581,7 +581,7 @@ XML_H_API void xml_node_free(XMLNode *node) {
   XML_FREE(node->attrs->data);
   XML_FREE(node->attrs);
   // Recursively free the children
-  for (size_t i = 0; i < node->children->len; i++) xml_node_free((XMLNode *)node->children->data[i]);
+  for (size_t j = 0; j < node->children->len; j++) xml_node_free((XMLNode *)node->children->data[j]);
   XML_FREE(node->children->data);
   XML_FREE(node->children);
   // Free the tag
