@@ -62,6 +62,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Custom...",                   IDM_STYLE_CUSTOM
         END
+        MENUITEM "&Keep position of other windows in sync", IDM_SYNC_POSITION
     END
     POPUP "&Help"
     BEGIN

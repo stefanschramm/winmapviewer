@@ -35,6 +35,9 @@ const int WM_USER_TILE_AVAILABLE = WM_USER + 3;
 // Search dialog notifies main window that a search result was selected and the map should be centered to it
 const int WM_USER_SEARCH_SET_LONLAT = WM_USER + 4;
 
+// Map control notifies parent window about new map position (when dragging finishes)
+const int WM_USER_MAP_POSITION_UPDATED = WM_USER + 5;
+
 struct LonLat {
 	double lon;
 	double lat;

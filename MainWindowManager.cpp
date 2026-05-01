@@ -1,5 +1,8 @@
-#include "MainWindowManager.h"
+#include <algorithm>
+#include <iostream>
+
 #include "MainWindow.h"
+#include "MainWindowManager.h"
 
 MainWindowManager::MainWindowManager(
 	const MapPrinter& mapPrinter,
@@ -13,7 +16,7 @@ MainWindowManager::MainWindowManager(
 	  m_styleDatabase(styleDatabase),
 	  m_tileCache(tileCache),
 	  m_hInstance(hInstance),
-	  m_windowCount(0) {
+	  m_windows() {
 }
 
 void MainWindowManager::create(Settings settings, int nCmdShow) {
@@ -26,14 +29,23 @@ void MainWindowManager::create(Settings settings, int nCmdShow) {
 		m_hInstance,
 		settings
 	);
+	m_windows.push_back(mainWindow);
 	mainWindow->create(nCmdShow);
-	m_windowCount++;
 }
 
 void MainWindowManager::destroy(MainWindow* mainWindow) {
+	m_windows.erase(std::remove(m_windows.begin(), m_windows.end(), mainWindow));
 	delete mainWindow;
-	m_windowCount--;
-	if (m_windowCount == 0) {
+	if (m_windows.size() == 0) {
 		PostQuitMessage(0);
+	}
+}
+
+void MainWindowManager::setCenterLonLat(LonLat* lonLat, MainWindow* triggeringMainWindow) {
+	for (std::vector<MainWindow*>::iterator it = m_windows.begin(); it != m_windows.end(); ++it) {
+		if (*it == triggeringMainWindow) {
+			continue; // don't send to self
+		}
+		(*it)->setCenterLonLat(lonLat);
 	}
 }

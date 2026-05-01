@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "MapPrinter.h"
 #include "SearchProvider.h"
 #include "Settings.h"
@@ -20,6 +22,7 @@ class MainWindowManager {
 	);
 	void create(Settings settings, int nCmdShow);
 	void destroy(MainWindow* mainWindow);
+	void setCenterLonLat(LonLat* lonLat, MainWindow* triggeringMainWindow);
 
   private:
 	const MapPrinter& m_mapPrinter;
@@ -28,5 +31,5 @@ class MainWindowManager {
 	TileCache& m_tileCache;
 
 	HINSTANCE m_hInstance;
-	int m_windowCount;
+	std::vector<MainWindow*> m_windows;
 };

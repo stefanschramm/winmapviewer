@@ -264,6 +264,7 @@ void MapControl::moveToOffset() {
 	restrictCoordinates(&m_x, &m_y);
 	m_offsetX = 0;
 	m_offsetY = 0;
+	SendMessage(m_hwndMain, WM_USER_MAP_POSITION_UPDATED, 0, 0);
 }
 
 void MapControl::setCenterLonLat(const LonLat* lonLat) {
@@ -271,6 +272,10 @@ void MapControl::setCenterLonLat(const LonLat* lonLat) {
 	m_x = mapSize * (lonLat->lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
 	m_y = mapSize * (1.0 - asinh(tan(lonLat->lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
 	restrictCoordinates(&m_x, &m_y);
+}
+
+void MapControl::getCenterLonLat(LonLat* lonLat) {
+	getLonLat(m_viewportWidth / 2, m_viewportHeight / 2, lonLat);
 }
 
 void MapControl::setZoomLevel(int zoomLevel) {

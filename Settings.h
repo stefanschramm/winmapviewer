@@ -12,6 +12,7 @@ struct Settings {
 	int centerY;
 	bool useTls;
 	std::string customStyleUrlTemplate;
+	bool syncPosition;
 };
 
 Settings loadSettingsFromRegistry();

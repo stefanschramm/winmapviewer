@@ -28,6 +28,7 @@ class MainWindow {
 	static LRESULT CALLBACK customStyleDialogWndProcStatic(HWND hwndDialog, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK aboutDialogWndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void setCenterLonLat(LonLat* lonLat);
 
   private:
 	void createMainWindow();
@@ -46,7 +47,10 @@ class MainWindow {
 
 	void onLonLatUpdate(LonLat* updatedLonLat);
 
+	void syncOtherWindowsPositions();
+
 	void updateStyleMenu();
+	void updateSyncPositionMenuEntry();
 	void updateStatusBarZoom();
 
 	const MapPrinter& m_mapPrinter;

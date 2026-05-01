@@ -35,6 +35,7 @@
 #define IDC_STATIC -1
 #define IDM_NEW_WINDOW 800
 #define IDM_PRINT 900
+#define IDM_SYNC_POSITION 910
 
 // Next default values for new objects
 //

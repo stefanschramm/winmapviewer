@@ -6,6 +6,7 @@ const char* VALUE_NAME_CENTER_X = "centerX";
 const char* VALUE_NAME_CENTER_Y = "centerY";
 const char* VALUE_NAME_STYLE_IDENTIFIER = "styleIdentifier";
 const char* VALUE_NAME_USE_TLS = "useTls";
+const char* VALUE_NAME_SYNC_POSItION = "syncPosition";
 const char* VALUE_NAME_ZOOMLEVEL = "zoomLevel";
 const char* VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE = "customStyleUrlTemplate";
 
@@ -13,6 +14,7 @@ Settings getDefaultSettings() {
 	Settings settings;
 	settings.styleIdentifier = IDM_STYLE_OSM_STANDARD;
 	settings.useTls = false;
+	settings.syncPosition = false;
 	// Put some eurocentrism in here
 	settings.zoomLevel = 4;
 	settings.centerX = 2211;
@@ -128,6 +130,14 @@ bool loadString(HKEY hKey, const char* valueName, std::string* value) {
 	return true;
 }
 
+bool loadBool(HKEY hKey, const char* valueName, bool* value) {
+	int tmp = *value ? 1 : 0;
+	bool success = loadInt(hKey, valueName, &tmp);
+	*value = tmp != 0;
+
+	return success;
+}
+
 Settings loadSettingsFromRegistry() {
 	Settings settings = getDefaultSettings();
 
@@ -144,10 +154,8 @@ Settings loadSettingsFromRegistry() {
 	loadInt(hKey, VALUE_NAME_CENTER_Y, &(settings.centerY));
 	loadInt(hKey, VALUE_NAME_ZOOMLEVEL, &(settings.zoomLevel));
 	loadString(hKey, VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE, &(settings.customStyleUrlTemplate));
-
-	int iUseTls = settings.useTls ? 1 : 0;
-	loadInt(hKey, VALUE_NAME_USE_TLS, &iUseTls);
-	settings.useTls = iUseTls != 0;
+	loadBool(hKey, VALUE_NAME_USE_TLS, &(settings.useTls));
+	loadBool(hKey, VALUE_NAME_SYNC_POSItION, &(settings.syncPosition));
 
 	closeRegistryKey(hKey);
 
@@ -192,6 +200,7 @@ void storeSettingsInRegistry(Settings settings) {
 	storeInt(hKey, VALUE_NAME_CENTER_Y, settings.centerY);
 	storeInt(hKey, VALUE_NAME_ZOOMLEVEL, settings.zoomLevel);
 	storeInt(hKey, VALUE_NAME_USE_TLS, settings.useTls ? 1 : 0);
+	storeInt(hKey, VALUE_NAME_SYNC_POSItION, settings.syncPosition ? 1 : 0);
 	storeString(hKey, VALUE_NAME_CUSTOM_STYLE_URL_TEMPLATE, settings.customStyleUrlTemplate);
 
 	closeRegistryKey(hKey);

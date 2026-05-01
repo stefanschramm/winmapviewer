@@ -137,6 +137,8 @@ void MainWindow::applyInitialSettings() {
 	} else {
 		selectIntegratedStyle(m_settings.styleIdentifier);
 	}
+
+	updateSyncPositionMenuEntry();
 }
 
 LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -196,6 +198,12 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						toggleTls();
 						break;
 
+					case IDM_SYNC_POSITION:
+						m_settings.syncPosition = !m_settings.syncPosition;
+						updateSyncPositionMenuEntry();
+						syncOtherWindowsPositions();
+						break;
+
 					case IDM_PRINT:
 						print();
 						break;
@@ -239,11 +247,13 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				onLonLatUpdate(reinterpret_cast<LonLat*>(lParam));
 				break;
 
-			case WM_USER_SEARCH_SET_LONLAT: {
-				m_mapControl->setCenterLonLat(reinterpret_cast<LonLat*>(lParam));
-				m_mapControl->requestRedraw();
+			case WM_USER_SEARCH_SET_LONLAT:
+				setCenterLonLat(reinterpret_cast<LonLat*>(lParam));
 				break;
-			}
+
+			case WM_USER_MAP_POSITION_UPDATED:
+				syncOtherWindowsPositions();
+				break;
 
 			case WM_NCDESTROY:
 				m_mapControl->getSettings(&m_settings);
@@ -322,6 +332,11 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 	}
 
 	return FALSE;
+}
+
+void MainWindow::setCenterLonLat(LonLat* lonLat) {
+	m_mapControl->setCenterLonLat(lonLat);
+	m_mapControl->requestRedraw();
 }
 
 void MainWindow::zoom(int zoomLevelDelta) {
@@ -426,6 +441,14 @@ void MainWindow::onLonLatUpdate(LonLat* updatedLonLat) {
 	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
 }
 
+void MainWindow::syncOtherWindowsPositions() {
+	if (m_settings.syncPosition) {
+		LonLat lonLat;
+		m_mapControl->getCenterLonLat(&lonLat);
+		m_mainWindowManager.setCenterLonLat(&lonLat, this);
+	}
+}
+
 void MainWindow::updateStyleMenu() {
 	HMENU hMenu = GetMenu(m_hWnd);
 	CheckMenuItem(hMenu, IDM_USE_TLS, m_settings.useTls ? MF_CHECKED : MF_UNCHECKED);
@@ -436,6 +459,11 @@ void MainWindow::updateStyleMenu() {
 		m_settings.styleIdentifier,
 		MF_BYCOMMAND
 	);
+}
+
+void MainWindow::updateSyncPositionMenuEntry() {
+	HMENU hMenu = GetMenu(m_hWnd);
+	CheckMenuItem(hMenu, IDM_SYNC_POSITION, m_settings.syncPosition ? MF_CHECKED : MF_UNCHECKED);
 }
 
 void MainWindow::updateStatusBarZoom() {
