@@ -181,17 +181,18 @@ void SearchDialog::updateResultList() {
 		entry.pszText = const_cast<wchar_t*>(it->m_displayName.c_str());
 		SendMessageW(m_hwndListView, LVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&entry));
 
-		std::wstringstream latText;
-		latText << it->m_lonLat.lat;
+		// VC++ 6 compatibility: Don't use std::wstringstream for the next two because it is broken in debug builds.
+		wchar_t tmp[16];
+
+		swprintf(tmp, L"%.7f", it->m_lonLat.lat);
 		entry.iSubItem = 1;
-		entry.pszText = const_cast<wchar_t*>(latText.str().c_str());
+		entry.pszText = tmp;
 		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
 
-		std::wstringstream lonText;
-		lonText << it->m_lonLat.lon;
+		swprintf(tmp, L"%.7f", it->m_lonLat.lon);
 		entry.iSubItem = 2;
-		entry.pszText = const_cast<wchar_t*>(lonText.str().c_str());
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+		entry.pszText = tmp;
+		SendMessageA(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
 
 		entry.iSubItem = 3;
 		entry.pszText = const_cast<wchar_t*>(it->m_class.c_str());
