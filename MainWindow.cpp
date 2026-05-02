@@ -255,9 +255,12 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 				syncOtherWindowsPositions();
 				break;
 
-			case WM_NCDESTROY:
+			case WM_DESTROY:
 				m_mapControl->getSettings(&m_settings);
 				storeSettingsInRegistry(m_settings);
+				break;
+
+			case WM_NCDESTROY:
 				m_mainWindowManager.destroy(this);
 				break;
 
