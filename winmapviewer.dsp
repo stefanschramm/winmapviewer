@@ -111,6 +111,10 @@ SOURCE=.\HiddenWindow.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ListViewWrapper.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainWindow.cpp
 # End Source File
 # Begin Source File
@@ -180,6 +184,10 @@ SOURCE=.\GdiPlusWrapper.h
 # Begin Source File
 
 SOURCE=.\HiddenWindow.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ListViewWrapper.h
 # End Source File
 # Begin Source File
 

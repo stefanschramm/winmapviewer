@@ -10,11 +10,11 @@
 #include "Common.h"
 
 struct SearchResult {
-	std::wstring m_displayName;
-	std::wstring m_osmType;
-	std::wstring m_osmId;
-	std::wstring m_class;
-	std::wstring m_type;
+	std::string m_displayName;
+	std::string m_osmType;
+	std::string m_osmId;
+	std::string m_class;
+	std::string m_type;
 	LonLat m_lonLat;
 };
 
@@ -22,10 +22,10 @@ class SearchProvider {
   public:
 	SearchProvider();
 	~SearchProvider();
-	std::vector<SearchResult> search(std::wstring locationName, std::vector<SearchResult> searchResults) const;
+	std::vector<SearchResult> search(std::string locationNameUtf8, std::vector<SearchResult> searchResults) const;
 
   private:
-	std::string doQuery(std::wstring locationName) const;
+	std::string doQuery(std::string locationNameUtf8) const;
 
 	HINTERNET m_hInternet;
 };
