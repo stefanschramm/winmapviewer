@@ -19,32 +19,6 @@ HBITMAP createPlaceholderBitmap(bool error) {
 	return hPlaceholderBitmap;
 }
 
-std::string urlEncode(const std::wstring& url) {
-	int utf8Length = WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, 0, 0, 0, 0);
-	std::string utf8(utf8Length - 1, '\0');
-	WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, &utf8[0], utf8Length, 0, 0);
-
-	static const char hex[] = "0123456789ABCDEF";
-
-	std::string encoded;
-	for (size_t i = 0; i < utf8.size(); ++i) {
-		unsigned char c = utf8[i];
-
-		if ((c >= 'A' && c <= 'Z') ||
-			(c >= 'a' && c <= 'z') ||
-			(c >= '0' && c <= '9') ||
-			c == '-' || c == '_' || c == '.' || c == '~') {
-			encoded += c;
-		} else {
-			encoded += '%';
-			encoded += hex[c >> 4];
-			encoded += hex[c & 0x0F];
-		}
-	}
-
-	return encoded;
-}
-
 std::string parseStyleUrlTemplate(const TileKey& tileKey) {
 	static const char* invalidPlaceholder = "Encountered invalid placeholder. Valid required placeholders: {z}, {x}, {y}; Optional Placeholder: {s}";
 

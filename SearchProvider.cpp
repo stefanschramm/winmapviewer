@@ -1,14 +1,10 @@
 #include <sstream>
 
-// VC++ 6 compatibility
-#if _MSC_VER == 1200
-#import "msxml6.dll" raw_interfaces_only
-using namespace MSXML2;
-#else
-#include <msxml2.h>
-#endif
+#define XML_H_IMPLEMENTATION
+#include "lib/xml/xml.h"
 
 #include "Common.h"
+#include "Encoding.h"
 #include "SearchProvider.h"
 
 SearchProvider::SearchProvider() {
@@ -22,11 +18,11 @@ SearchProvider::~SearchProvider() {
 	InternetCloseHandle(m_hInternet);
 }
 
-std::wstring* SearchProvider::doQuery(std::wstring locationName) const {
+std::string SearchProvider::doQuery(std::string locationNameUtf8) const {
 	std::stringstream strstr;
 	// Reverse proxy server URL is used to be able to centrally disable/change usage if required.
 	// TODO: add option to (not) use TLS
-	strstr << "http://osm.kesto.de/nominatim/search?format=xml&limit=35&q=" << urlEncode(locationName);
+	strstr << "http://osm.kesto.de/nominatim/search?format=xml&limit=35&q=" << urlEncode(locationNameUtf8);
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, strstr.str().c_str(), NULL, 0, 0, 0);
 	if (!hUrl) {
@@ -42,98 +38,54 @@ std::wstring* SearchProvider::doQuery(std::wstring locationName) const {
 	}
 	InternetCloseHandle(hUrl);
 
-	int length = MultiByteToWideChar(CP_UTF8, 0, rawResult.c_str(), rawResult.size(), 0, 0);
-	std::wstring* result = new std::wstring(length, L'\0');
-	MultiByteToWideChar(CP_UTF8, 0, rawResult.c_str(), rawResult.size(), &((*result)[0]), length);
-
-	return result;
+	return rawResult;
 }
 
-std::wstring getAttribute(IXMLDOMNamedNodeMap* attrs, const wchar_t* attributeName) {
-	IXMLDOMNode* attr = NULL;
-	attrs->getNamedItem(SysAllocString(attributeName), &attr);
-	if (!attr) {
-		throw "Missing attribute.";
+std::string getAttribute(XMLNode* place, const char* attributeName) {
+	const char* value = xml_node_attr(place, attributeName);
+	if (value == NULL) {
+		throw "Unable to get attribute from search result XML.";
 	}
-	BSTR rawValue;
-	attr->get_text(&rawValue);
-	std::wstring value(rawValue, SysStringLen(rawValue));
-	SysFreeString(rawValue);
-	attr->Release();
 
-	return value;
+	return std::string(value);
 }
 
-std::vector<SearchResult> SearchProvider::search(std::wstring locationName, std::vector<SearchResult> searchResults) const {
-	std::wstring* rawXml = doQuery(locationName);
+std::vector<SearchResult> SearchProvider::search(std::string locationNameUtf8, std::vector<SearchResult> searchResults) const {
+	// Result XML looks like this:
+	// <?xml version="1.0" encoding="UTF-8" ?>
+	// <searchresults timestamp="Fri, 01 May 2026 19:15:01 +00:00" attribution="Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright" querystring="Berlin" more_url="https://osm.kesto.de, nominatim.openstreetmap.org/search?q=Berlin&amp;addressdetails=1&amp;limit=45&amp;exclude_place_ids=R62422&amp;format=xml" exclude_place_ids="R62422">
+	//   <place place_id="134060781" osm_type="relation" osm_id="62422" ref="BE" lat="52.5173885" lon="13.3951309" boundingbox="52.3382448,52.6755087,13.0883450,13.7611609" place_rank="8" address_rank="16" display_name="Berlin, Deutschland" class="boundary" type="administrative" importance="0.8522196536088086" />
+	// </searchresults>
 
-	CoInitialize(NULL);
-	IXMLDOMDocument* doc = NULL;
-	HRESULT hr = CoCreateInstance(
-		__uuidof(DOMDocument60),
-		NULL,
-		CLSCTX_INPROC_SERVER,
-		__uuidof(IXMLDOMDocument2),
-		reinterpret_cast<void**>(&doc)
-	);
+	std::string rawXml = doQuery(locationNameUtf8);
 
-	if (FAILED(hr)) {
-		throw "MSXML not available.";
+	XMLNode* root = xml_parse_string(rawXml.c_str());
+	if (root == NULL) {
+		throw "Unable to parse result XML.";
 	}
 
-	doc->put_async(VARIANT_FALSE);
-	doc->put_validateOnParse(VARIANT_FALSE);
-	doc->put_resolveExternals(VARIANT_FALSE);
+	XMLNode* entries = xml_node_child_at(root, 0);
 
-	VARIANT_BOOL ok = VARIANT_FALSE;
-
-	BSTR b = SysAllocString(rawXml->c_str());
-	doc->loadXML(b, &ok);
-	SysFreeString(b);
-
-	delete rawXml;
-
-	if (ok != VARIANT_TRUE) {
-		doc->Release();
-		CoUninitialize();
-		// throw "Failed to load XML.";
-		return searchResults;
-	}
-
-	IXMLDOMNodeList* places = NULL;
-	doc->selectNodes(SysAllocString(L"//place"), &places);
-
-	long count = 0;
-	places->get_length(&count);
-
-	for (long i = 0; i < count; i++) {
-		IXMLDOMNode* node = NULL;
-		places->get_item(i, &node);
-
-		IXMLDOMNamedNodeMap* attrs = NULL;
-		node->get_attributes(&attrs);
+	for (size_t i = 0; i < entries->children->len; i++) {
+		XMLNode* place = xml_node_child_at(entries, i);
 
 		LonLat lonLat = {
-			wcstod(getAttribute(attrs, L"lon").c_str(), NULL),
-			wcstod(getAttribute(attrs, L"lat").c_str(), NULL)
+			strtod(getAttribute(place, "lon").c_str(), NULL),
+			strtod(getAttribute(place, "lat").c_str(), NULL)
 		};
 
 		SearchResult searchResult;
-		searchResult.m_displayName = getAttribute(attrs, L"display_name");
-		searchResult.m_osmType = getAttribute(attrs, L"osm_type");
-		searchResult.m_osmId = getAttribute(attrs, L"osm_id");
-		searchResult.m_class = getAttribute(attrs, L"class");
-		searchResult.m_type = getAttribute(attrs, L"type");
+		searchResult.m_displayName = getAttribute(place, "display_name");
+		searchResult.m_osmType = getAttribute(place, "osm_type");
+		searchResult.m_osmId = getAttribute(place, "osm_id");
+		searchResult.m_class = getAttribute(place, "class");
+		searchResult.m_type = getAttribute(place, "type");
 		searchResult.m_lonLat = lonLat;
 
 		searchResults.push_back(searchResult);
-
-		attrs->Release();
-		node->Release();
 	}
 
-	doc->Release();
-	CoUninitialize();
+	xml_node_free(root);
 
 	return searchResults;
 }

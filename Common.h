@@ -45,8 +45,6 @@ struct LonLat {
 
 HBITMAP createPlaceholderBitmap(bool error);
 
-std::string urlEncode(const std::wstring& url);
-
 std::string parseStyleUrlTemplate(const TileKey& tileKey);
 
 void panicMessage(const char* place, const char* message);

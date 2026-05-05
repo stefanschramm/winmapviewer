@@ -8,6 +8,8 @@
 #include <windowsx.h>
 
 #include "Common.h"
+#include "Encoding.h"
+#include "ListViewWrapper.h"
 #include "SearchDialog.h"
 #include "resource.h"
 
@@ -100,46 +102,47 @@ BOOL SearchDialog::init(HWND hwndDialog) {
 	m_hwndDialog = hwndDialog;
 	m_hwndListView = GetDlgItem(hwndDialog, IDC_SEARCH_RESULTS);
 
-	LVCOLUMNW col = {0};
-	col.mask = LVCF_TEXT | LVCF_WIDTH;
+	ListViewWrapper* wrapper = ListViewWrapper::create(m_hwndListView);
 
-	col.pszText = const_cast<wchar_t*>(L"Name");
-	col.cx = 350;
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 0, reinterpret_cast<LPARAM>(&col));
+	wrapper->insertColumn(0, 350, "Name");
+	wrapper->insertColumn(1, 65, "Lat");
+	wrapper->insertColumn(2, 65, "Lon");
+	wrapper->insertColumn(3, 65, "Class");
+	wrapper->insertColumn(4, 65, "Type");
+	wrapper->insertColumn(5, 65, "OSM Type");
+	wrapper->insertColumn(6, 65, "OSM ID");
 
-	col.pszText = const_cast<wchar_t*>(L"Lat");
-	col.cx = 65;
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 1, reinterpret_cast<LPARAM>(&col));
-
-	col.pszText = const_cast<wchar_t*>(L"Lon");
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 2, reinterpret_cast<LPARAM>(&col));
-
-	col.pszText = const_cast<wchar_t*>(L"Class");
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 3, reinterpret_cast<LPARAM>(&col));
-
-	col.pszText = const_cast<wchar_t*>(L"Type");
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 4, reinterpret_cast<LPARAM>(&col));
-
-	col.pszText = const_cast<wchar_t*>(L"OSM Type");
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 5, reinterpret_cast<LPARAM>(&col));
-
-	col.pszText = const_cast<wchar_t*>(L"OSM ID");
-	SendMessageW(m_hwndListView, LVM_INSERTCOLUMNW, 6, reinterpret_cast<LPARAM>(&col));
+	// TODO: use smart pointer
+	delete wrapper;
 
 	updateResultList();
 
 	return TRUE;
 }
 
+std::string getLocationName(HWND hInputField) {
+	if (useUtf8()) {
+		std::wstring locationNameWide;
+		int length = GetWindowTextLengthW(hInputField) + 1;
+		locationNameWide.resize(length);
+		GetWindowTextW(hInputField, &locationNameWide[0], length);
+		std::string locationNameUtf8 = convertWideToUtf8(locationNameWide);
+		return locationNameUtf8;
+	} else {
+		std::string locationName;
+		int length = GetWindowTextLengthA(hInputField) + 1;
+		locationName.resize(length);
+		GetWindowTextA(hInputField, &locationName[0], length);
+		std::string locationNameUtf8 = convertCurrentCodepageToUtf8(locationName);
+		return locationNameUtf8;
+	}
+}
+
 void SearchDialog::ok() {
 	ListView_DeleteAllItems(m_hwndListView);
 	m_searchResults.clear();
 
-	HWND hInputField = GetDlgItem(m_hwndDialog, IDC_DLG_LOCATIONNAME);
-	int length = GetWindowTextLength(hInputField) + 1;
-	std::wstring locationName;
-	locationName.resize(length);
-	GetWindowTextW(hInputField, &locationName[0], length);
+	std::string locationName = getLocationName(GetDlgItem(m_hwndDialog, IDC_DLG_LOCATIONNAME));
 
 	// TODO: Do search in a thread
 	m_searchResults = m_searchProvider.search(locationName, m_searchResults);
@@ -172,44 +175,29 @@ void SearchDialog::openInOsm() {
 
 void SearchDialog::updateResultList() {
 	int i = 0;
+
+	ListViewWrapper* wrapper = ListViewWrapper::create(m_hwndListView);
+
 	for (std::vector<SearchResult>::iterator it = m_searchResults.begin(); it != m_searchResults.end(); ++it) {
-		LVITEMW entry = {0};
-		entry.mask = LVIF_TEXT;
-		entry.iItem = i++;
+		std::stringstream latstrstr;
+		latstrstr << it->m_lonLat.lat;
 
-		entry.iSubItem = 0;
-		entry.pszText = const_cast<wchar_t*>(it->m_displayName.c_str());
-		SendMessageW(m_hwndListView, LVM_INSERTITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+		std::stringstream lonstrstr;
+		lonstrstr << it->m_lonLat.lon;
 
-		// VC++ 6 compatibility: Don't use std::wstringstream for the next two because it is broken in debug builds.
-		wchar_t tmp[16];
+		wrapper->insertItem(i, 0, it->m_displayName);
+		wrapper->insertItem(i, 1, latstrstr.str());
+		wrapper->insertItem(i, 2, lonstrstr.str());
+		wrapper->insertItem(i, 3, it->m_class);
+		wrapper->insertItem(i, 4, it->m_type);
+		wrapper->insertItem(i, 5, it->m_osmType);
+		wrapper->insertItem(i, 6, it->m_osmId);
 
-		swprintf(tmp, L"%.7f", it->m_lonLat.lat);
-		entry.iSubItem = 1;
-		entry.pszText = tmp;
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
-
-		swprintf(tmp, L"%.7f", it->m_lonLat.lon);
-		entry.iSubItem = 2;
-		entry.pszText = tmp;
-		SendMessageA(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
-
-		entry.iSubItem = 3;
-		entry.pszText = const_cast<wchar_t*>(it->m_class.c_str());
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
-
-		entry.iSubItem = 4;
-		entry.pszText = const_cast<wchar_t*>(it->m_type.c_str());
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
-
-		entry.iSubItem = 5;
-		entry.pszText = const_cast<wchar_t*>(it->m_osmType.c_str());
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
-
-		entry.iSubItem = 6;
-		entry.pszText = const_cast<wchar_t*>(it->m_osmId.c_str());
-		SendMessageW(m_hwndListView, LVM_SETITEMW, 0, reinterpret_cast<LPARAM>(&entry));
+		i++;
 	}
+
+	// TODO: use smart pointer
+	delete wrapper;
 }
 
 void SearchDialog::selectItem() {
