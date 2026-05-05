@@ -103,6 +103,10 @@ SOURCE=.\DownloadWorker.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Encoding.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\GdiPlusWrapper.cpp
 # End Source File
 # Begin Source File
@@ -176,6 +180,10 @@ SOURCE=.\Common.h
 # Begin Source File
 
 SOURCE=.\DownloadWorker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Encoding.h
 # End Source File
 # Begin Source File
 
