@@ -1,0 +1,18 @@
+{
+  "name": "winmapviewer-devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-vscode.cpptools"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}
