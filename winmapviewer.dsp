@@ -43,12 +43,12 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GX /Z7 /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# ADD CPP /nologo /W3 /GX /Z7 /O2 /I "include" /I "resources" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
-# ADD RSC /l 0x407 /d "NDEBUG"
+# ADD RSC /l 0x407 /i "include" /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -71,12 +71,12 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
+# ADD CPP /nologo /W3 /GX /Z7 /Od /I "include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
-# ADD RSC /l 0x407 /d "_DEBUG"
+# ADD RSC /l 0x407 /i "include" /i "resources" /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -95,79 +95,79 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\Common.cpp
+SOURCE=.\src\Common.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\DownloadWorker.cpp
+SOURCE=.\src\DownloadWorker.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Encoding.cpp
+SOURCE=.\src\Encoding.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GdiPlusWrapper.cpp
+SOURCE=.\src\GdiPlusWrapper.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\HiddenWindow.cpp
+SOURCE=.\src\HiddenWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ListViewWrapper.cpp
+SOURCE=.\src\ListViewWrapper.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainWindow.cpp
+SOURCE=.\src\MainWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainWindowManager.cpp
+SOURCE=.\src\MainWindowManager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MapControl.cpp
+SOURCE=.\src\MapControl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\MapPrinter.cpp
+SOURCE=.\src\MapPrinter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SearchDialog.cpp
+SOURCE=.\src\SearchDialog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SearchProvider.cpp
+SOURCE=.\src\SearchProvider.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Settings.cpp
+SOURCE=.\src\Settings.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\StyleDatabase.cpp
+SOURCE=.\src\StyleDatabase.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileCache.cpp
+SOURCE=.\src\TileCache.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileDownloader.cpp
+SOURCE=.\src\TileDownloader.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileIterator.cpp
+SOURCE=.\src\TileIterator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\winmapviewer.cpp
+SOURCE=.\src\winmapviewer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\winmapviewer.rc
+SOURCE=.\src\winmapviewer.rc
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -175,87 +175,87 @@ SOURCE=.\winmapviewer.rc
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\Common.h
+SOURCE=.\include\Common.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\DownloadWorker.h
+SOURCE=.\include\DownloadWorker.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Encoding.h
+SOURCE=.\include\Encoding.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\GdiPlusWrapper.h
+SOURCE=.\include\GdiPlusWrapper.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\HiddenWindow.h
+SOURCE=.\include\HiddenWindow.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ListViewWrapper.h
+SOURCE=.\include\ListViewWrapper.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainWindow.h
+SOURCE=.\include\MainWindow.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MainWindowManager.h
+SOURCE=.\include\MainWindowManager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MapControl.h
+SOURCE=.\include\MapControl.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MapPrinter.h
+SOURCE=.\include\MapPrinter.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\resource.h
+SOURCE=.\include\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SearchDialog.h
+SOURCE=.\include\SearchDialog.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SearchProvider.h
+SOURCE=.\include\SearchProvider.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Settings.h
+SOURCE=.\include\Settings.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StyleDatabase.h
+SOURCE=.\include\StyleDatabase.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileCache.h
+SOURCE=.\include\TileCache.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileDownloader.h
+SOURCE=.\include\TileDownloader.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileIterator.h
+SOURCE=.\include\TileIterator.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileKey.h
+SOURCE=.\include\TileKey.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TileRange.h
+SOURCE=.\include\TileRange.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\winmapviewer.h
+SOURCE=.\include\winmapviewer.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
@@ -263,16 +263,12 @@ SOURCE=.\winmapviewer.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
-SOURCE=.\small.ico
+SOURCE=.\resources\small.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\winmapviewer.ico
+SOURCE=.\resources\winmapviewer.ico
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ReadMe.txt
-# End Source File
 # End Target
 # End Project
