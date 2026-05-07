@@ -1,6 +1,5 @@
 #include <sstream>
 
-#define XML_H_IMPLEMENTATION
 #include "lib/xml/xml.h"
 
 #include "Common.h"

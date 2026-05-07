@@ -19,12 +19,6 @@ Install `g++-mingw-w64` and run `make`.
 When running winmapviewer on older versions of Windows it may be necessary to use insecure HTTP for fetching the tiles.
 This is possible by toggling *View* - *Style* - *Use secure connection (TLS)*.
 
-## Running under Windows 95/98
-
-The program makes use of GDI+ to decode the map tile PNGs.
-
-GDI+ was introduced in Windows XP, but you can download ["Platform SDK Redistributable: GDI+"](https://archive.org/download/gdiplus_dnld) and place the gdiplus.dll next to winmapviewer.exe to use it under Windows 9x.
-
 ## Authors
 
 Stefan Schramm (<mail@stefanschramm.net>)

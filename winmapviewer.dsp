@@ -107,11 +107,11 @@ SOURCE=.\src\Encoding.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\GdiPlusWrapper.cpp
+SOURCE=.\src\HiddenWindow.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\HiddenWindow.cpp
+SOURCE=.\src\Libraries.cpp
 # End Source File
 # Begin Source File
 
@@ -184,10 +184,6 @@ SOURCE=.\include\DownloadWorker.h
 # Begin Source File
 
 SOURCE=.\include\Encoding.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\GdiPlusWrapper.h
 # End Source File
 # Begin Source File
 

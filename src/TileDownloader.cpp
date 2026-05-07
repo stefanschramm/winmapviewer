@@ -3,10 +3,11 @@
 #include <string>
 
 #include "Common.h"
-#include "GdiPlusWrapper.h"
 #include "TileDownloader.h"
 
-TileDownloader::TileDownloader(const GdiPlusWrapper& gdi) : m_gdi(gdi) {
+#include "lib/image/stb_image.h"
+
+TileDownloader::TileDownloader() {
 	m_hInternet = InternetOpen(TEXT("winmapviewer"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 	if (!m_hInternet) {
 		throw "Unable to initialize WinINet.";
@@ -27,32 +28,52 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 		return createPlaceholderBitmap(true);
 	}
 
-	IStream* memoryStream = NULL;
-	if (FAILED(CreateStreamOnHGlobal(NULL, TRUE, &memoryStream))) {
-		InternetCloseHandle(hUrl);
-		throw "Failed to create memory stream.";
-	}
-
+	std::string rawData;
 	char buffer[10240];
 	DWORD bytesRead = 0;
-	ULONG bytesWritten = 0;
 	while (InternetReadFile(hUrl, buffer, sizeof(buffer), &bytesRead) && bytesRead != 0) {
-		if (memoryStream->Write(buffer, bytesRead, &bytesWritten) != S_OK) {
-			memoryStream->Release();
-			InternetCloseHandle(hUrl);
-			throw "Failed to write to memory stream.";
-		}
+		rawData.append(buffer, bytesRead);
 	}
+	InternetCloseHandle(hUrl);
 
-	LARGE_INTEGER liZero = {0, 0};
-	memoryStream->Seek(liZero, STREAM_SEEK_SET, NULL);
+	int width;
+	int height;
+	int channels;
 
-	HBITMAP hBitmap = m_gdi.loadPng(memoryStream);
-	if (hBitmap == NULL) {
+	stbi_uc* img = stbi_load_from_memory((stbi_uc*)rawData.c_str(), rawData.size(), &width, &height, &channels, STBI_rgb);
+
+	BITMAPINFO bmi = {0};
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = width;
+	bmi.bmiHeader.biHeight = -height;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 24;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	void* dibPixels = NULL;
+	HBITMAP hBmp = CreateDIBSection(
+		NULL,
+		&bmi,
+		DIB_RGB_COLORS,
+		&dibPixels,
+		NULL,
+		0
+	);
+	if (!hBmp) {
 		return createPlaceholderBitmap(true);
 	}
 
-	InternetCloseHandle(hUrl);
+	memcpy(dibPixels, img, width * height * channels);
 
-	return hBitmap;
+	stbi_image_free(img);
+
+	// Swap red and blue channel because that's the format Windows expects
+	unsigned char* p = (unsigned char*)dibPixels;
+	int total = width * height;
+	for (int i = 0; i < total; i++) {
+		std::swap(p[0], p[2]);
+		p += channels;
+	}
+
+	return hBmp;
 }

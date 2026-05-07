@@ -19,8 +19,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		InitCommonControls();
 
 		const StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
-		const GdiPlusWrapper gdiPlusWrapper;
-		const TileDownloader tileDownloader(gdiPlusWrapper);
+		const TileDownloader tileDownloader;
 		DownloadWorker downloadWorker(tileDownloader);
 		TileCache tileCache(downloadWorker, tileDownloader);
 		HiddenWindow hiddenWindow(hInstance, tileCache);

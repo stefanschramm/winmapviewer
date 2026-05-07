@@ -8,7 +8,7 @@ CC = $(ARCH)-w64-mingw32-g++
 RC = $(ARCH)-w64-mingw32-windres
 
 CFLAGS = -mwindows -static-libgcc -static-libstdc++ -s -Os
-LFLAGS = -luser32 -lgdi32 -lole32 -lcomctl32 -lwininet
+LFLAGS = -luser32 -lgdi32 -lcomctl32 -lwininet
 
 SRC = $(wildcard src/*.cpp)
 RC_FILE = src/$(APPNAME).rc
