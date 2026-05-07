@@ -41,6 +41,9 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 	int channels;
 
 	stbi_uc* img = stbi_load_from_memory((stbi_uc*)rawData.c_str(), rawData.size(), &width, &height, &channels, STBI_rgb);
+	if (img == NULL) {
+		return createPlaceholderBitmap(true);
+	}
 
 	BITMAPINFO bmi = {0};
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
