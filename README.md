@@ -1,23 +1,39 @@
-# winmapviewer
+# winmapviewer ![Icon of winmapviewer](doc/icon.png)
 
-[OpenStreetMap](https://www.openstreetmap.org/) viewer application playground for usage of the Win32 API.
+winmapviewer is a free minimalistic viewer for [OpenStreetMap](https://www.openstreetmap.org/) raster tile maps. It's written using the Win32 API and runs on systems with Windows 95 and above.
 
-![Screenshot of winmapviewer](doc/winmapviewer.png)
+![Screenshot of winmapviewer](doc/screenshot.png)
+
+## Features
+
+- Four presets for well-known OpenStreetMap styles
+- Custom tile URL templates for using any [compatible map source](https://wiki.openstreetmap.org/wiki/Raster_tile_providers)
+- Location search powered by the [Nominatim geocoding API](https://nominatim.org/)
+- Printing of current map position
+- Multiple map windows to view different locations, zoom levels and/or map styles simultaneously
+
+### Disabling TLS
+
+When running winmapviewer on older versions of Windows it may be necessary to use insecure HTTP for fetching the tiles.
+This is possible by toggling *View* - *Style* - *Use secure connection (TLS)*.
+
+## System requirements
+- Windows 95 or later (or Linux with Wine)
+- 133 MHz processor, 32 MB RAM (when using Windows 95)
 
 ## Building
-
-### Visual C++ 6
-
-Open the workspace winmapviewer.dsw and select Build - Build all.
 
 ### Linux / MinGW
 
 Install `g++-mingw-w64` and run `make`.
 
-## Disabling TLS
+### Visual C++ 6
 
-When running winmapviewer on older versions of Windows it may be necessary to use insecure HTTP for fetching the tiles.
-This is possible by toggling *View* - *Style* - *Use secure connection (TLS)*.
+Open the workspace winmapviewer.dsw and select Build - Build all.
+
+### Devcontainer
+
+A devcontainer configuration is supplied for compiling using MinGW.
 
 ## Authors
 

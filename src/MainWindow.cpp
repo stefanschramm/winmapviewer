@@ -75,7 +75,7 @@ void MainWindow::createMainWindow() {
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
 		wcex.hInstance = m_hInstance;
-		wcex.hIcon = LoadIcon(m_hInstance, reinterpret_cast<LPCTSTR>(IDI_WINMAPVIEWER));
+		wcex.hIcon = LoadIcon(wcex.hInstance, reinterpret_cast<LPCTSTR>(IDI_WINMAPVIEWER));
 		wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 		wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
 		wcex.lpszMenuName = reinterpret_cast<LPCSTR>(IDC_WINMAPVIEWER);

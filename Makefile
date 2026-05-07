@@ -11,7 +11,7 @@ CFLAGS = -mwindows -static-libgcc -static-libstdc++ -s -Os
 LFLAGS = -luser32 -lgdi32 -lcomctl32 -lwininet
 
 SRC = $(wildcard src/*.cpp)
-RC_FILE = src/$(APPNAME).rc
+RC_FILE = resources/$(APPNAME).rc
 RES_OBJ = build/$(APPNAME).res.o
 OBJ = $(patsubst src/%.cpp,build/%.o,$(SRC))
 
@@ -23,7 +23,7 @@ run: $(OUT)
 	wine $(OUT)
 
 build/%.o: src/%.cpp
-	$(CC) -c $< -o $@ -Iinclude
+	$(CC) -c $< -o $@ -Iinclude -Iresources
 
 $(OUT): $(OBJ) $(RES_OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(RES_OBJ) -o $(OUT) $(LFLAGS)

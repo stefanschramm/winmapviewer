@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /GX /Z7 /O2 /I "include" /I "resources" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# ADD CPP /nologo /W3 /GX /Z7 /O2 /I "resources" /I "include resources" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /GX /Z7 /Od /I "include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
+# ADD CPP /nologo /W3 /GX /Z7 /Od /I "include" /I "resources" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -165,10 +165,6 @@ SOURCE=.\src\TileIterator.cpp
 
 SOURCE=.\src\winmapviewer.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\src\winmapviewer.rc
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -208,10 +204,6 @@ SOURCE=.\include\MapControl.h
 # Begin Source File
 
 SOURCE=.\include\MapPrinter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\resource.h
 # End Source File
 # Begin Source File
 
@@ -259,11 +251,19 @@ SOURCE=.\include\winmapviewer.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\resources\resource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\resources\small.ico
 # End Source File
 # Begin Source File
 
 SOURCE=.\resources\winmapviewer.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resources\winmapviewer.rc
 # End Source File
 # End Group
 # End Target

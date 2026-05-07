@@ -54,15 +54,16 @@ BEGIN
         MENUITEM "Zoom &out\t-",                IDM_ZOOMOUT
         POPUP "&Style"
         BEGIN
-            MENUITEM "&1 OpenStreetMap Standard",    IDM_STYLE_OSM_STANDARD
-            MENUITEM "&2 OpenStreetMap German",      IDM_STYLE_OSM_GERMAN
-            MENUITEM "&3 OEPNVKarte",                IDM_STYLE_OEPNV
-            MENUITEM "&4 OpenTopoMap",               IDM_STYLE_OPENTOPO
+            MENUITEM "&1 OpenStreetMap Standard",   IDM_STYLE_OSM_STANDARD
+            MENUITEM "&2 OpenStreetMap German",     IDM_STYLE_OSM_GERMAN
+            MENUITEM "&3 OEPNVKarte",               IDM_STYLE_OEPNV
+            MENUITEM "&4 OpenTopoMap",              IDM_STYLE_OPENTOPO
             MENUITEM "Use &secure connection (TLS)", IDM_USE_TLS
             MENUITEM SEPARATOR
-            MENUITEM "&Custom...",                   IDM_STYLE_CUSTOM
+            MENUITEM "&Custom...",                  IDM_STYLE_CUSTOM
         END
-        MENUITEM "&Keep position of other windows in sync", IDM_SYNC_POSITION
+        MENUITEM "&Keep position of other windows in sync", 
+                                                IDM_SYNC_POSITION
     END
     POPUP "&Help"
     BEGIN
@@ -82,8 +83,8 @@ BEGIN
     "-",            IDM_ZOOMOUT,            ASCII,  NOINVERT
     "/",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
     "?",            IDM_ABOUT,              ASCII,  ALT, NOINVERT
-    "P",            IDM_PRINT,              CONTROL, VIRTKEY
-    "N",            IDM_NEW_WINDOW,         CONTROL, VIRTKEY
+    "P",            IDM_PRINT,              VIRTKEY, CONTROL
+    "N",            IDM_NEW_WINDOW,         VIRTKEY, CONTROL
     VK_DOWN,        IDM_DOWN,               VIRTKEY, NOINVERT
     VK_LEFT,        IDM_LEFT,               VIRTKEY, NOINVERT
     VK_RIGHT,       IDM_RIGHT,              VIRTKEY, NOINVERT
@@ -103,11 +104,15 @@ CAPTION "About"
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "winmapviewer",IDC_STATIC,2,3,250,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2026 Stefan Schramm",IDC_STATIC,2,15,250,8
+    LTEXT           "Copyright (C) 2026 Stefan Schramm",IDC_STATIC,2,15,250,
+                    8
     LTEXT           "Map data from OpenStreetMap",IDC_STATIC,2,39,250,8
     DEFPUSHBUTTON   "OK",IDOK,250,6,45,15,WS_GROUP
-    CONTROL         "https://www.openstreetmap.org/copyright",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,51,250,8
-    CONTROL         "https://github.com/stefanschramm/winmapviewer",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,27,250,8
+    CONTROL         "https://www.openstreetmap.org/copyright",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,51,250,8
+    CONTROL         "https://github.com/stefanschramm/winmapviewer",
+                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,2,27,
+                    250,8
 END
 
 IDD_CUSTOMSTYLE DIALOG DISCARDABLE  0, 0, 300, 40
@@ -115,9 +120,9 @@ STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom style"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL       "https://tile.openstreetmap.org/{z}/{x}/{y}.png", IDC_DLG_TEXT, "EDIT", ES_LEFT | ES_AUTOHSCROLL | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 2, 2, 298, 15
-    DEFPUSHBUTTON "&OK",IDOK,2,20,45,15,WS_GROUP
-    PUSHBUTTON    "&Cancel",IDCANCEL,50,20,45,15,WS_GROUP
+    EDITTEXT        IDC_DLG_TEXT,2,2,298,15,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&OK",IDOK,2,20,45,15,WS_GROUP
+    PUSHBUTTON      "&Cancel",IDCANCEL,50,20,45,15,WS_GROUP
 END
 
 IDD_SEARCH DIALOG DISCARDABLE  0, 0, 500, 330
@@ -125,9 +130,10 @@ STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "Search"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    CONTROL       "", IDC_DLG_LOCATIONNAME, "EDIT", ES_LEFT | ES_AUTOHSCROLL | WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP, 2, 3, 400, 15
-    PUSHBUTTON    "&Search",IDOK,404,3,94,15,WS_GROUP
-    CONTROL       "", IDC_SEARCH_RESULTS, "SysListView32", WS_CHILD | WS_VISIBLE | WS_BORDER | WS_TABSTOP | LVS_REPORT | LVS_SINGLESEL, 2, 21, 496, 306
+    EDITTEXT        IDC_DLG_LOCATIONNAME,2,3,400,15,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Search",IDOK,404,3,94,15,WS_GROUP
+    CONTROL         "",IDC_SEARCH_RESULTS,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,2,21,496,306
 END
 
 
