@@ -5,7 +5,8 @@
 
 TileCache::TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileDownloader)
 	: m_downloadWorker(downloadWorker),
-	  m_tileDownloader(tileDownloader) {
+	  m_tileDownloader(tileDownloader),
+	  addedEntriesSinceLastCleanup(0) {
 	m_hPlaceholderBitmap = createPlaceholderBitmap(false);
 }
 
@@ -26,6 +27,7 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	std::map<TileKey, CacheContent>::iterator iterator = m_cache.find(tileKey);
 	if (iterator != m_cache.end()) {
 		if (iterator->second.available) {
+			iterator->second.lastAccess = GetTickCount();
 			return iterator->second.bitmap;
 		}
 		// Downloading, but not finished yet; tile possibly requested by another window
@@ -40,6 +42,7 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	cacheContent.available = false;
 	cacheContent.bitmap = 0;
 	cacheContent.subscribers.push_back(hwndSubscriber);
+	cacheContent.lastAccess = GetTickCount();
 	m_cache[tileKey] = cacheContent;
 
 	// download asynchronously
@@ -96,6 +99,38 @@ void TileCache::clear() {
 	m_cache.clear();
 }
 
+bool compareBySecond(const std::pair<TileKey, DWORD>& a, const std::pair<TileKey, DWORD>& b) {
+	return a.second < b.second;
+}
+
+void TileCache::cleanUpCacheIfRequired() {
+	// 700 entries should be sufficient to cover zooming from level 0 to 18 in full HD resolution
+	// and correspond to roughly 140 MB (700 * 256 * 256 * 3).
+	static const int targetSize = 600;
+	static const int maxSize = 700;
+
+	// Only do it from time to time and if required
+	addedEntriesSinceLastCleanup++;
+	if (addedEntriesSinceLastCleanup < maxSize - targetSize || m_cache.size() < targetSize) {
+		return;
+	}
+	addedEntriesSinceLastCleanup = 0;
+
+	// Remove least recently used
+	// clang-format off
+	// keep that space :)
+	std::vector<std::pair<TileKey, DWORD> > entries;
+	// clang-format on
+	for (std::map<TileKey, CacheContent>::iterator it = m_cache.begin(); it != m_cache.end(); ++it) {
+		entries.push_back(std::pair<TileKey, DWORD>(it->first, it->second.lastAccess));
+	}
+	std::sort(entries.begin(), entries.end(), compareBySecond);
+	const int entriesToRemove = m_cache.size() - targetSize;
+	for (int i = 0; i < entriesToRemove; i++) {
+		m_cache.erase(entries[i].first);
+	}
+}
+
 void notifySubscribers(const TileKey& tileKey, std::vector<HWND>& subscribers) {
 	for (std::vector<HWND>::iterator it = subscribers.begin(); it != subscribers.end(); ++it) {
 		SendMessage(*it, WM_USER_TILE_AVAILABLE, 0, reinterpret_cast<LPARAM>(&tileKey));
@@ -103,6 +138,8 @@ void notifySubscribers(const TileKey& tileKey, std::vector<HWND>& subscribers) {
 }
 
 void TileCache::onDownloadFinished() {
+	cleanUpCacheIfRequired();
+
 	std::map<TileKey, HBITMAP> finishedDownloads;
 	m_downloadWorker.transferFinishedDownloads(&finishedDownloads);
 

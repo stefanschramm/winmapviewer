@@ -15,7 +15,7 @@ struct CacheContent {
 	bool available;
 	HBITMAP bitmap;
 	Subscribers subscribers;
-	// TODO: Remember last use and later clean up cache (keep 100 tiles)?
+	DWORD lastAccess;
 };
 
 class TileCache {
@@ -26,6 +26,7 @@ class TileCache {
 	HBITMAP getBlocking(const TileKey& tileKey);
 	void unqueueInvisible(const TileRange& visibleTiles, HWND hwndSubscriber);
 	void clear();
+	void cleanUpCacheIfRequired();
 	void onDownloadFinished();
 
   private:
@@ -33,5 +34,6 @@ class TileCache {
 	const TileDownloader& m_tileDownloader;
 
 	std::map<TileKey, CacheContent> m_cache;
+	int addedEntriesSinceLastCleanup;
 	HBITMAP m_hPlaceholderBitmap;
 };
