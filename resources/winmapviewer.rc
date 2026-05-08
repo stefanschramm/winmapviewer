@@ -56,8 +56,9 @@ BEGIN
         BEGIN
             MENUITEM "&1 OpenStreetMap Standard",   IDM_STYLE_OSM_STANDARD
             MENUITEM "&2 OpenStreetMap German",     IDM_STYLE_OSM_GERMAN
-            MENUITEM "&3 OEPNVKarte",               IDM_STYLE_OEPNV
-            MENUITEM "&4 OpenTopoMap",              IDM_STYLE_OPENTOPO
+            MENUITEM "&3 OpenStreetMap Swiss",      IDM_STYLE_SWISS
+            MENUITEM "&4 OEPNVKarte",               IDM_STYLE_OEPNV
+            MENUITEM "&5 OpenTopoMap",              IDM_STYLE_OPENTOPO
             MENUITEM "Use &secure connection (TLS)", IDM_USE_TLS
             MENUITEM SEPARATOR
             MENUITEM "&Custom...",                  IDM_STYLE_CUSTOM

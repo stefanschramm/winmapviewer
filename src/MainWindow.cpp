@@ -187,6 +187,7 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 					case IDM_STYLE_OSM_GERMAN:
 					case IDM_STYLE_OEPNV:
 					case IDM_STYLE_OPENTOPO:
+					case IDM_STYLE_SWISS:
 						selectIntegratedStyle(wmId);
 						break;
 
