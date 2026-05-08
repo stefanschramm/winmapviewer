@@ -112,7 +112,6 @@ BOOL SearchDialog::init(HWND hwndDialog) {
 	wrapper->insertColumn(5, 65, "OSM Type");
 	wrapper->insertColumn(6, 65, "OSM ID");
 
-	// TODO: use smart pointer
 	delete wrapper;
 
 	updateResultList();
@@ -196,7 +195,6 @@ void SearchDialog::updateResultList() {
 		i++;
 	}
 
-	// TODO: use smart pointer
 	delete wrapper;
 }
 

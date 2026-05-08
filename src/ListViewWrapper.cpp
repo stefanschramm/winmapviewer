@@ -8,8 +8,10 @@
 #include "Encoding.h"
 #include "ListViewWrapper.h"
 
+// Create wrapper for ListView access that uses wide characters, if supported
+// The caller must delete the created object after usage.
+// VC++ 6 compatibility: Explicitly not using std::unique_ptr to stay compatible.
 ListViewWrapper* ListViewWrapper::create(HWND hwndListView) {
-	// TODO: return smart pointers?
 	if (useUtf8()) {
 		return new ListViewWrapperW(hwndListView);
 	} else {
