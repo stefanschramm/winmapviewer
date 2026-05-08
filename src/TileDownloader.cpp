@@ -38,9 +38,9 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 
 	int width;
 	int height;
-	int channels;
-
-	stbi_uc* img = stbi_load_from_memory((stbi_uc*)rawData.c_str(), rawData.size(), &width, &height, &channels, STBI_rgb);
+	int actualChannels;
+	const int desiredChannels = STBI_rgb;
+	stbi_uc* img = stbi_load_from_memory((stbi_uc*)rawData.c_str(), rawData.size(), &width, &height, &actualChannels, desiredChannels);
 	if (img == NULL) {
 		return createPlaceholderBitmap(true);
 	}
@@ -50,7 +50,7 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 	bmi.bmiHeader.biWidth = width;
 	bmi.bmiHeader.biHeight = -height;
 	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 24;
+	bmi.bmiHeader.biBitCount = 8 * desiredChannels;
 	bmi.bmiHeader.biCompression = BI_RGB;
 
 	void* dibPixels = NULL;
@@ -66,7 +66,7 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 		return createPlaceholderBitmap(true);
 	}
 
-	memcpy(dibPixels, img, width * height * channels);
+	memcpy(dibPixels, img, width * height * desiredChannels);
 
 	stbi_image_free(img);
 
@@ -75,7 +75,7 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 	int total = width * height;
 	for (int i = 0; i < total; i++) {
 		std::swap(p[0], p[2]);
-		p += channels;
+		p += desiredChannels;
 	}
 
 	return hBmp;
