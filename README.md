@@ -6,7 +6,7 @@ winmapviewer is a free minimalistic viewer for [OpenStreetMap](https://www.opens
 
 ## Features
 
-- Four presets for well-known OpenStreetMap styles
+- Five presets for well-known OpenStreetMap styles
 - Custom tile URL templates for using any [compatible map source](https://wiki.openstreetmap.org/wiki/Raster_tile_providers)
 - Location search powered by the [Nominatim geocoding API](https://nominatim.org/)
 - Printing of current map position
@@ -19,7 +19,7 @@ This is possible by toggling *View* - *Style* - *Use secure connection (TLS)*.
 
 ## System requirements
 - Windows 95 or later (or Linux with Wine)
-- 133 MHz processor, 32 MB RAM (when using Windows 95)
+- 133 MHz processor, 32 MB RAM (when using Windows 95), network connection
 
 ## Building
 
