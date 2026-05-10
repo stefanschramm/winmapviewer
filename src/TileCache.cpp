@@ -117,10 +117,7 @@ void TileCache::cleanUpCacheIfRequired() {
 	addedEntriesSinceLastCleanup = 0;
 
 	// Remove least recently used
-	// clang-format off
-	// keep that space :)
 	std::vector<std::pair<TileKey, DWORD> > entries;
-	// clang-format on
 	for (std::map<TileKey, CacheContent>::iterator it = m_cache.begin(); it != m_cache.end(); ++it) {
 		entries.push_back(std::pair<TileKey, DWORD>(it->first, it->second.lastAccess));
 	}

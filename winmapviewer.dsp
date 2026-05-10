@@ -107,6 +107,10 @@ SOURCE=.\src\Encoding.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\GpxLoader.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\HiddenWindow.cpp
 # End Source File
 # Begin Source File
@@ -180,6 +184,10 @@ SOURCE=.\include\DownloadWorker.h
 # Begin Source File
 
 SOURCE=.\include\Encoding.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\GpxLoader.h
 # End Source File
 # Begin Source File
 

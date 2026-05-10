@@ -6,3 +6,5 @@ IndentCaseLabels: true
 UseTab: Always
 IndentWidth: 4
 TabWidth: 4
+Standard: Cpp03
+

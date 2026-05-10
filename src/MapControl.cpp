@@ -42,11 +42,15 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_dragging(false),
 	  m_dragStartX(0),
 	  m_dragStartY(0),
-	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png") {
+	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png"),
+	  m_tracks(),
+	  m_tracksProjected() {
 	m_unmappedBrush = CreateSolidBrush(RGB(128, 128, 128));
+	m_hTrackPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 }
 
 MapControl::~MapControl() {
+	DeleteObject(m_hTrackPen);
 	DeleteObject(m_unmappedBrush);
 }
 
@@ -200,6 +204,13 @@ void MapControl::requestRedraw() {
 }
 
 void MapControl::render(HDC hdcDestination, RECT* updateRect) {
+	renderTiles(hdcDestination, updateRect);
+	if (!m_dragging) {
+		renderTracks(hdcDestination, updateRect);
+	}
+}
+
+void MapControl::renderTiles(HDC hdcDestination, RECT* updateRect) {
 	long originX = m_x + m_offsetX;
 	long originY = m_y + m_offsetY;
 	restrictCoordinates(&originX, &originY);
@@ -225,7 +236,9 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 		TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
 
 		HBITMAP hBitmap = m_tileCache.get(tileKey, m_hwndMap);
-		SelectObject(hMemDC, hBitmap);
+		if (SelectObject(hMemDC, hBitmap) == NULL) {
+			throw "Unable to select bitmap object.";
+		}
 		BitBlt(
 			hdcDestination,
 			tileRect.left,
@@ -239,6 +252,8 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 		);
 	}
 
+	DeleteDC(hMemDC);
+
 	// On low zoom levels (or large viewports) there is an unmapped area at the bottom (south)
 	int outOfRangeYOffset = tileIterator.getOutOfRangeYOffset();
 	if (outOfRangeYOffset > 0) {
@@ -249,8 +264,40 @@ void MapControl::render(HDC hdcDestination, RECT* updateRect) {
 		outOfBoundsRect.bottom = m_viewportHeight;
 		FillRect(hdcDestination, &outOfBoundsRect, m_unmappedBrush);
 	}
+}
 
-	DeleteDC(hMemDC);
+void MapControl::renderTracks(HDC hdcDestination, RECT* updateRect) {
+	if (m_tracksProjected.size() != m_tracks.size()) {
+		reprojectTracks();
+	}
+	for (std::vector<std::vector<POINT> >::iterator it = m_tracksProjected.begin(); it != m_tracksProjected.end(); it++) {
+		renderTrack(hdcDestination, updateRect, *it);
+	}
+}
+
+void MapControl::renderTrack(HDC hdcDestination, RECT* updateRect, std::vector<POINT>& track) const {
+	if (track.size() < 2) {
+		return;
+	}
+
+	if (SelectObject(hdcDestination, m_hTrackPen) == NULL) {
+		throw "Unable to select pen object.";
+	}
+
+	if (!BeginPath(hdcDestination)) {
+		throw "Unable to create path for track.";
+	}
+	// We can't simply use PolyLine here because of the varying m_x/m_y offsets
+	MoveToEx(hdcDestination, track[0].x - m_x, track[0].y - m_y, NULL);
+	for (std::vector<POINT>::iterator pointIterator = track.begin(); pointIterator != track.end(); pointIterator++) {
+		LineTo(hdcDestination, pointIterator->x - m_x, pointIterator->y - m_y);
+	}
+	if (!EndPath(hdcDestination)) {
+		throw "Unable to end path for track.";
+	}
+	if (!StrokePath(hdcDestination)) {
+		throw "Unable to stroke path.";
+	}
 }
 
 void MapControl::setOffset(int offsetX, int offsetY) {
@@ -268,9 +315,9 @@ void MapControl::moveToOffset() {
 }
 
 void MapControl::setCenterLonLat(const LonLat* lonLat) {
-	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
-	m_x = mapSize * (lonLat->lon + 180.0) / 360.0 - (m_viewportWidth >> 1);
-	m_y = mapSize * (1.0 - asinh(tan(lonLat->lat * M_PI / 180.0)) / M_PI) / 2.0 - (m_viewportHeight >> 1);
+	getXY(*lonLat, &m_x, &m_y);
+	m_x -= (m_viewportWidth >> 1);
+	m_y -= (m_viewportHeight >> 1);
 	restrictCoordinates(&m_x, &m_y);
 }
 
@@ -304,6 +351,8 @@ void MapControl::setZoomLevelKeepingFixPoint(int zoomLevel, int x, int y) {
 	m_zoomLevel = zoomLevel;
 
 	restrictCoordinates(&m_x, &m_y);
+
+	reprojectTracks();
 }
 
 void MapControl::setViewportSize(int width, int height) {
@@ -327,7 +376,10 @@ void MapControl::setSettings(Settings* settings) {
 	m_x = settings->centerX - m_viewportWidth / 2;
 	m_y = settings->centerY - m_viewportHeight / 2;
 	m_zoomLevel = settings->zoomLevel;
+
 	restrictCoordinates(&m_x, &m_y);
+
+	reprojectTracks();
 }
 
 void MapControl::restrictCoordinates(long* x, long* y) const {
@@ -392,6 +444,37 @@ void MapControl::endDragging(int x, int y) {
 
 void MapControl::setStyle(const std::string& styleUrlTemplate) {
 	m_styleUrlTemplate = styleUrlTemplate;
+}
+
+void MapControl::addTrack(std::vector<LonLat> track) {
+	m_tracks.push_back(track);
+	// Projection will happen lazily on next draw
+}
+
+void MapControl::clearTracks() {
+	m_tracks.clear();
+	m_tracksProjected.clear();
+}
+
+void MapControl::getXY(const LonLat& lonLat, long* x, long* y) const {
+	long mapSize = 1 << m_zoomLevel << TILE_SIZE_BITS;
+	*x = mapSize * (lonLat.lon + 180.0) / 360.0;
+	*y = mapSize * (1.0 - asinh(tan(lonLat.lat * M_PI / 180.0)) / M_PI) / 2.0;
+}
+
+void MapControl::reprojectTracks() {
+	m_tracksProjected.clear();
+
+	POINT p;
+	for (std::vector<std::vector<LonLat> >::iterator trackIterator = m_tracks.begin(); trackIterator != m_tracks.end(); trackIterator++) {
+		std::vector<POINT> points;
+		for (std::vector<LonLat>::iterator pointIterator = trackIterator->begin(); pointIterator != trackIterator->end(); pointIterator++) {
+			POINT point;
+			getXY(*pointIterator, &point.x, &point.y);
+			points.push_back(point);
+		}
+		m_tracksProjected.push_back(points);
+	}
 }
 
 void putTextIntoClipboard(char* text) {

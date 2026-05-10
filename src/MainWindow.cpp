@@ -29,6 +29,7 @@ const int STATUS_BAR_PART_ATTRIBUTION = 3;
 const int CUSTOM_STYLE_MAX_ZOOM_LEVEL = 30;
 
 MainWindow::MainWindow(
+	const GpxLoader& gpxLoader,
 	MainWindowManager& mainWindowManager,
 	const MapPrinter& mapPrinter,
 	const SearchProvider& searchProvider,
@@ -36,7 +37,8 @@ MainWindow::MainWindow(
 	TileCache& tileCache,
 	HINSTANCE hInstance,
 	Settings settings
-) : m_mainWindowManager(mainWindowManager),
+) : m_gpxLoader(gpxLoader),
+	m_mainWindowManager(mainWindowManager),
 	m_mapPrinter(mapPrinter),
 	m_searchProvider(searchProvider),
 	m_styleDatabase(styleDatabase),
@@ -55,6 +57,8 @@ bool MainWindow::create(int nCmdShow) {
 	updateStatusBarZoom();
 
 	applyInitialSettings();
+
+	DragAcceptFiles(m_hWnd, true);
 
 	ShowWindow(m_hWnd, nCmdShow);
 	UpdateWindow(m_hWnd);
@@ -209,6 +213,15 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 						print();
 						break;
 
+					case IDM_LOAD_TRACK:
+						loadTrack();
+						break;
+
+					case IDM_CLEAR_TRACK:
+						m_mapControl->clearTracks();
+						m_mapControl->requestRedraw();
+						break;
+
 					default:
 						return DefWindowProc(m_hWnd, message, wParam, lParam);
 				}
@@ -242,6 +255,10 @@ LRESULT CALLBACK MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 			case WM_MOUSEWHEEL:
 				zoomByMouseWheel(static_cast<short>(HIWORD(wParam)) > 0 ? 1 : -1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+
+			case WM_DROPFILES:
+				onDropFiles(reinterpret_cast<HDROP>(wParam));
 				break;
 
 			case WM_USER_MAP_LONLAT_UPDATE:
@@ -445,6 +462,17 @@ void MainWindow::onLonLatUpdate(LonLat* updatedLonLat) {
 	SendMessageA(m_hwndStatusBar, SB_SETTEXT, STATUS_BAR_PART_LAT, reinterpret_cast<LPARAM>(statusText));
 }
 
+void MainWindow::onDropFiles(HDROP hDrop) {
+	unsigned int count = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+	for (unsigned int i = 0; i < count; i++) {
+		TCHAR filePath[MAX_PATH];
+		DragQueryFile(hDrop, i, filePath, MAX_PATH);
+		std::vector<LonLat> track = m_gpxLoader.load(filePath);
+		m_mapControl->addTrack(track);
+	}
+	m_mapControl->requestRedraw();
+}
+
 void MainWindow::syncOtherWindowsPositions() {
 	if (m_settings.syncPosition) {
 		LonLat lonLat;
@@ -499,4 +527,23 @@ void MainWindow::print() {
 	);
 
 	EnableMenuItem(hMenu, IDM_PRINT, MF_ENABLED);
+}
+
+void MainWindow::loadTrack() {
+	char fileName[MAX_PATH] = {0};
+
+	OPENFILENAMEA ofn = {0};
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = m_hWnd;
+	ofn.lpstrFilter = "GPX Tracks\0*.gpx\0";
+	ofn.lpstrFile = fileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+	ofn.lpstrDefExt = "gpx";
+
+	if (GetOpenFileNameA(&ofn)) {
+		std::vector<LonLat> track = m_gpxLoader.load(fileName);
+		m_mapControl->addTrack(track);
+		m_mapControl->requestRedraw();
+	}
 }
