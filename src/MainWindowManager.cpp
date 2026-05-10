@@ -5,13 +5,15 @@
 #include "MainWindowManager.h"
 
 MainWindowManager::MainWindowManager(
+	const GpxLoader& gpxLoader,
 	const MapPrinter& mapPrinter,
 	const SearchProvider& searchProvider,
 	const StyleDatabase& styleDatabase,
 	TileCache& tileCache,
 	HINSTANCE hInstance
 )
-	: m_mapPrinter(mapPrinter),
+	: m_gpxLoader(gpxLoader),
+	  m_mapPrinter(mapPrinter),
 	  m_searchProvider(searchProvider),
 	  m_styleDatabase(styleDatabase),
 	  m_tileCache(tileCache),
@@ -21,6 +23,7 @@ MainWindowManager::MainWindowManager(
 
 void MainWindowManager::create(Settings settings, int nCmdShow) {
 	MainWindow* mainWindow = new MainWindow(
+		m_gpxLoader,
 		*this,
 		m_mapPrinter,
 		m_searchProvider,

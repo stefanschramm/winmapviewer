@@ -5,6 +5,7 @@
 // clang-format on
 #include <cstdlib>
 
+#include "GpxLoader.h"
 #include "HiddenWindow.h"
 #include "MainWindow.h"
 #include "MainWindowManager.h"
@@ -18,6 +19,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	try {
 		InitCommonControls();
 
+		const GpxLoader gpxLoader;
 		const StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
 		const TileDownloader tileDownloader;
 		DownloadWorker downloadWorker(tileDownloader);
@@ -26,7 +28,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		downloadWorker.setNotificationReceiver(hiddenWindow.create());
 		const SearchProvider searchProvider;
 		const MapPrinter mapPrinter(tileCache);
-		MainWindowManager mainWindowManager(mapPrinter, searchProvider, styleDatabase, tileCache, hInstance);
+		MainWindowManager mainWindowManager(gpxLoader, mapPrinter, searchProvider, styleDatabase, tileCache, hInstance);
 
 		mainWindowManager.create(loadSettingsFromRegistry(), nCmdShow);
 

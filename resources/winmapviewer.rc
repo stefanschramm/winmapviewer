@@ -66,6 +66,11 @@ BEGIN
         MENUITEM "&Keep position of other windows in sync", 
                                                 IDM_SYNC_POSITION
     END
+    POPUP "&Tracks"
+    BEGIN
+        MENUITEM "&Load ...",                   IDM_LOAD_TRACK
+        MENUITEM "&Clear",                      IDM_CLEAR_TRACK
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About ...",                  IDM_ABOUT

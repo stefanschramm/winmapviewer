@@ -37,6 +37,8 @@
 #define IDM_NEW_WINDOW 800
 #define IDM_PRINT 900
 #define IDM_SYNC_POSITION 910
+#define IDM_LOAD_TRACK 920
+#define IDM_CLEAR_TRACK 921
 
 // Next default values for new objects
 //

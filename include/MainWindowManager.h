@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "GpxLoader.h"
 #include "MapPrinter.h"
 #include "SearchProvider.h"
 #include "Settings.h"
@@ -14,6 +15,7 @@ class MainWindow;
 class MainWindowManager {
   public:
 	MainWindowManager(
+		const GpxLoader& gpxLoader,
 		const MapPrinter& mapPrinter,
 		const SearchProvider& searchProvider,
 		const StyleDatabase& styleDatabase,
@@ -25,6 +27,7 @@ class MainWindowManager {
 	void setCenterLonLat(LonLat* lonLat, MainWindow* triggeringMainWindow);
 
   private:
+	const GpxLoader& m_gpxLoader;
 	const MapPrinter& m_mapPrinter;
 	const SearchProvider& m_searchProvider;
 	const StyleDatabase& m_styleDatabase;

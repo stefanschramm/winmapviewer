@@ -25,6 +25,9 @@ class MapControl {
 	void getSettings(Settings* settings) const;
 	void setSettings(Settings* settings);
 	void setStyle(const std::string& styleUrlTemplate);
+	void addTrack(std::vector<LonLat> track);
+	void clearTracks();
+	void getXY(const LonLat& lonLat, long* x, long* y) const;
 
 	HINSTANCE m_hInstance;
 	HWND m_hwndMap;
@@ -34,6 +37,9 @@ class MapControl {
 	TileCache& m_tileCache;
 
 	void render(HDC hdcDestination, RECT* updateRect);
+	void renderTiles(HDC hdcDestination, RECT* updateRect);
+	void renderTracks(HDC hdcDestination, RECT* updateRect);
+	void renderTrack(HDC hdcDestination, RECT* updateRect, std::vector<POINT>& track) const;
 	void setViewportSize(int width, int height);
 	void getLonLat(int x, int y, LonLat* lonLat) const;
 	void startDragging(int x, int y);
@@ -41,8 +47,10 @@ class MapControl {
 	void endDragging(int x, int y);
 	void restrictCoordinates(long* x, long* y) const;
 	void invalidateUpdateRects(const TileKey& tileKey) const;
+	void reprojectTracks();
 
 	HBRUSH m_unmappedBrush;
+	HPEN m_hTrackPen;
 
 	std::string m_styleUrlTemplate;
 	int m_maxZoomLevel;
@@ -58,4 +66,6 @@ class MapControl {
 	int m_dragStartX;
 	int m_dragStartY;
 	LonLat m_clickLonLat;
+	std::vector<std::vector<LonLat> > m_tracks;
+	std::vector<std::vector<POINT> > m_tracksProjected;
 };

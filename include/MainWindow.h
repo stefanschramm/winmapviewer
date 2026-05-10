@@ -16,6 +16,7 @@
 class MainWindow {
   public:
 	MainWindow(
+		const GpxLoader& gpxLoader,
 		MainWindowManager& mainWindowManager,
 		const MapPrinter& mapPrinter,
 		const SearchProvider& searchProvider,
@@ -44,8 +45,10 @@ class MainWindow {
 	void selectIntegratedStyle(int styleIdentifier);
 	void selectCustomStyle();
 	void print();
+	void loadTrack();
 
 	void onLonLatUpdate(LonLat* updatedLonLat);
+	void onDropFiles(HDROP hDrop);
 
 	void syncOtherWindowsPositions();
 
@@ -53,6 +56,7 @@ class MainWindow {
 	void updateSyncPositionMenuEntry();
 	void updateStatusBarZoom();
 
+	const GpxLoader& m_gpxLoader;
 	const MapPrinter& m_mapPrinter;
 	MainWindowManager& m_mainWindowManager;
 	const SearchProvider& m_searchProvider;
