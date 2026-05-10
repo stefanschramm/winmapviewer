@@ -73,7 +73,11 @@ std::string parseStyleUrlTemplate(const TileKey& tileKey) {
 	return strstr.str();
 }
 
+void warningMessage(const char* message) {
+	MessageBoxA(NULL, message, "winmapviewer", MB_OK | MB_ICONWARNING);
+}
+
 void panicMessage(const char* place, const char* message) {
 	std::cerr << "Exception caught in " << place << ": " << message << std::endl;
-	MessageBoxA(NULL, message, "winmapviewer", MB_OK);
+	MessageBoxA(NULL, message, "winmapviewer", MB_OK | MB_ICONERROR);
 }

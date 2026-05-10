@@ -319,7 +319,7 @@ LRESULT CALLBACK MainWindow::customStyleDialogWndProcStatic(HWND hwndDialog, UIN
 				try {
 					parseStyleUrlTemplate(dummyTileKey);
 				} catch (const char* e) {
-					MessageBoxA(NULL, e, "Invalid URL template", MB_OK);
+					MessageBoxA(NULL, e, "Invalid URL template", MB_OK | MB_ICONWARNING);
 					return TRUE;
 				}
 
@@ -477,6 +477,9 @@ void MainWindow::updateStatusBarZoom() {
 }
 
 void MainWindow::print() {
+	HMENU hMenu = GetMenu(m_hWnd);
+	EnableMenuItem(hMenu, IDM_PRINT, MF_GRAYED);
+
 	m_mapControl->getSettings(&m_settings);
 
 	std::string styleUrlTemplate;
@@ -494,4 +497,6 @@ void MainWindow::print() {
 		m_settings.centerY,
 		styleUrlTemplate
 	);
+
+	EnableMenuItem(hMenu, IDM_PRINT, MF_ENABLED);
 }

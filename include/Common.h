@@ -47,6 +47,8 @@ HBITMAP createPlaceholderBitmap(bool error);
 
 std::string parseStyleUrlTemplate(const TileKey& tileKey);
 
+void warningMessage(const char* message);
+
 void panicMessage(const char* place, const char* message);
 
 // Template for wrapper that calls the wndProc instance method of the object corresponding to the window.
