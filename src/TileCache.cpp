@@ -127,7 +127,11 @@ void TileCache::cleanUpCacheIfRequired() {
 	std::sort(entries.begin(), entries.end(), compareBySecond);
 	const int entriesToRemove = m_cache.size() - targetSize;
 	for (int i = 0; i < entriesToRemove; i++) {
-		m_cache.erase(entries[i].first);
+		TileKey tileKey = entries[i].first;
+		if (m_cache[tileKey].available) {
+			DeleteObject(m_cache[tileKey].bitmap);
+		}
+		m_cache.erase(tileKey);
 	}
 }
 
