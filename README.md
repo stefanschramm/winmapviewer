@@ -1,6 +1,6 @@
 # winmapviewer ![Icon of winmapviewer](doc/icon.png)
 
-winmapviewer is a free minimalistic viewer for [OpenStreetMap](https://www.openstreetmap.org/) raster tile maps. It's written using the Win32 API and runs on systems with Windows 95 and above.
+winmapviewer is a free minimalistic viewer for [OpenStreetMap](https://www.openstreetmap.org/) and compatible raster tile maps. It's written using the Win32 API and runs on systems with Windows 95 and above.
 
 ![Screenshot of winmapviewer](doc/screenshot.png)
 
@@ -11,6 +11,7 @@ winmapviewer is a free minimalistic viewer for [OpenStreetMap](https://www.opens
 - Location search powered by the [Nominatim geocoding API](https://nominatim.org/)
 - Printing of current map position
 - Multiple map windows to view different locations, zoom levels and/or map styles simultaneously
+- Display GPX tracks
 
 ### Disabling TLS
 
