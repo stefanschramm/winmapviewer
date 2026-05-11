@@ -7,18 +7,18 @@ TileCache::TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileD
 	: m_downloadWorker(downloadWorker),
 	  m_tileDownloader(tileDownloader),
 	  addedEntriesSinceLastCleanup(0) {
-	m_hPlaceholderBitmap = createPlaceholderBitmap(false);
 }
 
 TileCache::~TileCache() {
 	clear();
-	DeleteObject(m_hPlaceholderBitmap);
 }
 
 bool contains(const Subscribers& subscribers, HWND hwndSubscriber) {
 	return std::find(subscribers.begin(), subscribers.end(), hwndSubscriber) != subscribers.end();
 }
 
+// Get tile from cache
+// Returns NULL if tile is not in cache yet, but enqueues its download
 HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	if (tileKey.x < 0 || tileKey.y < 0 || tileKey.x > (1 << tileKey.zoomLevel) || tileKey.y > (1 << tileKey.zoomLevel)) {
 		throw "Invalid tile requested";
@@ -35,7 +35,7 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 			iterator->second.subscribers.push_back(hwndSubscriber);
 		}
 
-		return m_hPlaceholderBitmap;
+		return NULL;
 	}
 
 	CacheContent cacheContent;
@@ -52,7 +52,7 @@ HBITMAP TileCache::get(const TileKey& tileKey, HWND hwndSubscriber) {
 	// and deliver a scaled version of it temporarily?
 	// CacheContent should have a flag if it's the actual tile or a scaled version.
 
-	return m_hPlaceholderBitmap;
+	return NULL;
 }
 
 HBITMAP TileCache::getBlocking(const TileKey& tileKey) {

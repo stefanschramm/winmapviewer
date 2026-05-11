@@ -45,8 +45,9 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_styleUrlTemplate("http://osm.kesto.de/tile/osm/{z}/{x}/{y}.png"),
 	  m_tracks(),
 	  m_tracksProjected() {
-	m_unmappedBrush = CreateSolidBrush(RGB(128, 128, 128));
-	m_hTrackPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+	m_unmappedBrush = CreateSolidBrush(RGB(0x80, 0x80, 0x80));
+	m_loadingBrush = CreateSolidBrush(RGB(0xcc, 0xcc, 0xcc));
+	m_hTrackPen = CreatePen(PS_SOLID, 2, RGB(0xff, 0, 0));
 }
 
 MapControl::~MapControl() {
@@ -236,20 +237,29 @@ void MapControl::renderTiles(HDC hdcDestination, RECT* updateRect) {
 		TileKey tileKey(m_styleUrlTemplate, m_zoomLevel, tileX, tileY);
 
 		HBITMAP hBitmap = m_tileCache.get(tileKey, m_hwndMap);
-		if (SelectObject(hMemDC, hBitmap) == NULL) {
-			throw "Unable to select bitmap object.";
+		if (hBitmap != NULL) {
+			HGDIOBJ hPreviousObject = SelectObject(hMemDC, hBitmap);
+			if (hPreviousObject == NULL) {
+				throw "Unable to select bitmap object.";
+			}
+
+			BitBlt(
+				hdcDestination,
+				tileRect.left,
+				tileRect.top,
+				TILE_SIZE,
+				TILE_SIZE,
+				hMemDC,
+				0,
+				0,
+				SRCCOPY
+			);
+
+			SelectObject(hMemDC, hPreviousObject);
+		} else {
+			// Tile not available in cache (yet)
+			FillRect(hdcDestination, &tileRect, m_loadingBrush);
 		}
-		BitBlt(
-			hdcDestination,
-			tileRect.left,
-			tileRect.top,
-			TILE_SIZE,
-			TILE_SIZE,
-			hMemDC,
-			0,
-			0,
-			SRCCOPY
-		);
 	}
 
 	DeleteDC(hMemDC);
@@ -465,7 +475,6 @@ void MapControl::getXY(const LonLat& lonLat, long* x, long* y) const {
 void MapControl::reprojectTracks() {
 	m_tracksProjected.clear();
 
-	POINT p;
 	for (std::vector<std::vector<LonLat> >::iterator trackIterator = m_tracks.begin(); trackIterator != m_tracks.end(); trackIterator++) {
 		std::vector<POINT> points;
 		for (std::vector<LonLat>::iterator pointIterator = trackIterator->begin(); pointIterator != trackIterator->end(); pointIterator++) {

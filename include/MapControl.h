@@ -50,6 +50,7 @@ class MapControl {
 	void reprojectTracks();
 
 	HBRUSH m_unmappedBrush;
+	HBRUSH m_loadingBrush;
 	HPEN m_hTrackPen;
 
 	std::string m_styleUrlTemplate;

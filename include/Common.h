@@ -43,8 +43,6 @@ struct LonLat {
 	double lat;
 };
 
-HBITMAP createPlaceholderBitmap(bool error);
-
 std::string parseStyleUrlTemplate(const TileKey& tileKey);
 
 void warningMessage(const char* message);

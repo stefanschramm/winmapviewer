@@ -35,5 +35,4 @@ class TileCache {
 
 	std::map<TileKey, CacheContent> m_cache;
 	int addedEntriesSinceLastCleanup;
-	HBITMAP m_hPlaceholderBitmap;
 };

@@ -18,6 +18,40 @@ TileDownloader::~TileDownloader() {
 	InternetCloseHandle(m_hInternet);
 }
 
+HBITMAP createPlaceholderBitmap() {
+	int width = 256;
+	int height = 256;
+
+	BITMAPINFO bmi = {0};
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = width;
+	bmi.bmiHeader.biHeight = height;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 8 * 3;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	void* dibPixels = NULL;
+	HBITMAP hBmp = CreateDIBSection(
+		NULL,
+		&bmi,
+		DIB_RGB_COLORS,
+		&dibPixels,
+		NULL,
+		0
+	);
+
+	unsigned char* p = (unsigned char*)dibPixels;
+	int total = width * height;
+	for (int i = 0; i < total; i++) {
+		p[0] = 0xcc; // B
+		p[1] = 0xcc; // G
+		p[2] = 0xff; // R
+		p += 3;
+	}
+
+	return hBmp;
+}
+
 // Returns bitmap for specified tile
 // The caller is responsible to DeleteObject after usage.
 HBITMAP TileDownloader::get(const TileKey& tileKey) const {
@@ -25,7 +59,7 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 
 	HINTERNET hUrl = InternetOpenUrl(m_hInternet, url.c_str(), NULL, 0, 0, 0);
 	if (!hUrl) {
-		return createPlaceholderBitmap(true);
+		return createPlaceholderBitmap();
 	}
 
 	std::string rawData;
@@ -42,7 +76,7 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 	const int desiredChannels = STBI_rgb;
 	stbi_uc* img = stbi_load_from_memory((stbi_uc*)rawData.c_str(), rawData.size(), &width, &height, &actualChannels, desiredChannels);
 	if (img == NULL) {
-		return createPlaceholderBitmap(true);
+		return createPlaceholderBitmap();
 	}
 
 	BITMAPINFO bmi = {0};
@@ -63,7 +97,8 @@ HBITMAP TileDownloader::get(const TileKey& tileKey) const {
 		0
 	);
 	if (!hBmp) {
-		return createPlaceholderBitmap(true);
+		stbi_image_free(img);
+		return createPlaceholderBitmap();
 	}
 
 	memcpy(dibPixels, img, width * height * desiredChannels);
