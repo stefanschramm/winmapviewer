@@ -46,7 +46,7 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 	  m_tracks(),
 	  m_tracksProjected() {
 	m_unmappedBrush = CreateSolidBrush(RGB(0x80, 0x80, 0x80));
-	m_loadingBrush = CreateSolidBrush(RGB(0xcc, 0xcc, 0xcc));
+	m_loadingBrush = CreateHatchBrush(HS_BDIAGONAL, RGB(0xcc, 0xcc, 0xcc));
 	m_hTrackPen = CreatePen(PS_SOLID, 2, RGB(0xff, 0, 0));
 }
 
