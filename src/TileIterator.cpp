@@ -31,7 +31,7 @@ TileIterator::TileIterator(int zoomLevel, int x, int y, int width, int height)
 	m_outOfRangeYOffset = fullMapHeight < height ? fullMapHeight : 0;
 }
 
-TileRange TileIterator::getTileRange(const std::string& styleUrlTemplate) {
+TileRange TileIterator::getTileRange(const std::string& styleUrlTemplate) const {
 	TileRange visibleTiles(
 		styleUrlTemplate,
 		m_zoomLevel,
@@ -44,7 +44,7 @@ TileRange TileIterator::getTileRange(const std::string& styleUrlTemplate) {
 	return visibleTiles;
 }
 
-int TileIterator::getOutOfRangeYOffset() {
+int TileIterator::getOutOfRangeYOffset() const {
 	return m_outOfRangeYOffset;
 }
 

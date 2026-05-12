@@ -21,7 +21,7 @@ SearchDialog::SearchDialog(HINSTANCE hInstance, HWND hWnd, const SearchProvider&
 	  m_searchProvider(searchProvider) {
 }
 
-void SearchDialog::show() {
+void SearchDialog::show() const {
 	DialogBoxParam(
 		m_hInstance,
 		reinterpret_cast<LPCTSTR>(IDD_SEARCH),
@@ -150,11 +150,11 @@ void SearchDialog::ok() {
 	SetFocus(GetDlgItem(m_hwndDialog, IDC_SEARCH_RESULTS));
 }
 
-void SearchDialog::cancel() {
+void SearchDialog::cancel() const {
 	EndDialog(m_hwndDialog, IDCANCEL);
 }
 
-void SearchDialog::openInOsm() {
+void SearchDialog::openInOsm() const {
 	std::stringstream url;
 
 	url << "https://www.openstreetmap.org/"
@@ -198,7 +198,7 @@ void SearchDialog::updateResultList() {
 	delete wrapper;
 }
 
-void SearchDialog::selectItem() {
+void SearchDialog::selectItem() const {
 	int row = ListView_GetNextItem(m_hwndListView, -1, LVNI_SELECTED);
 	if (row >= 0) {
 		SearchResult selectedResult = m_searchResults.at(row);

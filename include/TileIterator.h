@@ -8,8 +8,8 @@
 class TileIterator {
   public:
 	TileIterator(int zoomLevel, int x, int y, int width, int height);
-	TileRange getTileRange(const std::string& styleUrlTemplate);
-	int getOutOfRangeYOffset();
+	TileRange getTileRange(const std::string& styleUrlTemplate) const;
+	int getOutOfRangeYOffset() const;
 	bool next(int* tileX, int* tileY, RECT* destinationRect);
 
   private:

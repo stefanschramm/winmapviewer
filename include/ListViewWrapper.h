@@ -2,15 +2,15 @@
 class ListViewWrapper {
   public:
 	static ListViewWrapper* create(HWND hwndListView);
-	virtual void insertColumn(int columnNumber, int width, std::string caption) = 0;
-	virtual void insertItem(int item, int subItem, std::string utf8Text) = 0;
+	virtual void insertColumn(int columnNumber, int width, std::string caption) const = 0;
+	virtual void insertItem(int item, int subItem, std::string utf8Text) const = 0;
 };
 
 class ListViewWrapperA : public ListViewWrapper {
   public:
 	ListViewWrapperA(HWND hwndListView) : m_hwndListView(hwndListView) {}
-	void insertColumn(int columnNumber, int width, std::string caption);
-	void insertItem(int item, int subItem, std::string utf8Text);
+	void insertColumn(int columnNumber, int width, std::string caption) const;
+	void insertItem(int item, int subItem, std::string utf8Text) const;
 
   private:
 	HWND m_hwndListView;
@@ -19,8 +19,8 @@ class ListViewWrapperA : public ListViewWrapper {
 class ListViewWrapperW : public ListViewWrapper {
   public:
 	ListViewWrapperW(HWND hwndListView) : m_hwndListView(hwndListView) {}
-	void insertColumn(int columnNumber, int width, std::string caption);
-	void insertItem(int item, int subItem, std::string utf8Text);
+	void insertColumn(int columnNumber, int width, std::string caption) const;
+	void insertItem(int item, int subItem, std::string utf8Text) const;
 
   private:
 	HWND m_hwndListView;

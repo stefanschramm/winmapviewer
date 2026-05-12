@@ -3,7 +3,6 @@
 #include <windows.h>
 #include <commctrl.h>
 // clang-format on
-#include <cstdlib>
 
 #include "GpxLoader.h"
 #include "HiddenWindow.h"

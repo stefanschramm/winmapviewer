@@ -27,15 +27,15 @@ void doInsertColumn(HWND hwndListView, int columnNumber, int width, std::string 
 	SendMessageA(hwndListView, LVM_INSERTCOLUMNA, columnNumber, reinterpret_cast<LPARAM>(&col));
 }
 
-void ListViewWrapperA::insertColumn(int columnNumber, int width, std::string caption) {
+void ListViewWrapperA::insertColumn(int columnNumber, int width, std::string caption) const {
 	doInsertColumn(m_hwndListView, columnNumber, width, caption);
 }
 
-void ListViewWrapperW::insertColumn(int columnNumber, int width, std::string caption) {
+void ListViewWrapperW::insertColumn(int columnNumber, int width, std::string caption) const {
 	doInsertColumn(m_hwndListView, columnNumber, width, caption);
 }
 
-void ListViewWrapperA::insertItem(int item, int subItem, std::string utf8Text) {
+void ListViewWrapperA::insertItem(int item, int subItem, std::string utf8Text) const {
 	std::string result = convertUtf8ToCurrentCodepage(utf8Text);
 
 	LVITEMA entry = {0};
@@ -52,7 +52,7 @@ void ListViewWrapperA::insertItem(int item, int subItem, std::string utf8Text) {
 	}
 }
 
-void ListViewWrapperW::insertItem(int item, int subItem, std::string utf8Text) {
+void ListViewWrapperW::insertItem(int item, int subItem, std::string utf8Text) const {
 	std::wstring result = convertUtf8ToWide(utf8Text);
 
 	LVITEMW entry = {0};

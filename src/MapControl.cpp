@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <math.h>
 #include <stdio.h>
 #include <windows.h>

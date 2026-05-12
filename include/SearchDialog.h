@@ -10,7 +10,7 @@
 class SearchDialog {
   public:
 	SearchDialog(HINSTANCE hInst, HWND hWnd, const SearchProvider& searchProvider);
-	void show();
+	void show() const;
 	static LRESULT CALLBACK wndProcStatic(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
   private:
@@ -24,9 +24,9 @@ class SearchDialog {
 
 	BOOL init(HWND hwndDialog);
 	void ok();
-	void cancel();
-	void openInOsm();
-	void selectItem();
+	void cancel() const;
+	void openInOsm() const;
+	void selectItem() const;
 	void updateResultList();
 	LRESULT CALLBACK wndProc(HWND hDialog, UINT message, WPARAM wParam, LPARAM lParam);
 };
