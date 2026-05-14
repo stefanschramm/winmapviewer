@@ -3,9 +3,9 @@
 #include "Common.h"
 #include "TileCache.h"
 
-TileCache::TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileDownloader)
+TileCache::TileCache(DownloadWorker& downloadWorker, const TileFetcher& tileFetcher)
 	: m_downloadWorker(downloadWorker),
-	  m_tileDownloader(tileDownloader),
+	  m_tileFetcher(tileFetcher),
 	  addedEntriesSinceLastCleanup(0) {
 }
 
@@ -65,7 +65,7 @@ HBITMAP TileCache::getBlocking(const TileKey& tileKey) {
 		return iterator->second.bitmap;
 	}
 
-	HBITMAP hBitmap = m_tileDownloader.get(tileKey);
+	HBITMAP hBitmap = m_tileFetcher.get(tileKey);
 
 	CacheContent cacheContent;
 	cacheContent.available = true;

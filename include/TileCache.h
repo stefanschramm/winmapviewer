@@ -20,7 +20,7 @@ struct CacheContent {
 
 class TileCache {
   public:
-	TileCache(DownloadWorker& downloadWorker, const TileDownloader& tileDownloader);
+	TileCache(DownloadWorker& downloadWorker, const TileFetcher& tileFetcher);
 	~TileCache();
 	HBITMAP get(const TileKey& tileKey, HWND hwndSubscriber);
 	HBITMAP getBlocking(const TileKey& tileKey);
@@ -31,7 +31,7 @@ class TileCache {
 
   private:
 	DownloadWorker& m_downloadWorker;
-	const TileDownloader& m_tileDownloader;
+	const TileFetcher& m_tileFetcher;
 
 	std::map<TileKey, CacheContent> m_cache;
 	int addedEntriesSinceLastCleanup;

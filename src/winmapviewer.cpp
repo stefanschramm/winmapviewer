@@ -12,6 +12,7 @@
 #include "SearchProvider.h"
 #include "Settings.h"
 #include "StyleDatabase.h"
+#include "TileFetcher.h"
 #include "resource.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -20,9 +21,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 		const GpxLoader gpxLoader;
 		const StyleDatabase styleDatabase(IDM_STYLE_OSM_STANDARD);
-		const TileDownloader tileDownloader;
-		DownloadWorker downloadWorker(tileDownloader);
-		TileCache tileCache(downloadWorker, tileDownloader);
+		const TileFetcher tileFetcher;
+		DownloadWorker downloadWorker(tileFetcher);
+		TileCache tileCache(downloadWorker, tileFetcher);
 		HiddenWindow hiddenWindow(hInstance, tileCache);
 		downloadWorker.setNotificationReceiver(hiddenWindow.create());
 		const SearchProvider searchProvider;

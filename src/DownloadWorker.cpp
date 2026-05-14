@@ -1,7 +1,7 @@
-#include "Common.h"
 #include "DownloadWorker.h"
+#include "Common.h"
 
-DownloadWorker::DownloadWorker(const TileDownloader& tileDownloader) : m_tileDownloader(tileDownloader), m_hwndNotificationReceiver(0), m_stop(false) {
+DownloadWorker::DownloadWorker(const TileFetcher& tileFetcher) : m_tileFetcher(tileFetcher), m_hwndNotificationReceiver(0), m_stop(false) {
 	InitializeCriticalSection(&m_mutex);
 
 	m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -50,7 +50,7 @@ void DownloadWorker::run() {
 			m_queuedDownloads.pop_front();
 			LeaveCriticalSection(&m_mutex);
 
-			HBITMAP hBitmap = m_tileDownloader.get(tileKey);
+			HBITMAP hBitmap = m_tileFetcher.get(tileKey);
 
 			EnterCriticalSection(&m_mutex);
 			m_finishedDownloads[tileKey] = hBitmap;

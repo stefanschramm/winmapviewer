@@ -6,12 +6,12 @@
 #include <map>
 #include <queue>
 
-#include "TileDownloader.h"
+#include "TileFetcher.h"
 #include "TileKey.h"
 
 class DownloadWorker {
   public:
-	DownloadWorker(const TileDownloader& tileDownloader);
+	DownloadWorker(const TileFetcher& tileFetcher);
 	~DownloadWorker();
 	void download(const TileKey& tileKey);
 	void transferFinishedDownloads(std::map<TileKey, HBITMAP>* pCacheMap);
@@ -26,7 +26,7 @@ class DownloadWorker {
 	HANDLE m_event;
 	bool m_stop;
 	HWND m_hwndNotificationReceiver;
-	const TileDownloader& m_tileDownloader;
+	const TileFetcher& m_tileFetcher;
 
 	static DWORD WINAPI threadEntry(LPVOID lpParam) {
 		DownloadWorker* worker = static_cast<DownloadWorker*>(lpParam);
