@@ -19,20 +19,12 @@ ListViewWrapper* ListViewWrapper::create(HWND hwndListView) {
 	}
 }
 
-void doInsertColumn(HWND hwndListView, int columnNumber, int width, std::string caption) {
+void ListViewWrapper::insertColumn(int columnNumber, int width, std::string caption) const {
 	LVCOLUMNA col = {0};
 	col.mask = LVCF_TEXT | LVCF_WIDTH;
 	col.pszText = const_cast<char*>(caption.c_str());
 	col.cx = width;
-	SendMessageA(hwndListView, LVM_INSERTCOLUMNA, columnNumber, reinterpret_cast<LPARAM>(&col));
-}
-
-void ListViewWrapperA::insertColumn(int columnNumber, int width, std::string caption) const {
-	doInsertColumn(m_hwndListView, columnNumber, width, caption);
-}
-
-void ListViewWrapperW::insertColumn(int columnNumber, int width, std::string caption) const {
-	doInsertColumn(m_hwndListView, columnNumber, width, caption);
+	SendMessageA(m_hwndListView, LVM_INSERTCOLUMNA, columnNumber, reinterpret_cast<LPARAM>(&col));
 }
 
 void ListViewWrapperA::insertItem(int item, int subItem, std::string utf8Text) const {
