@@ -52,6 +52,7 @@ MapControl::MapControl(HINSTANCE hInstance, HWND hwndMain, TileCache& tileCache)
 MapControl::~MapControl() {
 	DeleteObject(m_hTrackPen);
 	DeleteObject(m_unmappedBrush);
+	DeleteObject(m_loadingBrush);
 }
 
 LRESULT CALLBACK MapControl::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
