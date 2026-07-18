@@ -50,6 +50,8 @@ class MainWindow {
 	void onLonLatUpdate(LonLat* updatedLonLat);
 	void onDropFiles(HDROP hDrop);
 
+	void loadGpxFile(const char* filePath);
+
 	void syncOtherWindowsPositions();
 
 	void updateStyleMenu();

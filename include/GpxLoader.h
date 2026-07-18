@@ -6,5 +6,5 @@
 
 class GpxLoader {
   public:
-	std::vector<LonLat> load(const char* path) const;
+	std::vector<std::vector<LonLat> > load(const char* path) const;
 };

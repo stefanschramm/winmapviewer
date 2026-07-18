@@ -1,7 +1,7 @@
 #include "GpxLoader.h"
 #include "lib/xml/xml.h"
 
-std::vector<LonLat> GpxLoader::load(const char* path) const {
+std::vector<std::vector<LonLat> > GpxLoader::load(const char* path) const {
 	XMLNode* root = xml_parse_file(path);
 	if (root == NULL) {
 		throw "Unable to parse XML.";
@@ -11,10 +11,9 @@ std::vector<LonLat> GpxLoader::load(const char* path) const {
 	const static std::string trksegTag = "trkseg";
 	const static std::string trkptTag = "trkpt";
 
-	std::vector<LonLat> points;
+	// We don't differentiate between tracks and track segments
+	std::vector<std::vector<LonLat> > tracks;
 
-	// To keep data structures simple, we just retrieve all points in the GPX
-	// and don't care about individual tracks or track segments.
 	XMLNode* entries = xml_node_child_at(root, 0);
 	for (size_t i = 0; i < entries->children->len; i++) {
 		XMLNode* trk = xml_node_child_at(entries, i);
@@ -26,6 +25,7 @@ std::vector<LonLat> GpxLoader::load(const char* path) const {
 			if (trksegTag != trkseg->tag) {
 				continue;
 			}
+			std::vector<LonLat> points;
 			for (size_t k = 0; k < trkseg->children->len; k++) {
 				XMLNode* trkpt = xml_node_child_at(trkseg, k);
 				if (trkptTag != trkpt->tag) {
@@ -42,10 +42,11 @@ std::vector<LonLat> GpxLoader::load(const char* path) const {
 				LonLat lonLat = {strtod(lon, NULL), strtod(lat, NULL)};
 				points.push_back(lonLat);
 			}
+			tracks.push_back(points);
 		}
 	}
 
 	xml_node_free(root);
 
-	return points;
+	return tracks;
 }

@@ -467,10 +467,16 @@ void MainWindow::onDropFiles(HDROP hDrop) {
 	for (unsigned int i = 0; i < count; i++) {
 		TCHAR filePath[MAX_PATH];
 		DragQueryFile(hDrop, i, filePath, MAX_PATH);
-		std::vector<LonLat> track = m_gpxLoader.load(filePath);
-		m_mapControl->addTrack(track);
+		loadGpxFile(filePath);
 	}
 	m_mapControl->requestRedraw();
+}
+
+void MainWindow::loadGpxFile(const char* filePath) {
+	std::vector<std::vector<LonLat> > tracks = m_gpxLoader.load(filePath);
+	for (std::vector<std::vector<LonLat> >::iterator iterator = tracks.begin(); iterator != tracks.end(); iterator++) {
+		m_mapControl->addTrack(*iterator);
+	}
 }
 
 void MainWindow::syncOtherWindowsPositions() {
@@ -542,8 +548,7 @@ void MainWindow::loadTrack() {
 	ofn.lpstrDefExt = "gpx";
 
 	if (GetOpenFileNameA(&ofn)) {
-		std::vector<LonLat> track = m_gpxLoader.load(fileName);
-		m_mapControl->addTrack(track);
+		loadGpxFile(fileName);
 		m_mapControl->requestRedraw();
 	}
 }
