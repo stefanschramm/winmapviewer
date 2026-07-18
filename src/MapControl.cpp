@@ -10,7 +10,7 @@
 
 #define IDM_COPY_LON_LAT 10001
 
-void putTextIntoClipboard(char* text);
+void putTextIntoClipboard(const char* text);
 
 // used for optimized multiplication
 const int TILE_SIZE_BITS = 8;
@@ -486,20 +486,35 @@ void MapControl::reprojectTracks() {
 	}
 }
 
-void putTextIntoClipboard(char* text) {
+void putTextIntoClipboard(const char* text) {
 	if (!OpenClipboard(NULL)) {
 		return;
 	}
-	EmptyClipboard();
+
+	if (!EmptyClipboard()) {
+		CloseClipboard();
+		return;
+	}
+
 	size_t size = strlen(text) + 1;
 	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, size);
-	if (hMem) {
-		char* pMem = reinterpret_cast<char*>(GlobalLock(hMem));
-		if (pMem) {
-			memcpy(pMem, text, size);
-			GlobalUnlock(hMem);
-			SetClipboardData(CF_TEXT, hMem);
-		}
+	if (!hMem) {
+		CloseClipboard();
+		return;
 	}
+
+	char* pMem = reinterpret_cast<char*>(GlobalLock(hMem));
+	if (!pMem) {
+		GlobalFree(hMem);
+		CloseClipboard();
+		return;
+	}
+
+	memcpy(pMem, text, size);
+	GlobalUnlock(hMem);
+	if (SetClipboardData(CF_TEXT, hMem) == NULL) {
+		GlobalFree(hMem);
+	}
+
 	CloseClipboard();
 }
