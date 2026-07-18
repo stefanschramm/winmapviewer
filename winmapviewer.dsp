@@ -159,7 +159,7 @@ SOURCE=.\src\TileCache.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\TileDownloader.cpp
+SOURCE=.\src\TileFetcher.cpp
 # End Source File
 # Begin Source File
 
@@ -235,7 +235,7 @@ SOURCE=.\include\TileCache.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\TileDownloader.h
+SOURCE=.\include\TileFetcher.h
 # End Source File
 # Begin Source File
 
