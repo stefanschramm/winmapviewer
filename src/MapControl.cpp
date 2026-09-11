@@ -298,9 +298,20 @@ void MapControl::renderTrack(HDC hdcDestination, RECT* updateRect, std::vector<P
 		throw "Unable to create path for track.";
 	}
 	// We can't simply use PolyLine here because of the varying m_x/m_y offsets
-	MoveToEx(hdcDestination, track[0].x - m_x, track[0].y - m_y, NULL);
+	bool trackDrawingActive = false;
 	for (std::vector<POINT>::iterator pointIterator = track.begin(); pointIterator != track.end(); pointIterator++) {
-		LineTo(hdcDestination, pointIterator->x - m_x, pointIterator->y - m_y);
+		// Speed up rendering by only drawing visible parts
+		if (pointIterator->x >= m_x && pointIterator->x <= (m_x + m_viewportWidth) && pointIterator->y > m_y && pointIterator->y < (m_y + m_viewportHeight)) {
+			// Point is within viewport
+			if (trackDrawingActive) {
+				LineTo(hdcDestination, pointIterator->x - m_x, pointIterator->y - m_y);
+			} else {
+				MoveToEx(hdcDestination, pointIterator->x - m_x, pointIterator->y - m_y, NULL);
+				trackDrawingActive = true;
+			}
+		} else {
+			trackDrawingActive = false;
+		}
 	}
 	if (!EndPath(hdcDestination)) {
 		throw "Unable to end path for track.";
