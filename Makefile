@@ -22,13 +22,16 @@ all: $(OUT)
 run: $(OUT)
 	wine $(OUT)
 
-build/%.o: src/%.cpp
+build:
+	mkdir -p $@
+
+build/%.o: src/%.cpp | build
 	$(CC) -c $< -o $@ -Iinclude -Iresources
 
-$(OUT): $(OBJ) $(RES_OBJ)
+$(OUT): $(OBJ) $(RES_OBJ) | build
 	$(CC) $(CFLAGS) $(OBJ) $(RES_OBJ) -o $(OUT) $(LFLAGS)
 
-$(RES_OBJ): $(RC_FILE)
+$(RES_OBJ): $(RC_FILE) | build
 	$(RC) $(RC_FILE) -o $(RES_OBJ) -Iinclude -Iresources
 
 clean:

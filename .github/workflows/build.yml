@@ -1,0 +1,33 @@
+name: Build Windows application
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install MinGW toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ca-certificates \
+            make \
+            mingw-w64 \
+            libz-mingw-w64 \
+            g++-mingw-w64
+
+      - name: Build
+        run: make
+
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: winmapviewer
+          path: build/winmapviewer.exe
+          if-no-files-found: error
