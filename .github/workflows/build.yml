@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -31,3 +33,28 @@ jobs:
           name: winmapviewer
           path: build/winmapviewer.exe
           if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows executable
+        uses: actions/download-artifact@v5
+        with:
+          name: winmapviewer
+          path: build
+
+      - name: Prepare versioned release asset
+        run: cp build/winmapviewer.exe "build/winmapviewer-${GITHUB_REF_NAME}.exe"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME"
+          "build/winmapviewer-${GITHUB_REF_NAME}.exe"
+          --title "winmapviewer $GITHUB_REF_NAME"
+          --generate-notes
