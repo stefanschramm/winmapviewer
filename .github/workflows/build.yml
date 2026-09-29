@@ -24,14 +24,19 @@ jobs:
             libz-mingw-w64 \
             g++-mingw-w64
 
-      - name: Build
-        run: make
+      - name: Build 32-bit executable
+        run: make ARCH=i686
 
-      - name: Upload Windows executable
+      - name: Build 64-bit executable
+        run: make ARCH=x86_64
+
+      - name: Upload Windows executables
         uses: actions/upload-artifact@v5
         with:
           name: winmapviewer
-          path: build/winmapviewer.exe
+          path: |
+            build/i686/winmapviewer.exe
+            build/x86_64/winmapviewer.exe
           if-no-files-found: error
 
   release:
@@ -41,20 +46,22 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download Windows executable
+      - name: Download Windows executables
         uses: actions/download-artifact@v5
         with:
-          name: winmapviewer
           path: build
 
-      - name: Prepare versioned release asset
-        run: cp build/winmapviewer.exe "build/winmapviewer-${GITHUB_REF_NAME}.exe"
+      - name: Prepare versioned release assets
+        run: |
+          cp build/i686/winmapviewer.exe "build/winmapviewer-i686-${GITHUB_REF_NAME}.exe"
+          cp build/x86_64/winmapviewer.exe "build/winmapviewer-x86_64-${GITHUB_REF_NAME}.exe"
 
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create "$GITHUB_REF_NAME"
-          "build/winmapviewer-${GITHUB_REF_NAME}.exe"
+          "build/winmapviewer-i686-${GITHUB_REF_NAME}.exe"
+          "build/winmapviewer-x86_64-${GITHUB_REF_NAME}.exe"
           --title "winmapviewer $GITHUB_REF_NAME"
           --generate-notes
