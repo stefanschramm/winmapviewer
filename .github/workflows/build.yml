@@ -46,6 +46,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
       - name: Download Windows executables
         uses: actions/download-artifact@v8
         with:
